@@ -1,0 +1,34 @@
+# Build directories
+cinepi-qt/build/
+cinepi-raw/build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Compiled objects
+*.o
+*.d
+*.so
+*.a
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# Qt generated
+moc_*.cpp
+qrc_*.cpp
+*_autogen/
+
+# Install log
+install.log
+
+# OS
+.DS_Store
+Thumbs.db

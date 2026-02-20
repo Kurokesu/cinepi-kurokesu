@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/main.qml</file>
+        <file>qml/CameraPreview.qml</file>
+        <file>qml/ShaderOverlays.qml</file>
+        <file>qml/GridOverlays.qml</file>
+        <file>qml/CameraControls.qml</file>
+        <file>qml/StatusBar.qml</file>
+        <file>qml/SettingsPanel.qml</file>
+        <file>shaders/zebra.frag</file>
+        <file>shaders/falsecolor.frag</file>
+        <file>shaders/focuspeaking.frag</file>
+    </qresource>
+</RCC>
