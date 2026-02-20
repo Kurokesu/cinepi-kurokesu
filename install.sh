@@ -4,7 +4,7 @@
 # Installs CinePI camera platform on a fresh Raspberry Pi OS (Bookworm, 64-bit)
 #
 # Usage:
-#   git clone https://github.com/kurokesu/kurokesu-cinepi.git
+#   git clone --recurse-submodules https://github.com/Kurokesu/kurokesu-cinepi.git
 #   cd kurokesu-cinepi
 #   ./install.sh
 #
@@ -170,23 +170,13 @@ build_cinepi_raw() {
     fi
 
     log "Configuring with Meson..."
-    meson setup build \
-        -Denable_libav=true \
-        -Denable_drm=true \
-        -Denable_egl=true \
-        -Denable_qt=false \
-        -Denable_opencv=false \
-        -Denable_tflite=false \
-        --buildtype=release
+    meson setup build --buildtype=release
 
     log "Building..."
-    meson compile -C build
-
-    log "Installing..."
-    sudo meson install -C build
+    ninja -C build
 
     cd "$SCRIPT_DIR"
-    log "cinepi-raw built and installed to /usr/local/bin/cinepi-raw"
+    log "cinepi-raw built at $CINEPI_RAW_DIR/build/cinepi/cinepi-raw"
 }
 
 # Build cinepi-qt GUI
@@ -484,7 +474,7 @@ print_summary() {
     echo -e "${GREEN}kurokesu-cinepi has been installed successfully!${NC}"
     echo ""
     echo "Installed components:"
-    echo "  - cinepi-raw    : $(which cinepi-raw 2>/dev/null || echo '/usr/local/bin/cinepi-raw')"
+    echo "  - cinepi-raw    : $SCRIPT_DIR/cinepi-raw/build/cinepi/cinepi-raw"
     echo "  - cinepi-qt     : $SCRIPT_DIR/cinepi-qt/build/cinepi-qt"
     echo "  - Config files  : ~/config.ini, ~/overlay.ini"
     echo "  - Services      : cinepi-raw.service, cinepi-qt.service"
