@@ -6,8 +6,6 @@ Wants=redis-server.service
 [Service]
 ExecStart=/home/pi/kurokesu-cinepi/scripts/run-raw.sh
 WorkingDirectory=/home/pi
-# So run-raw.sh finds cinepi-raw (install puts it in /usr/local/bin; systemd default PATH often omits it)
-Environment=PATH=/usr/local/bin:/usr/bin:/bin
 StandardOutput=journal
 StandardError=journal
 Restart=always
