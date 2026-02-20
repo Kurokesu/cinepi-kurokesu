@@ -18,7 +18,16 @@ SENSOR_MODE="${SENSOR_MODE:-2784:1828:12:U}"
 LORES_WIDTH="${LORES_WIDTH:-960}"
 LORES_HEIGHT="${LORES_HEIGHT:-630}"
 
-exec cinepi-raw \
+BINARY="$REPO_DIR/cinepi-raw/build/cinepi/cinepi-raw"
+if [ ! -x "$BINARY" ]; then
+    echo "ERROR: cinepi-raw not built. Run: cd $REPO_DIR/cinepi-raw && meson setup build --buildtype=release && ninja -C build" >&2
+    exit 1
+fi
+
+export CINEPI_SKIP_SOUND=1
+export CINEPI_SKIP_REDIS_SUBSCRIBER=1
+
+exec "$BINARY" \
     --post-process-file "$REPO_DIR/config/post-processing.json" \
     --tuning-file "$TUNING_FILE" \
     -n \
