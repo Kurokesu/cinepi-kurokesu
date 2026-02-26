@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 #
 # kurokesu-cinepi installer
-# Installs CinePI camera platform on a fresh Raspberry Pi OS (Bookworm, 64-bit)
+# Installs CinePI camera platform on a fresh Raspberry Pi OS (Trixie, 64-bit)
 #
 # Usage:
 #   git clone --recurse-submodules https://github.com/Kurokesu/kurokesu-cinepi.git
@@ -10,7 +10,7 @@
 #
 # Requirements:
 #   - Raspberry Pi 5
-#   - Raspberry Pi OS Bookworm (64-bit)
+#   - Raspberry Pi OS Trixie (64-bit, Debian 13)
 #   - CSI-2 camera module connected
 #   - Internet connection
 
@@ -96,50 +96,77 @@ install_dependencies() {
         pkg-config \
         git
 
-    log "Installing Qt 5 development packages..."
+    log "Installing Qt 6 development packages..."
     sudo apt-get install -y \
-        qtbase5-dev \
-        qtdeclarative5-dev \
-        qtquickcontrols2-5-dev \
-        qml-module-qtquick2 \
-        qml-module-qtquick-controls2 \
-        qml-module-qtquick-layouts \
-        qml-module-qtquick-window2 \
-        libqt5opengl5-dev \
-        qtwayland5
+        qt6-base-dev \
+        qt6-declarative-dev \
+        qml6-module-qtquick \
+        qml6-module-qtquick-controls \
+        qml6-module-qtquick-layouts \
+        qml6-module-qtquick-window \
+        qt6-wayland
+
+    log "Installing rpicam-apps library (system libcamera + rpicam-apps)..."
+    sudo apt-get install -y \
+        librpicam-app-dev
 
     log "Installing Redis..."
     sudo apt-get install -y \
         redis-server \
         libhiredis-dev
 
-    log "Installing libcamera and camera dependencies..."
+    log "Installing cinepi-raw build dependencies..."
     sudo apt-get install -y \
-        libcamera-dev \
-        libcamera-apps \
-        rpicam-apps \
+        libboost-dev \
+        libboost-program-options-dev \
         libjpeg-dev \
-        libpng-dev \
         libtiff-dev \
-        libexif-dev
-
-    log "Installing multimedia libraries..."
-    sudo apt-get install -y \
-        libdrm-dev \
-        libegl-dev \
-        libgles2-mesa-dev \
-        libavcodec-dev \
-        libavformat-dev \
-        libavdevice-dev \
-        libswresample-dev \
-        libboost-program-options-dev
+        libspdlog-dev \
+        libjsoncpp-dev \
+        libasound2-dev \
+        libudev-dev
 
     log "Installing kernel driver build dependencies..."
-    sudo apt-get install -y \
-        dkms \
-        raspberrypi-kernel-headers
+    sudo apt-get install -y --no-install-recommends \
+        dkms
 
-    log "All dependencies installed."
+    log "All apt dependencies installed."
+
+    # Build and install redis-plus-plus (not packaged in Debian)
+    if ! pkg-config --exists redis++ 2>/dev/null; then
+        log "Building redis-plus-plus from source..."
+        REDIS_PP_DIR=$(mktemp -d)
+        git clone --depth 1 https://github.com/sewenew/redis-plus-plus.git "$REDIS_PP_DIR"
+        cd "$REDIS_PP_DIR"
+        mkdir build && cd build
+        cmake -DCMAKE_BUILD_TYPE=Release \
+              -DREDIS_PLUS_PLUS_CXX_STANDARD=17 \
+              -DREDIS_PLUS_PLUS_BUILD_TEST=OFF ..
+        make -j$(nproc)
+        sudo make install
+        cd "$SCRIPT_DIR"
+        rm -rf "$REDIS_PP_DIR"
+        sudo ldconfig
+        log "redis-plus-plus installed."
+    else
+        log "redis-plus-plus already installed, skipping."
+    fi
+
+    # Install cpp-mjpeg-streamer (header-only, not packaged in Debian)
+    if ! pkg-config --exists nadjieb_mjpeg_streamer 2>/dev/null; then
+        log "Installing cpp-mjpeg-streamer (header-only)..."
+        MJPEG_DIR=$(mktemp -d)
+        git clone --depth 1 https://github.com/nadjieb/cpp-mjpeg-streamer.git "$MJPEG_DIR"
+        cd "$MJPEG_DIR"
+        mkdir build && cd build
+        cmake -DCMAKE_BUILD_TYPE=Release ..
+        sudo make install
+        cd "$SCRIPT_DIR"
+        rm -rf "$MJPEG_DIR"
+        log "cpp-mjpeg-streamer installed."
+    else
+        log "cpp-mjpeg-streamer already installed, skipping."
+    fi
 }
 
 # Enable Redis service
@@ -176,6 +203,7 @@ build_cinepi_raw() {
     ninja -C build
 
     cd "$SCRIPT_DIR"
+    sudo ldconfig
     log "cinepi-raw built at $CINEPI_RAW_DIR/build/cinepi/cinepi-raw"
 }
 
