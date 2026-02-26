@@ -8,7 +8,7 @@ REPO_DIR="$(dirname "$SCRIPT_DIR")"
 
 export XDG_RUNTIME_DIR=/run/user/1000
 export QT_QPA_PLATFORM=wayland
-export WAYLAND_DISPLAY=wayland-1
+export WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-0}"
 export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
 
 # For EGLFS (direct framebuffer, bypassing compositor):
