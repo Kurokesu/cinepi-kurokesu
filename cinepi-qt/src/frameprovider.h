@@ -13,7 +13,7 @@
  *
  * Also exposes a frameUpdated signal that QML can use to trigger repaints.
  */
-class FrameProvider : public QObject, public QQuickImageProvider
+class FrameProvider : public QQuickImageProvider
 {
     Q_OBJECT
     Q_PROPERTY(int frameWidth READ frameWidth NOTIFY frameSizeChanged)
@@ -21,7 +21,7 @@ class FrameProvider : public QObject, public QQuickImageProvider
     Q_PROPERTY(int frameNumber READ frameNumber NOTIFY frameUpdated)
 
 public:
-    explicit FrameProvider(QObject *parent = nullptr);
+    explicit FrameProvider();
 
     // QQuickImageProvider interface
     QImage requestImage(const QString &id, QSize *size, const QSize &requestedSize) override;

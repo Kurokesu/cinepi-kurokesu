@@ -1,9 +1,8 @@
 #include "frameprovider.h"
 #include <QDebug>
 
-FrameProvider::FrameProvider(QObject *parent)
-    : QObject(parent)
-    , QQuickImageProvider(QQuickImageProvider::Image)
+FrameProvider::FrameProvider()
+    : QQuickImageProvider(QQuickImageProvider::Image)
 {
     // Create a placeholder frame (dark grey)
     m_currentFrame = QImage(960, 540, QImage::Format_RGB888);
