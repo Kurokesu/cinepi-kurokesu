@@ -21,7 +21,7 @@ This project is a fork and evolution of the [CinePI](https://github.com/cinepi/c
 | Component | Requirement |
 |-----------|-------------|
 | Board | Raspberry Pi 5 (4GB+ RAM recommended) |
-| OS | Raspberry Pi OS Bookworm (64-bit) |
+| OS | Raspberry Pi OS Trixie (64-bit, Debian 13) |
 | Camera | MIPI CSI-2 module (Kurokesu IMX283/IMX585/IMX477 or compatible) |
 | Storage | NVMe SSD via PCIe HAT (for RAW recording) |
 | Display | HyperPixel 4 Square (720x720) or any HDMI/DSI display |
@@ -31,7 +31,7 @@ This project is a fork and evolution of the [CinePI](https://github.com/cinepi/c
 ### 1. Clone the repository
 
 ```bash
-git clone --recursive https://github.com/kurokesu/kurokesu-cinepi.git
+git clone --recurse-submodules https://github.com/kurokesu/kurokesu-cinepi.git
 cd kurokesu-cinepi
 ```
 
@@ -43,7 +43,7 @@ chmod +x install.sh
 ```
 
 The installer will:
-- Install all system dependencies (Qt5, Redis, libcamera, build tools)
+- Install all system dependencies (Qt6, Redis, librpicam-app-dev, build tools)
 - Build cinepi-raw (camera backend)
 - Build cinepi-qt (Qt Quick GUI)
 - Install default configuration files
@@ -53,18 +53,34 @@ The installer will:
 
 ### 3. Configure your sensor
 
-Edit `/boot/firmware/config.txt` and add the overlay for your camera:
+Edit `/boot/firmware/config.txt`:
 
 ```ini
 # Disable automatic camera detection
 camera_auto_detect=0
+```
 
+Add the overlay for your camera under the `[all]` section:
+
+```ini
+[all]
 # Enable your sensor (uncomment one):
 dtoverlay=imx283
 #dtoverlay=imx477
 #dtoverlay=imx585
 #dtoverlay=imx462,clock-frequency=37125000
+
+# If using HyperPixel 4 Square display:
+#dtoverlay=vc4-kms-dpi-hyperpixel4sq
 ```
+
+> **Note:** Sensors default to the **cam1** port. To use cam0 instead, append `,cam0`:
+> ```ini
+> dtoverlay=imx283,cam0
+> ```
+
+> **Note:** The IMX283 driver is included in the mainline RPi kernel (6.12+).
+> Older kernels may require the DKMS driver from `drivers/imx283-v4l2-driver/`.
 
 Reboot after making changes.
 
@@ -76,80 +92,31 @@ sudo systemctl start cinepi-raw
 sudo systemctl start cinepi-qt
 ```
 
-## Project Structure
-
-```
-kurokesu-cinepi/
-├── cinepi-raw/              # Camera backend (git submodule)
-│   ├── cinepi/              #   CinePI-specific code (DNG encoder, MJPEG, Redis)
-│   ├── core/                #   rpicam-apps core framework
-│   ├── encoder/             #   Video encoders (MJPEG, H.264, libav)
-│   ├── preview/             #   Preview backends (DRM, EGL, Qt)
-│   └── meson.build
-├── cinepi-qt/               # Qt Quick GUI (this project)
-│   ├── src/                 #   C++ source files
-│   │   ├── main.cpp         #     Application entry point
-│   │   ├── redisbridge.*    #     Redis ↔ QML bridge
-│   │   ├── mjpegclient.*    #     MJPEG stream client
-│   │   ├── frameprovider.*  #     QML image provider
-│   │   ├── configmanager.*  #     INI config reader/writer
-│   │   └── sharedmempreview.* #   Zero-copy shared memory preview
-│   ├── qml/                 #   QML UI files
-│   │   ├── main.qml         #     Main window
-│   │   ├── CameraPreview.qml
-│   │   ├── CameraControls.qml
-│   │   ├── ShaderOverlays.qml
-│   │   ├── GridOverlays.qml
-│   │   ├── StatusBar.qml
-│   │   └── SettingsPanel.qml
-│   ├── shaders/             #   GLSL fragment shaders
-│   │   ├── zebra.frag
-│   │   ├── falsecolor.frag
-│   │   └── focuspeaking.frag
-│   ├── CMakeLists.txt
-│   └── qml.qrc
-├── config/                  # Configuration files
-│   ├── config.ini           #   Overlay settings defaults
-│   ├── overlay.ini          #   Grid/guide settings defaults
-│   ├── post-processing.json #   cinepi-raw post-processing pipeline
-│   ├── cinepi-raw.service   #   Systemd service for backend
-│   └── cinepi-qt.service    #   Systemd service for GUI
-├── scripts/                 # Launch scripts
-│   ├── run-raw.sh           #   Backend launcher (configurable via env vars)
-│   └── run-qt-gui.sh        #   GUI launcher
-├── drivers/                 # Kernel sensor drivers (DKMS)
-│   ├── imx283-v4l2-driver/
-│   └── imx585-v4l2-driver/
-├── tuning/                  # Sensor tuning files (libcamera)
-│   ├── imx283.json
-│   └── imx477.json
-├── install.sh               # One-step installer
-└── README.md
-```
-
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                      cinepi-qt (GUI)                        │
-│  ┌──────────┐  ┌────────────┐  ┌─────────────────────────┐ │
-│  │ Camera   │  │ Shader     │  │ Camera Controls         │ │
-│  │ Preview  │  │ Overlays   │  │ (ISO/Shutter/FPS/WB)    │ │
-│  │          │  │ (zebra,    │  │                         │ │
-│  │ SharedMem│  │  false clr,│  │ Settings Panel          │ │
-│  │ + MJPEG  │  │  focus pk) │  │ (overlays, compression) │ │
-│  └────┬─────┘  └────────────┘  └───────────┬─────────────┘ │
-│       │                                     │               │
-│       │  Shared Memory (zero-copy)    Redis │               │
-└───────┼─────────────────────────────────────┼───────────────┘
-        │                                     │
-┌───────┴─────────────────────────────────────┴───────────────┐
-│                    cinepi-raw (Backend)                      │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────────┐  │
-│  │libcamera │→ │DNG       │  │MJPEG     │  │Redis       │  │
-│  │capture   │  │encoder   │  │streamer  │  │pub/sub     │  │
-│  └──────────┘  └──────────┘  └──────────┘  └────────────┘  │
-└─────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────┐
+│                      cinepi-qt (GUI)                       │
+│  ┌──────────┐  ┌────────────┐   ┌────────────────────────┐ │
+│  │ Camera   │  │ Shader     │   │ Camera Controls        │ │
+│  │ Preview  │  │ Overlays   │   │ (ISO/Shutter/FPS/WB)   │ │
+│  │          │  │ (zebra,    │   │                        │ │
+│  │ SharedMem│  │  false clr,│   │ Settings Panel         │ │
+│  │ + MJPEG  │  │  focus pk) │   │ (overlays, compression)│ │
+│  └────┬─────┘  └────────────┘   └──────────┬─────────────┘ │
+│       │                                    │               │
+│       │  Shared Memory (zero-copy)   Redis │               │
+└───────┼────────────────────────────────────┼───────────────┘
+        │                                    │
+┌───────┴────────────────────────────────────┴───────────────┐
+│                    cinepi-raw (Backend)                    │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌───────────┐   │
+│  │libcamera │→ │DNG       │  │MJPEG     │  │Redis      │   │
+│  │capture   │  │encoder   │  │streamer  │  │pub/sub    │   │
+│  └──────────┘  └──────────┘  └──────────┘  └───────────┘   │
+│                                                            │
+│  Links against system librpicam-app-dev (rpicam-apps)      │
+└────────────────────────────────────────────────────────────┘
 ```
 
 ## Configuration
@@ -192,10 +159,11 @@ If you prefer to build components individually:
 
 ```bash
 cd cinepi-raw
-meson setup build -Denable_libav=enabled -Denable_drm=enabled -Denable_egl=enabled --buildtype=release
-meson compile -C build
-sudo meson install -C build
+meson setup build --buildtype=release
+ninja -C build
 ```
+
+Requires `librpicam-app-dev` and dependencies (see `install.sh`).
 
 ### cinepi-qt
 
