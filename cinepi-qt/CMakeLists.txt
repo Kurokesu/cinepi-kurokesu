@@ -6,8 +6,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-# Find Qt5 packages
-find_package(Qt5 REQUIRED COMPONENTS
+# Find Qt6 packages
+find_package(Qt6 REQUIRED COMPONENTS
     Core
     Quick
     QuickControls2
@@ -44,7 +44,7 @@ set(HEADERS
 )
 
 # QML resource file
-qt5_add_resources(QRC_SOURCES qml.qrc)
+qt_add_resources(QRC_SOURCES qml.qrc)
 
 # Executable
 add_executable(${PROJECT_NAME}
@@ -62,11 +62,11 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    Qt5::Core
-    Qt5::Quick
-    Qt5::QuickControls2
-    Qt5::Network
-    Qt5::Gui
+    Qt6::Core
+    Qt6::Quick
+    Qt6::QuickControls2
+    Qt6::Network
+    Qt6::Gui
     ${HIREDIS_LIBRARIES}
     ${EGL_LIBRARIES}
     ${GLES2_LIBRARIES}

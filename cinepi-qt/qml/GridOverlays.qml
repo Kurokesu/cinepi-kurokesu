@@ -1,4 +1,4 @@
-import QtQuick 2.15
+import QtQuick
 
 /**
  * GridOverlays - QML-drawn composition guides and grids.

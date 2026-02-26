@@ -12,10 +12,6 @@
 
 int main(int argc, char *argv[])
 {
-    // Use OpenGL ES for RPi5 hardware acceleration (required for GL_OES_EGL_image_external)
-    QCoreApplication::setAttribute(Qt::AA_UseOpenGLES);
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-
     QGuiApplication app(argc, argv);
     app.setApplicationName("CinePI-Qt");
     app.setOrganizationName("Kurokesu");
