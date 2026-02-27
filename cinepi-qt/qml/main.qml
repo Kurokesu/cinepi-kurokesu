@@ -29,17 +29,25 @@ ApplicationWindow {
             height: parent.height
         }
 
+        // Capture preview as a texture for shader overlays
+        ShaderEffectSource {
+            id: previewTexture
+            sourceItem: cameraPreview
+            live: true
+            hideSource: false
+        }
+
         // Shader-based overlays (zebra, false color, focus peaking)
         ShaderOverlays {
             id: shaderOverlays
-            anchors.fill: cameraPreview
-            source: cameraPreview.previewImage
+            anchors.fill: parent
+            source: previewTexture
         }
 
         // Grid/guide overlays (thirds, crosshair, cinematic guides)
         GridOverlays {
             id: gridOverlays
-            anchors.fill: cameraPreview
+            anchors.fill: parent
         }
 
         // Top status bar
@@ -83,7 +91,24 @@ ApplicationWindow {
         }
     }
 
-    // Settings panel (slides in from right)
+    // Dark overlay behind settings panel (must be BEFORE SettingsPanel for z-order)
+    Rectangle {
+        anchors.fill: parent
+        color: "#000000"
+        opacity: root.settingsVisible ? 0.4 : 0.0
+        visible: opacity > 0
+
+        Behavior on opacity {
+            NumberAnimation { duration: 200 }
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: root.settingsVisible = false
+        }
+    }
+
+    // Settings panel (slides in from right, on top of dark overlay)
     SettingsPanel {
         id: settingsPanel
         anchors.top: parent.top
@@ -98,23 +123,6 @@ ApplicationWindow {
 
         onCloseRequested: {
             root.settingsVisible = false
-        }
-    }
-
-    // Dark overlay behind settings panel
-    Rectangle {
-        anchors.fill: parent
-        color: "#000000"
-        opacity: root.settingsVisible ? 0.4 : 0.0
-        visible: opacity > 0
-
-        Behavior on opacity {
-            NumberAnimation { duration: 200 }
-        }
-
-        MouseArea {
-            anchors.fill: parent
-            onClicked: root.settingsVisible = false
         }
     }
 

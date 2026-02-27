@@ -63,7 +63,7 @@ Rectangle {
             SettingToggle {
                 label: "Zebra (Overexposure)"
                 checked: config.zebraEnabled
-                onToggled: config.zebraEnabled = checked
+                onToggled: function(val) { config.zebraEnabled = val }
             }
 
             // Zebra threshold slider
@@ -82,7 +82,7 @@ Rectangle {
                 Slider {
                     id: zebraSlider
                     Layout.fillWidth: true
-                    from: 0.7; to: 1.0; stepSize: 0.01
+                    from: 0.5; to: 1.0; stepSize: 0.01
                     value: config.zebraThreshold
                     onMoved: config.zebraThreshold = value
 
@@ -115,19 +115,19 @@ Rectangle {
             SettingToggle {
                 label: "False Color"
                 checked: config.falseColorEnabled
-                onToggled: config.falseColorEnabled = checked
+                onToggled: function(val) { config.falseColorEnabled = val }
             }
 
             SettingToggle {
                 label: "Focus Peaking"
                 checked: config.focusPeakingEnabled
-                onToggled: config.focusPeakingEnabled = checked
+                onToggled: function(val) { config.focusPeakingEnabled = val }
             }
 
             SettingToggle {
                 label: "Grayscale"
                 checked: config.grayscaleEnabled
-                onToggled: config.grayscaleEnabled = checked
+                onToggled: function(val) { config.grayscaleEnabled = val }
             }
 
             SectionHeader { text: "COMPOSITION GUIDES" }
@@ -135,31 +135,31 @@ Rectangle {
             SettingToggle {
                 label: "Rule of Thirds"
                 checked: config.thirdsGridEnabled
-                onToggled: config.thirdsGridEnabled = checked
+                onToggled: function(val) { config.thirdsGridEnabled = val }
             }
 
             SettingToggle {
                 label: "Center Crosshair"
                 checked: config.crosshairEnabled
-                onToggled: config.crosshairEnabled = checked
+                onToggled: function(val) { config.crosshairEnabled = val }
             }
 
             SettingToggle {
                 label: "16:9 Guide"
                 checked: config.cinematicGuideEnabled
-                onToggled: config.cinematicGuideEnabled = checked
+                onToggled: function(val) { config.cinematicGuideEnabled = val }
             }
 
             SettingToggle {
                 label: "1.85:1 Guide"
                 checked: config.cinematicGuide185Enabled
-                onToggled: config.cinematicGuide185Enabled = checked
+                onToggled: function(val) { config.cinematicGuide185Enabled = val }
             }
 
             SettingToggle {
                 label: "4:3 Guide"
                 checked: config.cinematicGuide43Enabled
-                onToggled: config.cinematicGuide43Enabled = checked
+                onToggled: function(val) { config.cinematicGuide43Enabled = val }
             }
 
             SectionHeader { text: "CAMERA" }
@@ -327,7 +327,7 @@ Rectangle {
     component SettingToggle: RowLayout {
         property string label: ""
         property bool checked: false
-        signal toggled(bool checked)
+        signal toggled(bool newValue)
 
         width: parent.width
         spacing: 8
@@ -341,7 +341,7 @@ Rectangle {
 
         Switch {
             checked: parent.checked
-            onToggled: parent.toggled(checked)
+            onToggled: function() { parent.toggled(checked) }
 
             indicator: Rectangle {
                 width: 40; height: 22; radius: 11
