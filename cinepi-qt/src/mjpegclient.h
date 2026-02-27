@@ -58,4 +58,5 @@ private:
     bool m_headerParsed = false;
     int m_frameCount = 0;
     bool m_running = false;
+    bool m_errorLogged = false;
 };

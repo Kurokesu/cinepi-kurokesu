@@ -28,6 +28,7 @@ void MjpegClient::start(const QString &urlStr)
     m_buffer.clear();
     m_boundary.clear();
     m_frameCount = 0;
+    m_errorLogged = false;
 
     m_socket = new QTcpSocket(this);
     connect(m_socket, &QTcpSocket::connected, this, &MjpegClient::onSocketConnected);
@@ -219,15 +220,28 @@ void MjpegClient::onSocketError()
 {
     if (m_socket) {
         QString err = m_socket->errorString();
-        qWarning() << "MJPEG socket error:" << err;
+        if (!m_errorLogged) {
+            qWarning() << "MJPEG: connection failed:" << err << "(suppressing further attempts)";
+            m_errorLogged = true;
+        }
         emit errorOccurred(err);
     }
 
-    // Auto-reconnect on error
     if (m_running) {
-        QTimer::singleShot(2000, this, [this]() {
+        QTimer::singleShot(5000, this, [this]() {
             if (m_running) {
-                start(QString("http://%1:%2%3").arg(m_host).arg(m_port).arg(m_path));
+                if (m_socket) {
+                    m_socket->disconnect();
+                    m_socket->abort();
+                    m_socket->deleteLater();
+                    m_socket = nullptr;
+                }
+                m_socket = new QTcpSocket(this);
+                connect(m_socket, &QTcpSocket::connected, this, &MjpegClient::onSocketConnected);
+                connect(m_socket, &QTcpSocket::readyRead, this, &MjpegClient::onSocketReadyRead);
+                connect(m_socket, &QTcpSocket::disconnected, this, &MjpegClient::onSocketDisconnected);
+                connect(m_socket, &QTcpSocket::errorOccurred, this, &MjpegClient::onSocketError);
+                m_socket->connectToHost(m_host, m_port);
             }
         });
     }
