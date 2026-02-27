@@ -1,6 +1,6 @@
 # kurokesu-cinepi
 
-Open-source cinema camera platform for Raspberry Pi 5 with Qt Quick GUI, CinemaDNG RAW recording, and Kurokesu CSI-2 sensor support.
+Open-source cinema camera platform for Raspberry Pi 5 with Qt Quick GUI, CinemaDNG RAW recording.
 
 This project is a fork and evolution of the [CinePI](https://github.com/cinepi/cinepi-sdk) platform, replacing the original ImGui-based GUI with a modern Qt Quick (QML) interface while preserving the powerful cinepi-raw recording backend.
 
@@ -13,7 +13,7 @@ This project is a fork and evolution of the [CinePI](https://github.com/cinepi/c
 - **Composition guides**: rule of thirds, center crosshair, cinematic aspect ratios (16:9, 1.85:1, 4:3)
 - **Camera controls**: ISO, shutter angle, FPS, white balance, compression, color gains
 - **Redis-based IPC** between backend and GUI
-- **Kurokesu sensor support**: IMX283, IMX585, IMX477, IMX462 with DKMS drivers
+<!-- TODO: - **Kurokesu sensor support**: IMX283, IMX585, IMX477, IMX462 with DKMS drivers -->
 - **Systemd services** for automatic startup
 
 ## Hardware Requirements
@@ -38,7 +38,6 @@ cd kurokesu-cinepi
 ### 2. Run the installer
 
 ```bash
-chmod +x install.sh
 ./install.sh
 ```
 
@@ -203,12 +202,3 @@ make -j$(nproc)
 
 - [CinePI](https://github.com/cinepi/cinepi-sdk) - Original cinema camera platform
 - [ALTCINECAM](https://github.com/ALTCINECAM) - Alternative CinePI distribution
-- [rpicam-apps](https://github.com/raspberrypi/rpicam-apps) - Raspberry Pi camera framework
-- [Kurokesu](https://www.kurokesu.com) - CSI-2 camera modules and sensor support
-
-## License
-
-This project incorporates components with different licenses:
-- cinepi-raw: BSD-2-Clause (based on rpicam-apps)
-- cinepi-qt: MIT
-- Sensor drivers: GPL-2.0 (kernel modules)
