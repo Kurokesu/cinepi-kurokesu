@@ -26,7 +26,9 @@ int main(int argc, char *argv[])
     RedisBridge redisBridge;
     MjpegClient mjpegClient;
     FrameProvider *frameProvider = new FrameProvider(); // engine takes ownership
-    ConfigManager configManager("/home/pi");
+    QString configDir = qEnvironmentVariable("CINEPI_CONFIG_DIR",
+        QCoreApplication::applicationDirPath() + "/../../config");
+    ConfigManager configManager(configDir);
 
     // Connect MJPEG to frame provider (fallback when DMA-BUF is not available)
     QObject::connect(&mjpegClient, &MjpegClient::frameReady,

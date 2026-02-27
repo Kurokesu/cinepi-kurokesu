@@ -34,7 +34,7 @@ class ConfigManager : public QObject
     Q_PROPERTY(bool cinematicGuide43Enabled READ cinematicGuide43Enabled WRITE setCinematicGuide43Enabled NOTIFY cinematicGuide43EnabledChanged)
 
 public:
-    explicit ConfigManager(const QString &basePath = "/home/pi", QObject *parent = nullptr);
+    explicit ConfigManager(const QString &basePath, QObject *parent = nullptr);
 
     // Shader overlays
     bool zebraEnabled() const { return m_zebraEnabled; }
@@ -90,7 +90,7 @@ private:
 
     // config.ini values
     bool m_zebraEnabled = true;
-    double m_zebraThreshold = 0.95;
+    double m_zebraThreshold = 0.85;
     bool m_falseColorEnabled = false;
     bool m_grayscaleEnabled = false;
     bool m_focusPeakingEnabled = false;
