@@ -1,29 +1,34 @@
-// Zebra pattern overlay - highlights overexposed areas
-// Port of eglYuv.frag zebra pattern for Qt 5 ShaderEffect
-varying highp vec2 qt_TexCoord0;
-uniform sampler2D source;
-uniform lowp float qt_Opacity;
+#version 440
 
-uniform lowp float zebraThreshold;  // default 0.95
-uniform highp float time;           // animated time for stripe motion
+layout(location = 0) in vec2 qt_TexCoord0;
+layout(location = 0) out vec4 fragColor;
+
+layout(std140, binding = 0) uniform buf {
+    mat4 qt_Matrix;
+    float qt_Opacity;
+    float zebraThreshold;
+    float time;
+};
+
+layout(binding = 1) uniform sampler2D source;
 
 void main() {
-    lowp vec4 color = texture2D(source, qt_TexCoord0);
-    highp float brightness = dot(color.rgb, vec3(0.299, 0.587, 0.114));
+    vec4 color = texture(source, qt_TexCoord0);
+    float brightness = dot(color.rgb, vec3(0.299, 0.587, 0.114));
 
     if (brightness > zebraThreshold) {
-        highp float speedFactor = 0.1;
-        highp float stripeSize = 0.01;
-        highp float stripePattern = mod(
+        float speedFactor = 0.1;
+        float stripeSize = 0.01;
+        float stripePattern = mod(
             (qt_TexCoord0.x + qt_TexCoord0.y + time * speedFactor) / stripeSize,
             2.0
         );
         if (stripePattern < 1.0) {
-            gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0) * qt_Opacity;
+            fragColor = vec4(0.0, 0.0, 0.0, 1.0) * qt_Opacity;
         } else {
-            gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0) * qt_Opacity;
+            fragColor = vec4(1.0, 1.0, 1.0, 1.0) * qt_Opacity;
         }
     } else {
-        gl_FragColor = color * qt_Opacity;
+        fragColor = color * qt_Opacity;
     }
 }

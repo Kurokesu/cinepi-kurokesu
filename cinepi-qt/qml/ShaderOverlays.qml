@@ -29,7 +29,8 @@ Item {
         property var source: root.source
         property real zebraThreshold: config.zebraThreshold
         property real time: root.elapsedTime
-        fragmentShader: "qrc:/shaders/zebra.frag"
+        fragmentShader: "qrc:/shaders/zebra.frag.qsb"
+
     }
 
     // False color overlay
@@ -38,7 +39,7 @@ Item {
         anchors.fill: parent
         visible: config.falseColorEnabled
         property var source: root.source
-        fragmentShader: "qrc:/shaders/falsecolor.frag"
+        fragmentShader: "qrc:/shaders/falsecolor.frag.qsb"
     }
 
     // Focus peaking overlay
@@ -50,7 +51,7 @@ Item {
         property real texWidth: root.width > 0 ? root.width : 960.0
         property real texHeight: root.height > 0 ? root.height : 540.0
         property real threshold: 0.08
-        fragmentShader: "qrc:/shaders/focuspeaking.frag"
+        fragmentShader: "qrc:/shaders/focuspeaking.frag.qsb"
     }
 
     // Grayscale effect (applied via simple desaturation shader)
@@ -59,15 +60,6 @@ Item {
         anchors.fill: parent
         visible: config.grayscaleEnabled && !config.falseColorEnabled
         property var source: root.source
-        fragmentShader: "
-            varying highp vec2 qt_TexCoord0;
-            uniform sampler2D source;
-            uniform lowp float qt_Opacity;
-            void main() {
-                lowp vec4 c = texture2D(source, qt_TexCoord0);
-                highp float lum = dot(c.rgb, vec3(0.299, 0.587, 0.114));
-                gl_FragColor = vec4(vec3(lum), c.a) * qt_Opacity;
-            }
-        "
+        fragmentShader: "qrc:/shaders/grayscale.frag.qsb"
     }
 }

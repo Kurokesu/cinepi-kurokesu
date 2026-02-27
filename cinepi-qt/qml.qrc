@@ -7,8 +7,9 @@
         <file>qml/CameraControls.qml</file>
         <file>qml/StatusBar.qml</file>
         <file>qml/SettingsPanel.qml</file>
-        <file>shaders/zebra.frag</file>
-        <file>shaders/falsecolor.frag</file>
-        <file>shaders/focuspeaking.frag</file>
+        <file>shaders/zebra.frag.qsb</file>
+        <file>shaders/falsecolor.frag.qsb</file>
+        <file>shaders/focuspeaking.frag.qsb</file>
+        <file>shaders/grayscale.frag.qsb</file>
     </qresource>
 </RCC>
