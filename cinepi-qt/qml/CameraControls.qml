@@ -81,17 +81,17 @@ Rectangle {
 
         // Settings gear
         Rectangle {
-            width: 40
-            height: 40
-            radius: 20
+            width: 56
+            height: 56
+            radius: 28
             color: settingsMouseArea.pressed ? "#555555" : "#333333"
             Layout.alignment: Qt.AlignVCenter
 
             Text {
                 anchors.centerIn: parent
-                text: "\u2699" // gear unicode
+                text: "\u2699"
                 color: "#CCCCCC"
-                font.pixelSize: 22
+                font.pixelSize: 30
             }
 
             MouseArea {

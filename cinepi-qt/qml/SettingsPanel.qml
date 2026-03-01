@@ -294,7 +294,32 @@ Rectangle {
                 font.family: "monospace"
             }
 
-            // Spacer at bottom
+            // Exit button
+            Item { width: 1; height: 16 }
+
+            Rectangle {
+                width: parent.width
+                height: 48
+                radius: 8
+                color: exitMouse.pressed ? "#CC2222" : "#882222"
+
+                Text {
+                    anchors.centerIn: parent
+                    text: "EXIT APPLICATION"
+                    color: "#FFFFFF"
+                    font.pixelSize: 13
+                    font.bold: true
+                    font.family: "monospace"
+                    font.letterSpacing: 1
+                }
+
+                MouseArea {
+                    id: exitMouse
+                    anchors.fill: parent
+                    onClicked: Qt.quit()
+                }
+            }
+
             Item { width: 1; height: 32 }
         }
     }
