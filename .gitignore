@@ -1,6 +1,5 @@
-# Build directories
-cinepi-qt/build/
-cinepi-raw/build/
+# Build directory
+build/
 
 # IDE
 .vscode/
