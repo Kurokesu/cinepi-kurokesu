@@ -27,6 +27,9 @@ fi
 export CINEPI_SKIP_SOUND=1
 export CINEPI_SKIP_REDIS_SUBSCRIBER=1
 
+# Suppress per-frame libcamera warnings (no lux calibration data)
+export LIBCAMERA_LOG_LEVELS="${LIBCAMERA_LOG_LEVELS:-RPiAgc:ERROR,RPiCcm:ERROR}"
+
 exec "$BINARY" \
     --post-process-file "$REPO_DIR/config/post-processing.json" \
     --tuning-file "$TUNING_FILE" \
