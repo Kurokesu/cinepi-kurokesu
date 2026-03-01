@@ -1,0 +1,196 @@
+#include "CameraWorker.h"
+
+#include "camera/cinepi_sound.hpp"
+#include "camera/cinepi_controller.hpp"
+#include "camera/dng_encoder.hpp"
+#include <rpicam-apps/output/output.hpp>
+#include <rpicam-apps/core/rpicam_app.hpp>
+
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+
+using namespace std::placeholders;
+
+CameraWorker::CameraWorker(const QString &configDir, QObject *parent)
+    : QThread(parent), m_configDir(configDir)
+{
+}
+
+CameraWorker::~CameraWorker()
+{
+    requestStop();
+    wait();
+}
+
+void CameraWorker::requestStop()
+{
+    m_stopRequested = true;
+}
+
+void CameraWorker::handleControl(const QString &key, const QString &value)
+{
+    if (controller_)
+        controller_->handleControl(key.toStdString(), value.toStdString());
+}
+
+void CameraWorker::run()
+{
+    auto console = spdlog::stdout_color_mt("camera_worker");
+
+    try {
+        CinePIRecorder app;
+        CinePISound sound(&app);
+        CinePIController controller(&app);
+        controller_ = &controller;
+
+        RawOptions *options = app.GetOptions();
+
+        std::string ppFile = (m_configDir + "/post-processing.json").toStdString();
+        std::string tuningFile = "/usr/share/libcamera/ipa/rpi/pisp/imx283.json";
+
+        std::vector<const char *> args = {
+            "cinepi",
+            "--post-process-file", ppFile.c_str(),
+            "--tuning-file", tuningFile.c_str(),
+            "-n",
+            "--mode", "2784:1828:12:U",
+            "--width", "960",
+            "--height", "630",
+            "--lores-width", "960",
+            "--lores-height", "630",
+        };
+        int fake_argc = static_cast<int>(args.size());
+        options->Parse(fake_argc, const_cast<char **>(args.data()));
+
+        options->mediaDest = "/media/RAW";
+        options->rawCrop[0] = 0;
+        options->rawCrop[1] = 0;
+        options->rawCrop[2] = 0;
+        options->rawCrop[3] = 0;
+
+        std::string settingsPath = (m_configDir + "/settings.json").toStdString();
+        controller.loadSettings(settingsPath);
+
+        controller.setStatsCallback(
+            [this](float framerate, int colorTemp, float focus,
+                   int frameCount, int bufferSize) {
+                Q_EMIT statsUpdate(framerate, colorTemp, focus, frameCount, bufferSize);
+            });
+
+        controller.setStreamInfoCallback(
+            [this](int w, int h) {
+                Q_EMIT streamInfoUpdate(w, h);
+            });
+
+        controller.sync();
+        sound.start();
+
+        std::unique_ptr<Output> output =
+            std::unique_ptr<Output>(Output::Create(options));
+        app.SetEncodeOutputReadyCallback(
+            std::bind(&Output::OutputReady, output.get(), _1, _2, _3, _4));
+        app.SetMetadataReadyCallback(
+            std::bind(&Output::MetadataReady, output.get(), _1));
+
+        console->info("Opening camera...");
+        app.OpenCamera();
+        console->info("Camera opened");
+
+        app.StartEncoder();
+        auto cameras = app.GetCameras();
+        if (cameras.empty())
+            throw std::runtime_error("no cameras available");
+        options->model = app.CameraModel();
+
+        for (unsigned int count = 0; !m_stopRequested; count++) {
+            if (controller.configChanged()) {
+                if (controller.cameraRunning) {
+                    app.StopCamera();
+                    app.Teardown();
+                }
+                app.ConfigureVideo(CinePIRecorder::FLAG_VIDEO_RAW);
+                app.StartCamera();
+                controller.cameraRunning = true;
+                controller.applyAwb();
+                controller.applyExposure();
+
+                auto const &cfg = app.RawStream()->configuration();
+                console->info("Raw stream: {}x{} : {} : {}",
+                              cfg.size.width, cfg.size.height,
+                              cfg.stride, cfg.pixelFormat.toString());
+                app.GetEncoder()->reset_encoder();
+                controller.process_stream_info(cfg);
+            }
+
+            CinePIRecorder::Msg msg = app.Wait();
+
+            if (m_stopRequested)
+                break;
+
+            if (msg.type == RPiCamApp::MsgType::Quit)
+                break;
+
+            if (msg.type == RPiCamApp::MsgType::Timeout) {
+                console->error("Device timeout, restarting camera");
+                app.StopCamera();
+                app.StartCamera();
+                continue;
+            }
+
+            if (msg.type != CinePIRecorder::MsgType::RequestComplete)
+                throw std::runtime_error("unrecognised message");
+
+            CompletedRequestPtr &completed_request =
+                std::get<CompletedRequestPtr>(msg.payload);
+
+            controller.process(completed_request);
+
+            int trigger = controller.triggerRec();
+            if (trigger > 0) {
+                controller.folderOpen =
+                    create_clip_folder(options, controller.getClipNumber());
+                app.GetEncoder()->resetFrameCount();
+                sound.record_start();
+            } else if (trigger < 0) {
+                controller.folderOpen = false;
+                sound.record_stop();
+            }
+
+            if (controller.isRecording() && sound.isRecording() &&
+                controller.folderOpen) {
+                if (app.GetEncoder()->buffer_full())
+                    controller.setRecording(false);
+                app.EncodeBuffer(completed_request, app.RawStream(),
+                                 app.LoresStream());
+            }
+
+            // Extract preview frame DMA-BUF fd for the Qt renderer.
+            // Prefer lores stream (smaller GPU upload).
+            auto *stream = app.LoresStream();
+            if (!stream)
+                stream = app.GetMainStream();
+            if (stream) {
+                auto *buffer = completed_request->buffers[stream];
+                if (buffer) {
+                    int fd = buffer->planes()[0].fd.get();
+                    auto info = app.GetStreamInfo(stream);
+                    Q_EMIT frameReady(fd, info.width, info.height,
+                                    info.stride, count);
+                }
+            }
+        }
+
+        if (controller.cameraRunning) {
+            app.StopCamera();
+            app.Teardown();
+        }
+
+        controller_ = nullptr;
+        console->info("Camera worker stopped");
+    }
+    catch (std::exception const &e) {
+        controller_ = nullptr;
+        console->error("Camera error: {}", e.what());
+        Q_EMIT cameraError(QString::fromStdString(e.what()));
+    }
+}
