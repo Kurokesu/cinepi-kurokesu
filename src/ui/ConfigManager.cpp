@@ -1,13 +1,16 @@
 #include "ConfigManager.h"
+#include "logging.h"
 #include <QFile>
 #include <QTextStream>
-#include <QDebug>
 #include <QDir>
+
+static auto logger = cinepi::getLogger("ui.config");
 
 ConfigManager::ConfigManager(const QString &basePath, QObject *parent)
     : QObject(parent)
     , m_basePath(basePath)
 {
+    logger->info("Loading config from {}", basePath.toStdString());
     reload();
 }
 
@@ -28,7 +31,7 @@ QVariantMap ConfigManager::readIniFile(const QString &path)
     QVariantMap map;
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qWarning() << "Cannot open" << path;
+        logger->warn("Cannot open config file: {}", path.toStdString());
         return map;
     }
 
@@ -37,7 +40,6 @@ QVariantMap ConfigManager::readIniFile(const QString &path)
         QString line = in.readLine().trimmed();
         if (line.isEmpty() || line.startsWith('#')) continue;
 
-        // Format: "Key Value" (space-separated)
         int spaceIdx = line.indexOf(' ');
         if (spaceIdx > 0) {
             QString key = line.left(spaceIdx).trimmed();
@@ -46,6 +48,7 @@ QVariantMap ConfigManager::readIniFile(const QString &path)
         }
     }
     file.close();
+    logger->debug("Loaded {} keys from {}", map.size(), path.toStdString());
     return map;
 }
 
@@ -53,7 +56,7 @@ void ConfigManager::writeIniFile(const QString &path, const QVariantMap &data)
 {
     QFile file(path);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        qWarning() << "Cannot write" << path;
+        logger->warn("Cannot write config file: {}", path.toStdString());
         return;
     }
 
@@ -62,6 +65,7 @@ void ConfigManager::writeIniFile(const QString &path, const QVariantMap &data)
         out << it.key() << " " << it.value().toString() << "\n";
     }
     file.close();
+    logger->debug("Saved {} keys to {}", data.size(), path.toStdString());
 }
 
 void ConfigManager::loadConfig()
@@ -133,8 +137,6 @@ void ConfigManager::saveOverlay()
 
     writeIniFile(m_basePath + "/overlay.ini", data);
 }
-
-// Property setters with change notification and auto-save
 
 void ConfigManager::setZebraEnabled(bool v) {
     if (m_zebraEnabled != v) { m_zebraEnabled = v; Q_EMIT zebraEnabledChanged(); saveConfig(); }

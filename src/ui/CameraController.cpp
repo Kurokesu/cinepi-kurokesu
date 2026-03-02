@@ -1,6 +1,8 @@
 #include "CameraController.h"
-#include "../CameraWorker.h"
-#include <QDebug>
+#include "CameraWorker.h"
+#include "logging.h"
+
+static auto logger = cinepi::getLogger("ui.camera");
 
 CameraController::CameraController(CameraWorker *worker, QObject *parent)
     : QObject(parent), m_worker(worker)
@@ -17,16 +19,19 @@ CameraController::CameraController(CameraWorker *worker, QObject *parent)
 
     connect(m_worker, &QThread::started, this, [this]() {
         m_connected = true;
+        logger->info("Camera connected");
         Q_EMIT connectedChanged();
     });
     connect(m_worker, &QThread::finished, this, [this]() {
         m_connected = false;
+        logger->info("Camera disconnected");
         Q_EMIT connectedChanged();
     });
 }
 
 void CameraController::sendControl(const QString &key, const QString &value)
 {
+    logger->debug("Control: {} = {}", key.toStdString(), value.toStdString());
     Q_EMIT controlRequested(key, value);
 }
 
@@ -68,6 +73,7 @@ void CameraController::setWhiteBalance(int value)
 
 void CameraController::setRecording(bool value)
 {
+    logger->info("Recording: {}", value ? "START" : "STOP");
     sendControl("is_recording", value ? "1" : "0");
     if (value != m_recording) {
         m_recording = value;
@@ -96,8 +102,6 @@ void CameraController::onStatsUpdate(float framerate, int colorTemp,
                                       float focus, int frameCount,
                                       int bufferSize)
 {
-    bool changed = false;
-
     int newFps = static_cast<int>(framerate + 0.5f);
     if (newFps != m_fps) {
         m_fps = newFps;
@@ -119,6 +123,7 @@ void CameraController::onStatsUpdate(float framerate, int colorTemp,
 void CameraController::onStreamInfo(int w, int h)
 {
     if (w != m_width || h != m_height) {
+        logger->info("Stream resolution: {}x{}", w, h);
         m_width = w;
         m_height = h;
         Q_EMIT resolutionChanged();
@@ -127,7 +132,7 @@ void CameraController::onStreamInfo(int w, int h)
 
 void CameraController::onCameraError(const QString &msg)
 {
-    qWarning() << "Camera error:" << msg;
+    logger->error("Camera error: {}", msg.toStdString());
     m_connected = false;
     Q_EMIT connectedChanged();
 }

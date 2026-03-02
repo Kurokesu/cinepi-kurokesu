@@ -1,6 +1,6 @@
 #include "DmaBufPreview.h"
+#include "logging.h"
 
-#include <QDebug>
 #include <QOpenGLFramebufferObject>
 #include <QOpenGLFunctions>
 #include <QQuickWindow>
@@ -66,6 +66,8 @@ private:
     QSize m_viewportSize;
 };
 
+static auto logger = cinepi::getLogger("ui.preview");
+
 DmaBufRenderer::DmaBufRenderer(const DmaBufPreview *item)
     : m_item(item) {}
 
@@ -88,9 +90,9 @@ GLuint DmaBufRenderer::compileShader(GLenum type, const char *source)
     GLint ok;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &ok);
     if (!ok) {
-        char log[512];
-        glGetShaderInfoLog(shader, sizeof(log), nullptr, log);
-        qWarning() << "Shader compile error:" << log;
+        char buf[512];
+        glGetShaderInfoLog(shader, sizeof(buf), nullptr, buf);
+        cinepi::getLogger("ui.preview")->error("Shader compile error: {}", buf);
         glDeleteShader(shader);
         return 0;
     }
@@ -125,9 +127,9 @@ bool DmaBufRenderer::initGL()
     GLint ok;
     glGetProgramiv(m_program, GL_LINK_STATUS, &ok);
     if (!ok) {
-        char log[512];
-        glGetProgramInfoLog(m_program, sizeof(log), nullptr, log);
-        qWarning() << "Program link error:" << log;
+        char buf[512];
+        glGetProgramInfoLog(m_program, sizeof(buf), nullptr, buf);
+        cinepi::getLogger("ui.preview")->error("Program link error: {}", buf);
         glDeleteProgram(m_program);
         m_program = 0;
         m_glFailed = true;
@@ -164,7 +166,7 @@ bool DmaBufRenderer::initGL()
     m_texV = createTex();
 
     m_glInitialized = true;
-    qDebug() << "DmaBufRenderer: GL initialized";
+    logger->debug("GL initialized");
     return true;
 }
 
@@ -183,8 +185,10 @@ bool DmaBufRenderer::uploadFrame()
 
     void *data = mmap(nullptr, totalSize, PROT_READ, MAP_SHARED,
                       m_frameInfo.fd, 0);
-    if (data == MAP_FAILED)
+    if (data == MAP_FAILED) {
+        logger->warn("mmap failed for preview frame (fd={}, size={})", m_frameInfo.fd, totalSize);
         return false;
+    }
 
     const uint8_t *yPlane = (const uint8_t *)data;
     const uint8_t *uPlane = yPlane + ySize;

@@ -1,12 +1,15 @@
 #include "FrameProvider.h"
-#include <QDebug>
+#include "logging.h"
+
+static auto logger = cinepi::getLogger("ui.frames");
 
 FrameProvider::FrameProvider()
     : QQuickImageProvider(QQuickImageProvider::Image)
 {
-    // Create a placeholder frame (dark grey)
     m_currentFrame = QImage(960, 540, QImage::Format_RGB888);
     m_currentFrame.fill(QColor(30, 30, 30));
+    logger->debug("FrameProvider initialized (placeholder {}x{})",
+               m_currentFrame.width(), m_currentFrame.height());
 }
 
 QImage FrameProvider::requestImage(const QString &id, QSize *size, const QSize &requestedSize)
@@ -36,6 +39,7 @@ void FrameProvider::onNewFrame(const QImage &frame)
         m_frameNumber++;
 
         if (sizeChanged) {
+            logger->info("Frame size changed to {}x{}", frame.width(), frame.height());
             Q_EMIT frameSizeChanged();
         }
     }
