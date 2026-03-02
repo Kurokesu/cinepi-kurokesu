@@ -6,7 +6,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type (Debug or Release)" FORCE)
+endif()
+
 # ── Qt6 ──────────────────────────────────────────────────────────────────────
+set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL TRUE)
+set(XKB_FIND_QUIETLY TRUE)
 find_package(Qt6 REQUIRED COMPONENTS Core Quick QuickControls2 Network Gui)
 
 # ── System libraries via pkg-config ──────────────────────────────────────────
@@ -115,5 +121,12 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 
 # Prevent Qt's emit/signals/slots macros from clashing with libcamera
 target_compile_definitions(${PROJECT_NAME} PRIVATE QT_NO_KEYWORDS)
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE CINEPI_DEBUG)
+    message(STATUS "CinePI: Debug build (CINEPI_DEBUG defined)")
+elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+    message(STATUS "CinePI: Release build")
+endif()
 
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)

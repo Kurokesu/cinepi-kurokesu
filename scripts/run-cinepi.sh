@@ -4,13 +4,20 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(dirname "$SCRIPT_DIR")"
-BINARY="$REPO_DIR/build/cinepi"
 
-if [ ! -x "$BINARY" ]; then
-    echo "Binary not found: $BINARY"
-    echo "Build with: cd $REPO_DIR && mkdir -p build && cd build && cmake .. && make -j4"
+# Auto-detect binary: prefer debug, then release
+if [ -x "$REPO_DIR/build/debug/cinepi" ]; then
+    BINARY="$REPO_DIR/build/debug/cinepi"
+elif [ -x "$REPO_DIR/build/release/cinepi" ]; then
+    BINARY="$REPO_DIR/build/release/cinepi"
+elif [ -x "$REPO_DIR/build/cinepi" ]; then
+    BINARY="$REPO_DIR/build/cinepi"
+else
+    echo "Binary not found. Build with: ./scripts/build.sh [debug|release]"
     exit 1
 fi
+
+echo "Using: $BINARY"
 
 export CINEPI_CONFIG_DIR="$REPO_DIR/config"
 export CINEPI_SKIP_SOUND=1
@@ -20,11 +27,12 @@ export XDG_RUNTIME_DIR=/run/user/1000
 export QT_QPA_PLATFORM=wayland
 export WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-0}"
 export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+export WLR_NO_HARDWARE_CURSORS=1
 
-# Suppress per-frame libcamera warnings (no lux calibration data)
+# Suppress per-frame libcamera warnings
 export LIBCAMERA_LOG_LEVELS="${LIBCAMERA_LOG_LEVELS:-RPiAgc:ERROR,RPiCcm:ERROR}"
 
-# Wait for Wayland compositor to be ready (up to 30 seconds)
+# Wait for Wayland compositor
 WAYLAND_SOCKET="$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY"
 TIMEOUT=30
 ELAPSED=0
