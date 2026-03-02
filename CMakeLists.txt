@@ -58,10 +58,12 @@ set(UI_SOURCES
 set(MAIN_SOURCES
     src/main.cpp
     src/CameraWorker.cpp
+    src/logging.cpp
 )
 
 set(HEADERS
     src/CameraWorker.h
+    src/logging.h
     src/ui/CameraController.h
     src/ui/DmaBufPreview.h
     src/ui/FrameProvider.h
@@ -122,11 +124,21 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 # Prevent Qt's emit/signals/slots macros from clashing with libcamera
 target_compile_definitions(${PROJECT_NAME} PRIVATE QT_NO_KEYWORDS)
 
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    PROJECT_VERSION="${PROJECT_VERSION}"
+)
+
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE CINEPI_DEBUG)
-    message(STATUS "CinePI: Debug build (CINEPI_DEBUG defined)")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE
+        CINEPI_DEBUG
+        SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG
+    )
+    message(STATUS "CinePI: Debug build (CINEPI_DEBUG, log level >= debug)")
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
-    message(STATUS "CinePI: Release build")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE
+        SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_INFO
+    )
+    message(STATUS "CinePI: Release build (log level >= info)")
 endif()
 
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)

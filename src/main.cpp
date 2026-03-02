@@ -2,17 +2,36 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQuickStyle>
-#include <QDebug>
 #include <QCursor>
 
+#include "logging.h"
 #include "CameraWorker.h"
 #include "ui/CameraController.h"
 #include "ui/DmaBufPreview.h"
 #include "ui/FrameProvider.h"
 #include "ui/ConfigManager.h"
 
+static void qtMessageHandler(QtMsgType type, const QMessageLogContext &ctx, const QString &msg)
+{
+    auto logger = cinepi::getLogger("qt");
+    std::string m = msg.toStdString();
+    switch (type) {
+    case QtDebugMsg:    logger->debug("{}", m); break;
+    case QtInfoMsg:     logger->info("{}", m); break;
+    case QtWarningMsg:  logger->warn("{}", m); break;
+    case QtCriticalMsg: logger->error("{}", m); break;
+    case QtFatalMsg:    logger->critical("{}", m); break;
+    }
+}
+
 int main(int argc, char *argv[])
 {
+    cinepi::initLogging();
+    qInstallMessageHandler(qtMessageHandler);
+
+    auto log = cinepi::getLogger("main");
+    log->info("CinePI v{} starting", PROJECT_VERSION);
+
     QGuiApplication app(argc, argv);
     app.setApplicationName("CinePI");
     app.setOrganizationName("Kurokesu");
@@ -24,6 +43,7 @@ int main(int argc, char *argv[])
 
     QString configDir = qEnvironmentVariable("CINEPI_CONFIG_DIR",
         QCoreApplication::applicationDirPath() + "/../../config");
+    log->info("Config dir: {}", configDir.toStdString());
 
     CameraWorker cameraWorker(configDir);
     CameraController cameraController(&cameraWorker);
@@ -47,8 +67,6 @@ int main(int argc, char *argv[])
 
     engine.load(url);
 
-    // Connect camera preview frames to all DmaBufPreview instances.
-    // The QML engine has loaded, so we can find the preview items.
     auto rootObjects = engine.rootObjects();
     for (auto *obj : rootObjects) {
         auto previews = obj->findChildren<DmaBufPreview *>();
@@ -59,11 +77,14 @@ int main(int argc, char *argv[])
     }
 
     cameraWorker.start();
+    log->info("Camera worker started");
 
     int ret = app.exec();
 
+    log->info("Shutting down...");
     cameraWorker.requestStop();
     cameraWorker.wait();
+    log->info("CinePI stopped (exit code {})", ret);
 
     return ret;
 }
