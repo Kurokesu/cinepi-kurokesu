@@ -1,9 +1,12 @@
 #include "utils.hpp"
+#include "logging.h"
+
+static auto logger = cinepi::getLogger("utils");
 
 bool is_mounted(const char *mount_point) {
     FILE *fp = fopen("/proc/mounts", "r");
     if (fp == NULL) {
-        perror("Error opening /proc/mounts");
+        logger->error("Cannot open /proc/mounts");
         return false;
     }
 
@@ -43,22 +46,35 @@ void generate_filename(RawOptions *options, unsigned int clip_number)
 
 bool create_clip_folder(RawOptions *options, unsigned int clip_number)
 {
-	if(!disk_mounted(options))
+	if(!disk_mounted(options)) {
+		logger->warn("Media not mounted at {}", options->mediaDest);
 		return false;
+	}
 	generate_filename(options, clip_number);
-	return fs::create_directories(options->mediaDest + std::string("/") + options->folder);
+	std::string path = options->mediaDest + "/" + options->folder;
+	bool ok = fs::create_directories(path);
+	if (ok)
+		logger->info("Created clip folder: {}", path);
+	else
+		logger->warn("Failed to create clip folder: {}", path);
+	return ok;
 }
 
 
 bool create_stills_folder(RawOptions *options, unsigned int still_number)
 {
-	if(!disk_mounted(options))
+	if(!disk_mounted(options)) {
+		logger->warn("Media not mounted at {}", options->mediaDest);
 		return false;
-	std::string stillsPath = options->mediaDest + std::string("/stills");
+	}
+	std::string stillsPath = options->mediaDest + "/stills";
 	bool exists = fs::exists(fs::path(stillsPath));
 	generate_filename(options, still_number);
 	if(!exists){
-		return fs::create_directories(options->mediaDest + std::string("/stills"));
+		bool ok = fs::create_directories(stillsPath);
+		if (!ok)
+			logger->warn("Failed to create stills folder: {}", stillsPath);
+		return ok;
 	}
 	return exists;
 }
@@ -68,11 +84,10 @@ std::string getHwId() {
     std::ifstream cpuinfo("/proc/cpuinfo");
     std::string line;
     std::string serialTag = "Serial";
-    
+
     while (std::getline(cpuinfo, line)) {
         if (line.find(serialTag) != std::string::npos) {
             std::string serial = line.substr(line.find(":") + 1);
-            // Remove leading and trailing whitespace
             size_t start = serial.find_first_not_of(" \t");
             size_t end = serial.find_last_not_of(" \t");
             if (start != std::string::npos) {
@@ -82,7 +97,6 @@ std::string getHwId() {
     }
     cpuinfo.close();
 
-    // Fallback to MAC address
     std::ifstream macFile("/sys/class/net/eth0/address");
     if (macFile.is_open()) {
         std::getline(macFile, line);
@@ -90,5 +104,6 @@ std::string getHwId() {
         return line;
     }
 
-    return "UNKNOWN"; // As a final fallback
+    logger->warn("Could not determine hardware ID");
+    return "UNKNOWN";
 }

@@ -1,13 +1,11 @@
 #include "CameraWorker.h"
+#include "logging.h"
 
 #include "camera/cinepi_sound.hpp"
 #include "camera/cinepi_controller.hpp"
 #include "camera/dng_encoder.hpp"
 #include <rpicam-apps/output/output.hpp>
 #include <rpicam-apps/core/rpicam_app.hpp>
-
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
 
 using namespace std::placeholders;
 
@@ -35,7 +33,7 @@ void CameraWorker::handleControl(const QString &key, const QString &value)
 
 void CameraWorker::run()
 {
-    auto console = spdlog::stdout_color_mt("camera_worker");
+    auto log = cinepi::getLogger("camera_worker");
 
     try {
         CinePIRecorder app;
@@ -92,9 +90,9 @@ void CameraWorker::run()
         app.SetMetadataReadyCallback(
             std::bind(&Output::MetadataReady, output.get(), _1));
 
-        console->info("Opening camera...");
+        log->info("Opening camera...");
         app.OpenCamera();
-        console->info("Camera opened");
+        log->info("Camera opened: {}", app.CameraModel());
 
         app.StartEncoder();
         auto cameras = app.GetCameras();
@@ -104,6 +102,7 @@ void CameraWorker::run()
 
         for (unsigned int count = 0; !m_stopRequested; count++) {
             if (controller.configChanged()) {
+                log->info("Config changed, reconfiguring camera...");
                 if (controller.cameraRunning) {
                     app.StopCamera();
                     app.Teardown();
@@ -115,7 +114,7 @@ void CameraWorker::run()
                 controller.applyExposure();
 
                 auto const &cfg = app.RawStream()->configuration();
-                console->info("Raw stream: {}x{} : {} : {}",
+                log->info("Raw stream: {}x{} stride:{} fmt:{}",
                               cfg.size.width, cfg.size.height,
                               cfg.stride, cfg.pixelFormat.toString());
                 app.GetEncoder()->reset_encoder();
@@ -131,7 +130,7 @@ void CameraWorker::run()
                 break;
 
             if (msg.type == RPiCamApp::MsgType::Timeout) {
-                console->error("Device timeout, restarting camera");
+                log->error("Device timeout, restarting camera");
                 app.StopCamera();
                 app.StartCamera();
                 continue;
@@ -147,25 +146,27 @@ void CameraWorker::run()
 
             int trigger = controller.triggerRec();
             if (trigger > 0) {
+                log->info("Recording started (clip #{})", controller.getClipNumber());
                 controller.folderOpen =
                     create_clip_folder(options, controller.getClipNumber());
                 app.GetEncoder()->resetFrameCount();
                 sound.record_start();
             } else if (trigger < 0) {
+                log->info("Recording stopped");
                 controller.folderOpen = false;
                 sound.record_stop();
             }
 
             if (controller.isRecording() && sound.isRecording() &&
                 controller.folderOpen) {
-                if (app.GetEncoder()->buffer_full())
+                if (app.GetEncoder()->buffer_full()) {
+                    log->warn("Disk buffer full, stopping recording");
                     controller.setRecording(false);
+                }
                 app.EncodeBuffer(completed_request, app.RawStream(),
                                  app.LoresStream());
             }
 
-            // Extract preview frame DMA-BUF fd for the Qt renderer.
-            // Prefer lores stream (smaller GPU upload).
             auto *stream = app.LoresStream();
             if (!stream)
                 stream = app.GetMainStream();
@@ -186,11 +187,11 @@ void CameraWorker::run()
         }
 
         controller_ = nullptr;
-        console->info("Camera worker stopped");
+        log->info("Camera worker stopped");
     }
     catch (std::exception const &e) {
         controller_ = nullptr;
-        console->error("Camera error: {}", e.what());
+        cinepi::getLogger("camera_worker")->error("Camera error: {}", e.what());
         Q_EMIT cameraError(QString::fromStdString(e.what()));
     }
 }

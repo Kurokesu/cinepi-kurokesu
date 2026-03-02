@@ -1,4 +1,5 @@
 #include "cinepi_controller.hpp"
+#include "logging.h"
 
 using namespace std;
 using namespace std::chrono;
@@ -52,7 +53,7 @@ CinePIController::CinePIController(CinePIRecorder *app)
       options_(app->GetOptions()),
       cameraInit_(true)
 {
-    console = spdlog::stdout_color_mt("cinepi_controller");
+    console = cinepi::getLogger("cinepi_controller");
     initHandlers();
 }
 
@@ -62,6 +63,7 @@ void CinePIController::initHandlers()
         { CONTROL_KEY_RECORD, [this](const std::string &v) {
             trigger_ = !is_recording_ ? 1 : -1;
             is_recording_ = (stoi(v) != 0);
+            console->info("Record trigger: {}", is_recording_ ? "START" : "STOP");
         }},
         { CONTROL_KEY_ISO, [this](const std::string &v) {
             iso_ = (unsigned int)(stoi(v) / 100.0);
@@ -109,18 +111,22 @@ void CinePIController::initHandlers()
         { CONTROL_KEY_WIDTH, [this](const std::string &v) {
             width_ = (uint16_t)(stoi(v));
             options_->Set().width = width_;
+            console->debug("Width: {}", width_);
         }},
         { CONTROL_KEY_HEIGHT, [this](const std::string &v) {
             height_ = (uint16_t)(stoi(v));
             options_->Set().height = height_;
+            console->debug("Height: {}", height_);
         }},
         { CONTROL_KEY_COMPRESSION, [this](const std::string &v) {
             compression_ = stoi(v);
+            console->debug("Compression: {}", compression_);
             options_->compression = compression_;
             cameraInit_ = true;
         }},
         { CONTROL_KEY_FRAMERATE, [this](const std::string &v) {
             framerate_ = stof(v);
+            console->info("Framerate: {:.1f}", framerate_);
             options_->Set().framerate = framerate_;
             long int durationValues[2] = {
                 static_cast<long int>(1000000.0 / framerate_),

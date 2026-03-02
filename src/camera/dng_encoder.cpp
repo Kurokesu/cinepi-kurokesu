@@ -10,6 +10,7 @@
 #include <chrono>
 #include <iostream>
 #include <libcamera/control_ids.h>
+#include "logging.h"
 #include <libcamera/formats.h>
 
 #include <tiffio.h>
@@ -239,7 +240,7 @@ DngEncoder::DngEncoder(RawOptions const *options)
       frames_(0), 
       options_(options)
 {
-    console = spdlog::stdout_color_mt("dng_encoder");
+    console = cinepi::getLogger("dng_encoder");
 
     for (int i = 0; i < NUM_ENC_THREADS; i++){
         encode_thread_[i] = std::thread(std::bind(&DngEncoder::encodeThread, this, i));
@@ -802,7 +803,7 @@ void DngEncoder::encodeThread(int num)
             
             uint8_t *mem_tiff;
             if (posix_memalign((void **)&mem_tiff, BLOCK_SIZE, dng_info.buffer_size) != 0) {
-                perror("Error allocating aligned memory");
+                console->error("Failed to allocate aligned memory ({} bytes)", dng_info.buffer_size);
                 return;
             }
             size_t tiff_size = dng_save(num,(const uint8_t*) mem_tiff,(const uint8_t*)encode_item.mem, encode_item.info, (const uint8_t*)encode_item.lomem, encode_item.loinfo, encode_item.losize, encode_item.met, encode_item.index);
@@ -870,13 +871,13 @@ void DngEncoder::diskThread(int num)
             posix_fadvise(fd, 0, 0, POSIX_FADV_SEQUENTIAL);
             posix_fadvise(fd, 0, 0, POSIX_FADV_NOREUSE);
             if(write(fd, disk_item.mem_tiff, dng_info.buffer_size) != dng_info.buffer_size) {
-                perror("Error writing to file");
+                console->error("Write failed for DNG frame");
             }
             ftruncate(fd, disk_item.size);
             close(fd);
 
         } else {
-            fprintf(stderr, "Failed to open file for writing\n");
+            console->error("Failed to open DNG file for writing");
         }
         // Clean up
         free(disk_item.mem_tiff);

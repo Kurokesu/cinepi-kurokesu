@@ -1,4 +1,5 @@
 #include "cinepi_sound.hpp"
+#include "logging.h"
 #include <cstdlib>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
@@ -139,7 +140,7 @@ CinePISound::CinePISound(CinePIRecorder *app) :
     defaultDevice(""),
     options_(app->GetOptions()) 
 {
-    console = spdlog::stdout_color_mt("cinepi_sound");
+    console = cinepi::getLogger("cinepi_sound");
 }
 
 CinePISound::~CinePISound() {
