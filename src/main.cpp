@@ -3,6 +3,7 @@
 #include <QQmlContext>
 #include <QQuickStyle>
 #include <QDebug>
+#include <QCursor>
 
 #include "CameraWorker.h"
 #include "ui/CameraController.h"
@@ -15,6 +16,7 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
     app.setApplicationName("CinePI");
     app.setOrganizationName("Kurokesu");
+    app.setOverrideCursor(QCursor(Qt::BlankCursor));
 
     QQuickStyle::setStyle("Default");
 
