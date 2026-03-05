@@ -313,7 +313,7 @@ Rectangle {
                 if (!values || values.length === 0 || !setter) return
                 var idx = values.indexOf(currentValue)
                 if (idx < 0) return
-                var steps = Math.round(-translation.y / 40)
+                var steps = Math.round(-translation.y / 80)
                 var newIdx = Math.max(0, Math.min(values.length - 1, idx + steps))
                 if (newIdx !== idx) setter(values[newIdx])
             }
