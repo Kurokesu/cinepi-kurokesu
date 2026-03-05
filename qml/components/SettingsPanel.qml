@@ -2,23 +2,16 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-/**
- * SettingsPanel - Slide-in panel for overlay and camera settings.
- *
- * Sections:
- *  - Image Analysis (zebra, false color, focus peaking, grayscale)
- *  - Composition Guides (thirds grid, crosshair, cinematic guides)
- *  - Camera Settings (compression, color gains)
- */
 Rectangle {
     id: root
-    color: "#EE1A1A1A"
+    color: Theme.surface
     signal closeRequested()
 
     Flickable {
         anchors.fill: parent
         contentHeight: settingsColumn.height + 32
         clip: true
+        pressDelay: 80
 
         Column {
             id: settingsColumn
@@ -27,29 +20,36 @@ Rectangle {
             anchors.margins: 16
             spacing: 8
 
-            // Header
             RowLayout {
                 width: parent.width
-                height: 48
+                height: 56
 
                 Text {
                     text: "SETTINGS"
-                    color: "#FFFFFF"
-                    font.pixelSize: 16
-                    font.bold: true
-                    font.family: "monospace"
+                    color: Theme.textPrimary
+                    font.pixelSize: 18
+                    font.weight: Font.Bold
+                    font.family: Theme.fontLabel
+                    font.letterSpacing: 1.5
                     Layout.fillWidth: true
                 }
 
                 Rectangle {
-                    width: 32; height: 32; radius: 16
-                    color: closeMouse.pressed ? "#444444" : "#333333"
+                    width: 40; height: 40; radius: 20
+                    color: closeMouse.pressed ? Theme.surfacePressed : Theme.surfaceHover
+                    scale: closeMouse.pressed ? Theme.pressScale : 1.0
+
+                    Behavior on scale {
+                        SpringAnimation { spring: 4; damping: 0.6 }
+                    }
+
                     Text {
                         anchors.centerIn: parent
                         text: "\u2715"
-                        color: "#AAAAAA"
-                        font.pixelSize: 16
+                        color: Theme.textSecondary
+                        font.pixelSize: 18
                     }
+
                     MouseArea {
                         id: closeMouse
                         anchors.fill: parent
@@ -66,7 +66,8 @@ Rectangle {
                 onToggled: function(val) { config.zebraEnabled = val }
             }
 
-            // Zebra threshold slider
+            Item { width: 1; height: 4; visible: config.zebraEnabled }
+
             RowLayout {
                 width: parent.width
                 visible: config.zebraEnabled
@@ -74,8 +75,9 @@ Rectangle {
 
                 Text {
                     text: "Threshold"
-                    color: "#888888"
-                    font.pixelSize: 11
+                    color: Theme.textSecondary
+                    font.pixelSize: 12
+                    font.family: Theme.fontBody
                     Layout.preferredWidth: 70
                 }
 
@@ -90,27 +92,30 @@ Rectangle {
                         x: zebraSlider.leftPadding
                         y: zebraSlider.topPadding + zebraSlider.availableHeight / 2 - height / 2
                         width: zebraSlider.availableWidth; height: 4; radius: 2
-                        color: "#444444"
+                        color: Theme.surfacePressed
                         Rectangle {
                             width: zebraSlider.visualPosition * parent.width; height: parent.height
-                            color: "#0078D7"; radius: 2
+                            color: Theme.accent; radius: 2
                         }
                     }
                     handle: Rectangle {
                         x: zebraSlider.leftPadding + zebraSlider.visualPosition * (zebraSlider.availableWidth - width)
                         y: zebraSlider.topPadding + zebraSlider.availableHeight / 2 - height / 2
-                        width: 18; height: 18; radius: 9; color: "#FFFFFF"
+                        implicitWidth: 28; implicitHeight: 28
+                        width: 22; height: 22; radius: 11; color: Theme.textPrimary
                     }
                 }
 
                 Text {
                     text: (config.zebraThreshold * 100).toFixed(0) + "%"
-                    color: "#AAAAAA"
-                    font.pixelSize: 11
-                    font.family: "monospace"
+                    color: Theme.textSecondary
+                    font.pixelSize: 12
+                    font.family: Theme.fontValue
                     Layout.preferredWidth: 36
                 }
             }
+
+            Item { width: 1; height: 4; visible: config.zebraEnabled }
 
             SettingToggle {
                 label: "False Color"
@@ -164,139 +169,156 @@ Rectangle {
 
             SectionHeader { text: "CAMERA" }
 
-            // Compression mode
-            RowLayout {
+            Column {
                 width: parent.width
                 spacing: 8
 
                 Text {
-                    text: "Compression"
-                    color: "#CCCCCC"
-                    font.pixelSize: 12
-                    Layout.fillWidth: true
+                    text: "Frame Rate"
+                    color: Theme.textPrimary
+                    font.pixelSize: 13
+                    font.family: Theme.fontBody
                 }
 
-                Row {
-                    spacing: 4
-                    Repeater {
-                        model: [
-                            { label: "None", val: 0 },
-                            { label: "Lossy", val: 1 },
-                            { label: "Lossless", val: 2 }
-                        ]
-                        delegate: Rectangle {
-                            width: 64; height: 28; radius: 4
-                            color: camera.compression === modelData.val ? "#0078D7" : "#444444"
-                            Text {
-                                anchors.centerIn: parent
-                                text: modelData.label
-                                color: "#FFFFFF"
-                                font.pixelSize: 10
-                                font.family: "monospace"
-                            }
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: camera.setCompression(modelData.val)
+                Flickable {
+                    width: parent.width
+                    height: 40
+                    contentWidth: fpsRow.implicitWidth
+                    clip: true
+                    flickableDirection: Flickable.HorizontalFlick
+                    boundsBehavior: Flickable.StopAtBounds
+
+                    Row {
+                        id: fpsRow
+                        spacing: 6
+
+                        Repeater {
+                            model: [24, 25, 30, 48, 50, 60]
+                            delegate: Rectangle {
+                                width: 56; height: 40
+                                radius: 20
+                                color: camera.fps === modelData ? Theme.accent : Theme.surfaceHover
+                                scale: fpsMouse.pressed ? Theme.pressScale : 1.0
+
+                                Behavior on scale {
+                                    SpringAnimation { spring: 4; damping: 0.6 }
+                                }
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: modelData
+                                    color: Theme.textPrimary
+                                    font.pixelSize: 14
+                                    font.family: Theme.fontValue
+                                    font.weight: Font.Medium
+                                }
+                                MouseArea {
+                                    id: fpsMouse
+                                    anchors.fill: parent
+                                    onClicked: camera.setFPS(modelData)
+                                }
                             }
                         }
                     }
                 }
             }
 
-            // Color gains
-            Text {
-                text: "Color Gains"
-                color: "#CCCCCC"
-                font.pixelSize: 12
-                topPadding: 4
-            }
-
-            RowLayout {
+            Column {
                 width: parent.width
                 spacing: 8
 
-                Text { text: "R"; color: "#FF6666"; font.pixelSize: 11; Layout.preferredWidth: 16 }
-                Slider {
-                    id: cgRedSlider
-                    Layout.fillWidth: true
-                    from: 0.1; to: 4.0; stepSize: 0.01
-                    value: camera.colorGainR
-                    onMoved: camera.setColorGains(value, camera.colorGainB)
-                    background: Rectangle {
-                        x: cgRedSlider.leftPadding
-                        y: cgRedSlider.topPadding + cgRedSlider.availableHeight / 2 - height / 2
-                        width: cgRedSlider.availableWidth; height: 4; radius: 2; color: "#444444"
-                        Rectangle { width: cgRedSlider.visualPosition * parent.width; height: parent.height; color: "#FF4444"; radius: 2 }
-                    }
-                    handle: Rectangle {
-                        x: cgRedSlider.leftPadding + cgRedSlider.visualPosition * (cgRedSlider.availableWidth - width)
-                        y: cgRedSlider.topPadding + cgRedSlider.availableHeight / 2 - height / 2
-                        width: 16; height: 16; radius: 8; color: "#FFFFFF"
+                Text {
+                    text: "Compression"
+                    color: Theme.textPrimary
+                    font.pixelSize: 13
+                    font.family: Theme.fontBody
+                }
+
+                Flickable {
+                    width: parent.width
+                    height: 40
+                    contentWidth: compRow.implicitWidth
+                    clip: true
+                    flickableDirection: Flickable.HorizontalFlick
+                    boundsBehavior: Flickable.StopAtBounds
+
+                    Row {
+                        id: compRow
+                        spacing: 6
+
+                        Repeater {
+                            model: [
+                                { label: "None", val: 0 },
+                                { label: "Lossy", val: 1 },
+                                { label: "Lossless", val: 2 }
+                            ]
+                            delegate: Rectangle {
+                                width: compLabel.implicitWidth + 32; height: 40
+                                radius: 20
+                                color: camera.compression === modelData.val ? Theme.accent : Theme.surfaceHover
+                                scale: compMouse.pressed ? Theme.pressScale : 1.0
+
+                                Behavior on scale {
+                                    SpringAnimation { spring: 4; damping: 0.6 }
+                                }
+
+                                Text {
+                                    id: compLabel
+                                    anchors.centerIn: parent
+                                    text: modelData.label
+                                    color: Theme.textPrimary
+                                    font.pixelSize: 13
+                                    font.family: Theme.fontBody
+                                    font.weight: Font.Medium
+                                }
+                                MouseArea {
+                                    id: compMouse
+                                    anchors.fill: parent
+                                    onClicked: camera.setCompression(modelData.val)
+                                }
+                            }
+                        }
                     }
                 }
-                Text { text: camera.colorGainR.toFixed(2); color: "#AAAAAA"; font.pixelSize: 10; font.family: "monospace"; Layout.preferredWidth: 32 }
             }
 
-            RowLayout {
-                width: parent.width
-                spacing: 8
-
-                Text { text: "B"; color: "#6666FF"; font.pixelSize: 11; Layout.preferredWidth: 16 }
-                Slider {
-                    id: cgBlueSlider
-                    Layout.fillWidth: true
-                    from: 0.1; to: 4.0; stepSize: 0.01
-                    value: camera.colorGainB
-                    onMoved: camera.setColorGains(camera.colorGainR, value)
-                    background: Rectangle {
-                        x: cgBlueSlider.leftPadding
-                        y: cgBlueSlider.topPadding + cgBlueSlider.availableHeight / 2 - height / 2
-                        width: cgBlueSlider.availableWidth; height: 4; radius: 2; color: "#444444"
-                        Rectangle { width: cgBlueSlider.visualPosition * parent.width; height: parent.height; color: "#4444FF"; radius: 2 }
-                    }
-                    handle: Rectangle {
-                        x: cgBlueSlider.leftPadding + cgBlueSlider.visualPosition * (cgBlueSlider.availableWidth - width)
-                        y: cgBlueSlider.topPadding + cgBlueSlider.availableHeight / 2 - height / 2
-                        width: 16; height: 16; radius: 8; color: "#FFFFFF"
-                    }
-                }
-                Text { text: camera.colorGainB.toFixed(2); color: "#AAAAAA"; font.pixelSize: 10; font.family: "monospace"; Layout.preferredWidth: 32 }
-            }
-
-            // System info
             SectionHeader { text: "SYSTEM" }
 
             Text {
                 text: "Camera: " + (camera.connected ? "Connected" : "Disconnected")
-                color: camera.connected ? "#00CC00" : "#CC0000"
-                font.pixelSize: 11
-                font.family: "monospace"
+                color: camera.connected ? Theme.success : Theme.danger
+                font.pixelSize: 13
+                font.family: Theme.fontBody
             }
 
             Text {
                 text: "Resolution: " + (camera.width > 0 ? camera.width + "x" + camera.height : "N/A")
-                color: "#AAAAAA"
-                font.pixelSize: 11
-                font.family: "monospace"
+                color: Theme.textSecondary
+                font.pixelSize: 13
+                font.family: Theme.fontBody
             }
 
-            // Exit button
             Item { width: 1; height: 16 }
 
             Rectangle {
                 width: parent.width
-                height: 48
-                radius: 8
+                height: 52
+                radius: Theme.radiusMedium
                 color: exitMouse.pressed ? "#CC2222" : "#882222"
+                scale: exitMouse.pressed ? Theme.pressScale : 1.0
+
+                Behavior on scale {
+                    SpringAnimation { spring: 4; damping: 0.6 }
+                }
 
                 Text {
                     anchors.centerIn: parent
                     text: "EXIT APPLICATION"
-                    color: "#FFFFFF"
-                    font.pixelSize: 13
-                    font.bold: true
-                    font.family: "monospace"
-                    font.letterSpacing: 1
+                    color: Theme.textPrimary
+                    font.pixelSize: 14
+                    font.weight: Font.Bold
+                    font.family: Theme.fontLabel
+                    font.letterSpacing: 1.5
                 }
 
                 MouseArea {
@@ -310,31 +332,29 @@ Rectangle {
         }
     }
 
-    /** Section header */
     component SectionHeader: Item {
         property string text: ""
         width: parent.width
-        height: 32
+        height: 36
 
         Rectangle {
             anchors.bottom: parent.bottom
             width: parent.width
             height: 1
-            color: "#333333"
+            color: Theme.separator
         }
 
         Text {
             anchors.verticalCenter: parent.verticalCenter
             text: parent.text
-            color: "#666666"
-            font.pixelSize: 10
-            font.bold: true
-            font.family: "monospace"
+            color: Theme.textTertiary
+            font.pixelSize: 11
+            font.weight: Font.DemiBold
+            font.family: Theme.fontLabel
             font.letterSpacing: 2
         }
     }
 
-    /** Toggle switch row */
     component SettingToggle: RowLayout {
         property string label: ""
         property bool checked: false
@@ -345,8 +365,9 @@ Rectangle {
 
         Text {
             text: label
-            color: "#CCCCCC"
-            font.pixelSize: 12
+            color: Theme.textPrimary
+            font.pixelSize: 13
+            font.family: Theme.fontBody
             Layout.fillWidth: true
         }
 
@@ -355,17 +376,17 @@ Rectangle {
             onToggled: function() { parent.toggled(checked) }
 
             indicator: Rectangle {
-                width: 40; height: 22; radius: 11
-                color: parent.checked ? "#0078D7" : "#444444"
+                width: 48; height: 28; radius: 14
+                color: parent.checked ? Theme.accent : Theme.surfacePressed
                 x: parent.leftPadding
                 y: parent.height / 2 - height / 2
 
                 Rectangle {
                     x: parent.parent.checked ? parent.width - width - 3 : 3
                     y: 3
-                    width: 16; height: 16; radius: 8
-                    color: "#FFFFFF"
-                    Behavior on x { NumberAnimation { duration: 120 } }
+                    width: 22; height: 22; radius: 11
+                    color: Theme.textPrimary
+                    Behavior on x { SpringAnimation { spring: 4; damping: 0.6 } }
                 }
             }
         }
