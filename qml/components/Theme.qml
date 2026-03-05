@@ -19,9 +19,9 @@ QtObject {
     readonly property color separator:      "#2A2A2A"
 
     // --- Typography ---
-    readonly property string fontLabel: "SF Pro Text, Helvetica Neue, Segoe UI, sans-serif"
-    readonly property string fontValue: "SF Mono, Menlo, Consolas, monospace"
-    readonly property string fontBody:  "SF Pro Text, Helvetica Neue, Segoe UI, sans-serif"
+    readonly property string fontLabel: "sans-serif"
+    readonly property string fontValue: "monospace"
+    readonly property string fontBody:  "sans-serif"
 
     // --- Sizes (calibrated for HyperPixel 4.0 Square: 720px / 72mm) ---
     readonly property int statusBarHeight:   56
