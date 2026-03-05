@@ -18,6 +18,7 @@ public:
     void requestStop();
 
     CinePIController *controller() const { return controller_; }
+    const QString &configDir() const { return m_configDir; }
 
 Q_SIGNALS:
     void frameReady(int fd, unsigned int width, unsigned int height,
@@ -25,6 +26,7 @@ Q_SIGNALS:
     void statsUpdate(float framerate, int colorTemp, float focus,
                      int frameCount, int bufferSize);
     void streamInfoUpdate(int width, int height);
+    void settingsLoaded(int iso, int shutterAngle, int fps, int wb);
     void cameraError(const QString &message);
 
 public Q_SLOTS:

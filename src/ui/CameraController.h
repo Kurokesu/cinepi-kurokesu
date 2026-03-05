@@ -70,9 +70,11 @@ private Q_SLOTS:
     void onStatsUpdate(float framerate, int colorTemp, float focus,
                        int frameCount, int bufferSize);
     void onStreamInfo(int w, int h);
+    void onSettingsLoaded(int iso, int shutterAngle, int fps, int wb);
     void onCameraError(const QString &msg);
 
 private:
+    void loadInitialSettings();
     void sendControl(const QString &key, const QString &value);
 
     CameraWorker *m_worker;

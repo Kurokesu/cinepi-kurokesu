@@ -100,6 +100,7 @@ void CameraWorker::run()
             throw std::runtime_error("no cameras available");
         options->model = app.CameraModel();
 
+        bool initialSync = false;
         for (unsigned int count = 0; !m_stopRequested; count++) {
             if (controller.configChanged()) {
                 log->info("Config changed, reconfiguring camera...");
@@ -119,6 +120,15 @@ void CameraWorker::run()
                               cfg.stride, cfg.pixelFormat.toString());
                 app.GetEncoder()->reset_encoder();
                 controller.process_stream_info(cfg);
+
+                if (!initialSync) {
+                    initialSync = true;
+                    Q_EMIT settingsLoaded(
+                        static_cast<int>(controller.getISO()) * 100,
+                        static_cast<int>(controller.getShutterAngle()),
+                        static_cast<int>(controller.getFramerate()),
+                        static_cast<int>(controller.getAWB()));
+                }
             }
 
             CinePIRecorder::Msg msg = app.Wait();
