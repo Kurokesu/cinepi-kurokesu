@@ -2,16 +2,11 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-/**
- * CameraControls - Bottom bar with primary camera controls.
- *
- * Provides quick access to: ISO, shutter angle, FPS, WB,
- * a record button, and a settings gear.
- */
 Rectangle {
     id: root
-    color: "#CC000000"
-    signal settingsRequested()
+    color: Theme.barOverlay
+
+    signal gearClicked()
 
     RowLayout {
         anchors.fill: parent
@@ -19,239 +14,174 @@ Rectangle {
         anchors.rightMargin: 8
         spacing: 4
 
-        // ISO control
         ControlButton {
             label: "ISO"
             value: camera.iso.toString()
+            values: [100, 200, 400, 800, 1600, 3200, 6400, 12800]
+            currentValue: camera.iso
+            setter: function(v) { camera.setISO(v) }
             onClicked: isoPopup.open()
         }
 
-        // Shutter Angle control
         ControlButton {
-            label: "SHUTTER"
-            value: camera.shutterAngle + "°"
+            label: "SHT"
+            value: camera.shutterAngle + "\u00B0"
+            values: [11, 22, 45, 72, 90, 144, 172, 180, 270, 360]
+            currentValue: camera.shutterAngle
+            setter: function(v) { camera.setShutterAngle(v) }
             onClicked: shutterPopup.open()
         }
 
-        // FPS control
-        ControlButton {
-            label: "FPS"
-            value: camera.fps.toString()
-            onClicked: fpsPopup.open()
-        }
-
-        // WB control
         ControlButton {
             label: "WB"
             value: camera.whiteBalance > 0 ? camera.whiteBalance + "K" : "AUTO"
             onClicked: wbPopup.open()
         }
 
-        Item { Layout.fillWidth: true }
-
-        // Record button
         Rectangle {
-            width: 56
-            height: 56
-            radius: 28
-            color: camera.recording ? "#FF0000" : "#444444"
-            border.color: "#FFFFFF"
-            border.width: 2
+            width: Theme.gearButtonSize
+            height: Theme.gearButtonSize
+            radius: Theme.gearButtonSize / 2
+            color: Theme.surfaceHover
             Layout.alignment: Qt.AlignVCenter
+            scale: gearMouse.pressed ? Theme.pressScale : 1.0
 
-            Rectangle {
-                anchors.centerIn: parent
-                width: camera.recording ? 20 : 36
-                height: camera.recording ? 20 : 36
-                radius: camera.recording ? 3 : 18
-                color: camera.recording ? "#FFFFFF" : "#FF0000"
-
-                Behavior on width { NumberAnimation { duration: 150 } }
-                Behavior on height { NumberAnimation { duration: 150 } }
-                Behavior on radius { NumberAnimation { duration: 150 } }
+            Behavior on scale {
+                SpringAnimation { spring: 4; damping: 0.6 }
             }
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: camera.setRecording(!camera.recording)
-            }
-        }
-
-        Item { Layout.fillWidth: true }
-
-        // Settings gear
-        Rectangle {
-            width: 56
-            height: 56
-            radius: 28
-            color: settingsMouseArea.pressed ? "#555555" : "#333333"
-            Layout.alignment: Qt.AlignVCenter
 
             Text {
                 anchors.centerIn: parent
                 text: "\u2699"
-                color: "#CCCCCC"
-                font.pixelSize: 30
+                color: Theme.textSecondary
+                font.pixelSize: 34
             }
 
             MouseArea {
-                id: settingsMouseArea
+                id: gearMouse
                 anchors.fill: parent
-                onClicked: root.settingsRequested()
+                anchors.margins: -8
+                onClicked: root.gearClicked()
             }
         }
     }
 
-    // ISO Popup
+    // --- ISO Popup ---
     Popup {
         id: isoPopup
         x: (root.width - width) / 2
         y: -height - 8
-        width: 280
-        height: 200
+        width: Theme.popupWidth
+        height: 220
         modal: true
 
-        background: Rectangle { color: "#EE222222"; radius: 8 }
+        enter: popupEnterTransition
+        exit: popupExitTransition
+        background: Rectangle { color: "#EE" + Theme.surface.toString().substring(1); radius: Theme.radiusMedium }
 
         Column {
-            anchors.fill: parent
-            anchors.margins: 8
-            spacing: 4
+            anchors.centerIn: parent
+            spacing: 8
 
-            Text { text: "ISO"; color: "#AAAAAA"; font.pixelSize: 12; font.bold: true }
+            Text {
+                text: "ISO"
+                color: Theme.textSecondary
+                font.pixelSize: 13
+                font.weight: Font.DemiBold
+                font.family: Theme.fontLabel
+                font.letterSpacing: 1.5
+            }
 
             Grid {
                 columns: 4
-                spacing: 4
+                spacing: 6
+                anchors.horizontalCenter: parent.horizontalCenter
                 Repeater {
                     model: [100, 200, 400, 800, 1600, 3200, 6400, 12800]
-                    delegate: Rectangle {
-                        width: 60; height: 36; radius: 4
-                        color: camera.iso === modelData ? "#0078D7" : "#444444"
-                        Text {
-                            anchors.centerIn: parent
-                            text: modelData
-                            color: "#FFFFFF"
-                            font.pixelSize: 13
-                            font.family: "monospace"
-                        }
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: { camera.setISO(modelData); isoPopup.close() }
-                        }
+                    delegate: PopupGridItem {
+                        itemWidth: Theme.popupItemWidth
+                        text: modelData.toString()
+                        selected: camera.iso === modelData
+                        onItemClicked: { camera.setISO(modelData); isoPopup.close() }
                     }
                 }
             }
         }
     }
 
-    // Shutter Angle Popup
+    // --- Shutter Angle Popup ---
     Popup {
         id: shutterPopup
         x: (root.width - width) / 2
         y: -height - 8
-        width: 280
-        height: 200
+        width: Theme.popupWidth
+        height: 250
         modal: true
 
-        background: Rectangle { color: "#EE222222"; radius: 8 }
+        enter: popupEnterTransition
+        exit: popupExitTransition
+        background: Rectangle { color: "#EE" + Theme.surface.toString().substring(1); radius: Theme.radiusMedium }
 
         Column {
-            anchors.fill: parent
-            anchors.margins: 8
-            spacing: 4
+            anchors.centerIn: parent
+            spacing: 8
 
-            Text { text: "SHUTTER ANGLE"; color: "#AAAAAA"; font.pixelSize: 12; font.bold: true }
+            Text {
+                text: "SHUTTER ANGLE"
+                color: Theme.textSecondary
+                font.pixelSize: 13
+                font.weight: Font.DemiBold
+                font.family: Theme.fontLabel
+                font.letterSpacing: 1.5
+            }
 
             Grid {
                 columns: 4
-                spacing: 4
+                spacing: 6
+                anchors.horizontalCenter: parent.horizontalCenter
                 Repeater {
                     model: [11, 22, 45, 72, 90, 144, 172, 180, 270, 360]
-                    delegate: Rectangle {
-                        width: 60; height: 36; radius: 4
-                        color: camera.shutterAngle === modelData ? "#0078D7" : "#444444"
-                        Text {
-                            anchors.centerIn: parent
-                            text: modelData + "°"
-                            color: "#FFFFFF"
-                            font.pixelSize: 13
-                            font.family: "monospace"
-                        }
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: { camera.setShutterAngle(modelData); shutterPopup.close() }
-                        }
+                    delegate: PopupGridItem {
+                        itemWidth: Theme.popupItemWidth
+                        text: modelData + "\u00B0"
+                        selected: camera.shutterAngle === modelData
+                        onItemClicked: { camera.setShutterAngle(modelData); shutterPopup.close() }
                     }
                 }
             }
         }
     }
 
-    // FPS Popup
-    Popup {
-        id: fpsPopup
-        x: (root.width - width) / 2
-        y: -height - 8
-        width: 280
-        height: 160
-        modal: true
-
-        background: Rectangle { color: "#EE222222"; radius: 8 }
-
-        Column {
-            anchors.fill: parent
-            anchors.margins: 8
-            spacing: 4
-
-            Text { text: "FRAME RATE"; color: "#AAAAAA"; font.pixelSize: 12; font.bold: true }
-
-            Grid {
-                columns: 4
-                spacing: 4
-                Repeater {
-                    model: [1, 5, 8, 12, 15, 18, 24, 25, 30, 48, 50, 60]
-                    delegate: Rectangle {
-                        width: 60; height: 36; radius: 4
-                        color: camera.fps === modelData ? "#0078D7" : "#444444"
-                        Text {
-                            anchors.centerIn: parent
-                            text: modelData
-                            color: "#FFFFFF"
-                            font.pixelSize: 13
-                            font.family: "monospace"
-                        }
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: { camera.setFPS(modelData); fpsPopup.close() }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // White Balance Popup
+    // --- White Balance Popup ---
     Popup {
         id: wbPopup
         x: (root.width - width) / 2
         y: -height - 8
-        width: 280
-        height: 200
+        width: Theme.popupWidth
+        height: 250
         modal: true
 
-        background: Rectangle { color: "#EE222222"; radius: 8 }
+        enter: popupEnterTransition
+        exit: popupExitTransition
+        background: Rectangle { color: "#EE" + Theme.surface.toString().substring(1); radius: Theme.radiusMedium }
 
         Column {
-            anchors.fill: parent
-            anchors.margins: 8
-            spacing: 4
+            anchors.centerIn: parent
+            spacing: 8
 
-            Text { text: "WHITE BALANCE"; color: "#AAAAAA"; font.pixelSize: 12; font.bold: true }
+            Text {
+                text: "WHITE BALANCE"
+                color: Theme.textSecondary
+                font.pixelSize: 13
+                font.weight: Font.DemiBold
+                font.family: Theme.fontLabel
+                font.letterSpacing: 1.5
+            }
 
             Grid {
                 columns: 3
-                spacing: 4
+                spacing: 6
+                anchors.horizontalCenter: parent.horizontalCenter
                 Repeater {
                     model: ListModel {
                         ListElement { label: "AUTO"; val: 0 }
@@ -264,37 +194,86 @@ Rectangle {
                         ListElement { label: "7500K"; val: 7500 }
                         ListElement { label: "9000K"; val: 9000 }
                     }
-                    delegate: Rectangle {
-                        width: 80; height: 36; radius: 4
-                        color: camera.whiteBalance === model.val ? "#0078D7" : "#444444"
-                        Text {
-                            anchors.centerIn: parent
-                            text: model.label
-                            color: "#FFFFFF"
-                            font.pixelSize: 12
-                            font.family: "monospace"
-                        }
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: { camera.setWhiteBalance(model.val); wbPopup.close() }
-                        }
+                    delegate: PopupGridItem {
+                        itemWidth: Theme.popupItemWidthWB
+                        text: model.label
+                        selected: camera.whiteBalance === model.val
+                        onItemClicked: { camera.setWhiteBalance(model.val); wbPopup.close() }
                     }
                 }
             }
         }
     }
 
-    /** Reusable control button */
+    // --- Shared popup enter/exit transitions ---
+    Transition {
+        id: popupEnterTransition
+        ParallelAnimation {
+            NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 150; easing.type: Easing.OutCubic }
+            NumberAnimation { property: "scale"; from: 0.9; to: 1.0; duration: 150; easing.type: Easing.OutCubic }
+        }
+    }
+
+    Transition {
+        id: popupExitTransition
+        ParallelAnimation {
+            NumberAnimation { property: "opacity"; from: 1; to: 0; duration: 120; easing.type: Easing.InCubic }
+            NumberAnimation { property: "scale"; from: 1.0; to: 0.9; duration: 120; easing.type: Easing.InCubic }
+        }
+    }
+
+    // --- Popup grid item component ---
+    component PopupGridItem: Rectangle {
+        property int itemWidth: Theme.popupItemWidth
+        property string text: ""
+        property bool selected: false
+        signal itemClicked()
+
+        width: itemWidth
+        height: Theme.popupItemHeight
+        radius: Theme.radiusMedium
+        color: selected ? Theme.accent : Theme.surfaceHover
+        scale: itemMouse.pressed ? Theme.pressScale : 1.0
+
+        Behavior on scale {
+            SpringAnimation { spring: 4; damping: 0.6 }
+        }
+
+        Text {
+            anchors.centerIn: parent
+            text: parent.text
+            color: Theme.textPrimary
+            font.pixelSize: 15
+            font.family: Theme.fontValue
+            font.weight: Font.Medium
+        }
+
+        MouseArea {
+            id: itemMouse
+            anchors.fill: parent
+            onClicked: parent.itemClicked()
+        }
+    }
+
+    // --- Control button component ---
     component ControlButton: Rectangle {
         property string label: ""
         property string value: ""
+        property var values: []
+        property var currentValue
+        property var setter
         signal clicked()
 
         Layout.fillHeight: true
-        Layout.preferredWidth: 72
-        Layout.margins: 6
-        radius: 6
-        color: buttonMouse.pressed ? "#555555" : "#333333"
+        Layout.fillWidth: true
+        Layout.margins: 4
+        radius: Theme.radiusMedium
+        color: Theme.surfaceHover
+        scale: btnMouse.pressed ? Theme.pressScale : 1.0
+
+        Behavior on scale {
+            SpringAnimation { spring: 4; damping: 0.6 }
+        }
 
         Column {
             anchors.centerIn: parent
@@ -303,25 +282,41 @@ Rectangle {
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: label
-                color: "#888888"
-                font.pixelSize: 9
-                font.family: "monospace"
-                font.bold: true
+                color: Theme.textSecondary
+                font.pixelSize: 12
+                font.family: Theme.fontLabel
+                font.weight: Font.DemiBold
+                font.letterSpacing: 1.2
             }
+
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: value
-                color: "#FFFFFF"
-                font.pixelSize: 15
-                font.family: "monospace"
-                font.bold: true
+                color: Theme.textPrimary
+                font.pixelSize: 20
+                font.family: Theme.fontValue
+                font.weight: Font.Bold
             }
         }
 
         MouseArea {
-            id: buttonMouse
+            id: btnMouse
             anchors.fill: parent
             onClicked: parent.clicked()
+        }
+
+        DragHandler {
+            target: null
+            yAxis.enabled: true
+            xAxis.enabled: false
+            onTranslationChanged: {
+                if (!values || values.length === 0 || !setter) return
+                var idx = values.indexOf(currentValue)
+                if (idx < 0) return
+                var steps = Math.round(-translation.y / 40)
+                var newIdx = Math.max(0, Math.min(values.length - 1, idx + steps))
+                if (newIdx !== idx) setter(values[newIdx])
+            }
         }
     }
 }
