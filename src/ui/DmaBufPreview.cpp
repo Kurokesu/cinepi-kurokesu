@@ -66,7 +66,11 @@ private:
     QSize m_viewportSize;
 };
 
-static auto logger = cinepi::getLogger("ui.preview");
+static auto &logger()
+{
+    static auto l = cinepi::getLogger("ui.preview");
+    return l;
+}
 
 DmaBufRenderer::DmaBufRenderer(const DmaBufPreview *item)
     : m_item(item) {}
@@ -166,7 +170,7 @@ bool DmaBufRenderer::initGL()
     m_texV = createTex();
 
     m_glInitialized = true;
-    logger->debug("GL initialized");
+    logger()->debug("GL initialized");
     return true;
 }
 
@@ -186,7 +190,7 @@ bool DmaBufRenderer::uploadFrame()
     void *data = mmap(nullptr, totalSize, PROT_READ, MAP_SHARED,
                       m_frameInfo.fd, 0);
     if (data == MAP_FAILED) {
-        logger->warn("mmap failed for preview frame (fd={}, size={})", m_frameInfo.fd, totalSize);
+        logger()->warn("mmap failed for preview frame (fd={}, size={})", m_frameInfo.fd, totalSize);
         return false;
     }
 

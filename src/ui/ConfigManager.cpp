@@ -4,13 +4,17 @@
 #include <QTextStream>
 #include <QDir>
 
-static auto logger = cinepi::getLogger("ui.config");
+static auto &logger()
+{
+    static auto l = cinepi::getLogger("ui.config");
+    return l;
+}
 
 ConfigManager::ConfigManager(const QString &basePath, QObject *parent)
     : QObject(parent)
     , m_basePath(basePath)
 {
-    logger->info("Loading config from {}", basePath.toStdString());
+    logger()->info("Loading config from {}", basePath.toStdString());
     reload();
 }
 
@@ -31,7 +35,7 @@ QVariantMap ConfigManager::readIniFile(const QString &path)
     QVariantMap map;
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        logger->warn("Cannot open config file: {}", path.toStdString());
+        logger()->warn("Cannot open config file: {}", path.toStdString());
         return map;
     }
 
@@ -48,7 +52,7 @@ QVariantMap ConfigManager::readIniFile(const QString &path)
         }
     }
     file.close();
-    logger->debug("Loaded {} keys from {}", map.size(), path.toStdString());
+    logger()->debug("Loaded {} keys from {}", map.size(), path.toStdString());
     return map;
 }
 
@@ -56,7 +60,7 @@ void ConfigManager::writeIniFile(const QString &path, const QVariantMap &data)
 {
     QFile file(path);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        logger->warn("Cannot write config file: {}", path.toStdString());
+        logger()->warn("Cannot write config file: {}", path.toStdString());
         return;
     }
 
@@ -65,7 +69,7 @@ void ConfigManager::writeIniFile(const QString &path, const QVariantMap &data)
         out << it.key() << " " << it.value().toString() << "\n";
     }
     file.close();
-    logger->debug("Saved {} keys to {}", data.size(), path.toStdString());
+    logger()->debug("Saved {} keys to {}", data.size(), path.toStdString());
 }
 
 void ConfigManager::loadConfig()

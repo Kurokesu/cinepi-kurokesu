@@ -1,12 +1,16 @@
 #include "utils.hpp"
 #include "logging.h"
 
-static auto logger = cinepi::getLogger("utils");
+static auto &logger()
+{
+    static auto l = cinepi::getLogger("utils");
+    return l;
+}
 
 bool is_mounted(const char *mount_point) {
     FILE *fp = fopen("/proc/mounts", "r");
     if (fp == NULL) {
-        logger->error("Cannot open /proc/mounts");
+        logger()->error("Cannot open /proc/mounts");
         return false;
     }
 
@@ -47,16 +51,16 @@ void generate_filename(RawOptions *options, unsigned int clip_number)
 bool create_clip_folder(RawOptions *options, unsigned int clip_number)
 {
 	if(!disk_mounted(options)) {
-		logger->warn("Media not mounted at {}", options->mediaDest);
+		logger()->warn("Media not mounted at {}", options->mediaDest);
 		return false;
 	}
 	generate_filename(options, clip_number);
 	std::string path = options->mediaDest + "/" + options->folder;
 	bool ok = fs::create_directories(path);
 	if (ok)
-		logger->info("Created clip folder: {}", path);
+		logger()->info("Created clip folder: {}", path);
 	else
-		logger->warn("Failed to create clip folder: {}", path);
+		logger()->warn("Failed to create clip folder: {}", path);
 	return ok;
 }
 
@@ -64,7 +68,7 @@ bool create_clip_folder(RawOptions *options, unsigned int clip_number)
 bool create_stills_folder(RawOptions *options, unsigned int still_number)
 {
 	if(!disk_mounted(options)) {
-		logger->warn("Media not mounted at {}", options->mediaDest);
+		logger()->warn("Media not mounted at {}", options->mediaDest);
 		return false;
 	}
 	std::string stillsPath = options->mediaDest + "/stills";
@@ -73,7 +77,7 @@ bool create_stills_folder(RawOptions *options, unsigned int still_number)
 	if(!exists){
 		bool ok = fs::create_directories(stillsPath);
 		if (!ok)
-			logger->warn("Failed to create stills folder: {}", stillsPath);
+			logger()->warn("Failed to create stills folder: {}", stillsPath);
 		return ok;
 	}
 	return exists;
@@ -104,6 +108,6 @@ std::string getHwId() {
         return line;
     }
 
-    logger->warn("Could not determine hardware ID");
+    logger()->warn("Could not determine hardware ID");
     return "UNKNOWN";
 }
