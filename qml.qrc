@@ -1,15 +1,22 @@
 <RCC>
     <qresource prefix="/">
+        <file>qtquickcontrols2.conf</file>
         <file>qml/main.qml</file>
         <file>qml/CameraPreview.qml</file>
         <file>qml/ShaderOverlays.qml</file>
         <file>qml/components/qmldir</file>
         <file>qml/components/Theme.qml</file>
+        <file>qml/components/CameraPresets.qml</file>
         <file>qml/components/MainLayout.qml</file>
         <file>qml/components/CameraControls.qml</file>
+        <file>qml/components/ControlButton.qml</file>
         <file>qml/components/GridOverlays.qml</file>
-        <file>qml/components/StatusBar.qml</file>
+        <file>qml/components/PopupGridItem.qml</file>
+        <file>qml/components/SectionHeader.qml</file>
+        <file>qml/components/SettingToggle.qml</file>
         <file>qml/components/SettingsPanel.qml</file>
+        <file>qml/components/StatusBar.qml</file>
+        <file>qml/components/StatusItem.qml</file>
         <file>shaders/zebra.frag.qsb</file>
         <file>shaders/falsecolor.frag.qsb</file>
         <file>shaders/focuspeaking.frag.qsb</file>
