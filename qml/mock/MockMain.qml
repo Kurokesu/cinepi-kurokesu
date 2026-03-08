@@ -1,19 +1,16 @@
 import QtQuick
-import QtQuick.Controls
-import QtQuick.Window
+import QtQuick.Controls.Basic
 import "../components"
 
-ApplicationWindow {
+Rectangle {
     id: mockRoot
-    visible: true
     width: 720
     height: 720
-    title: "CinePI \u2014 Mock Preview"
     color: "#000000"
 
-    QtObject {
-        id: camera
 
+    QtObject {
+        id: mockCamera
         property int iso: 800
         property int shutterAngle: 180
         property double shutterSpeed: 0.00555
@@ -23,8 +20,6 @@ ApplicationWindow {
         property int width: 2736
         property int height: 1824
         property bool connected: true
-        property double colorGainR: 1.90
-        property double colorGainB: 1.57
         property int compression: 0
         property int frameCount: 1234
         property int bufferSize: 0
@@ -35,12 +30,11 @@ ApplicationWindow {
         function setWhiteBalance(val) { whiteBalance = val }
         function setRecording(val) { recording = val }
         function setCompression(val) { compression = val }
-        function setColorGains(r, b) { colorGainR = r; colorGainB = b }
+        function setColorGains(r, b) {}
     }
 
     QtObject {
-        id: config
-
+        id: mockConfig
         property bool zebraEnabled: false
         property double zebraThreshold: 0.95
         property bool falseColorEnabled: false
@@ -55,6 +49,8 @@ ApplicationWindow {
 
     MainLayout {
         anchors.fill: parent
+        camera: mockCamera
+        config: mockConfig
 
         Rectangle {
             anchors.fill: parent
@@ -73,7 +69,7 @@ ApplicationWindow {
                 }
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text: camera.width + "x" + camera.height + " @ " + camera.fps + "fps"
+                    text: mockCamera.width + "x" + mockCamera.height + " @ " + mockCamera.fps + "fps"
                     color: Theme.surfacePressed
                     font.pixelSize: 14
                     font.family: Theme.fontValue
@@ -81,4 +77,11 @@ ApplicationWindow {
             }
         }
     }
+
 }
+
+/*##^##
+Designer {
+    D{i:0}D{i:1;invisible:true}D{i:2;invisible:true}D{i:4;invisible:true}D{i:5;invisible:true}
+}
+##^##*/

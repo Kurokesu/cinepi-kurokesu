@@ -1,0 +1,2 @@
+singleton Camera Camera.qml
+singleton Config Config.qml
