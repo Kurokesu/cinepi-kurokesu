@@ -4,8 +4,15 @@ import QtQuick.Layouts
 
 Rectangle {
     id: root
-    color: Theme.barOverlay
+    color: Theme.surface
 
+    property int iso: 800
+    property int shutterAngle: 180
+    property int whiteBalance: 0
+
+    signal isoChangeRequested(int val)
+    signal shutterAngleChangeRequested(int val)
+    signal whiteBalanceChangeRequested(int val)
     signal gearClicked()
 
     RowLayout {
@@ -16,53 +23,52 @@ Rectangle {
 
         ControlButton {
             label: "ISO"
-            value: camera.iso.toString()
-            values: [100, 200, 400, 800, 1600, 3200, 6400, 12800]
-            currentValue: camera.iso
-            setter: function(v) { camera.setISO(v) }
+            value: root.iso.toString()
+            values: CameraPresets.isoValues
+            currentValue: root.iso
+            setter: function(v) { root.isoChangeRequested(v) }
             onClicked: isoPopup.open()
         }
 
         ControlButton {
             label: "SHT"
-            value: camera.shutterAngle + "\u00B0"
-            values: [11, 22, 45, 72, 90, 144, 172, 180, 270, 360]
-            currentValue: camera.shutterAngle
-            setter: function(v) { camera.setShutterAngle(v) }
+            value: root.shutterAngle + "\u00B0"
+            values: CameraPresets.shutterAngles
+            currentValue: root.shutterAngle
+            setter: function(v) { root.shutterAngleChangeRequested(v) }
             onClicked: shutterPopup.open()
         }
 
         ControlButton {
             label: "WB"
-            value: camera.whiteBalance > 0 ? camera.whiteBalance + "K" : "AUTO"
+            value: root.whiteBalance > 0 ? root.whiteBalance + "K" : "AUTO"
             onClicked: wbPopup.open()
         }
 
-        Rectangle {
+        RoundButton {
             width: Theme.gearButtonSize
             height: Theme.gearButtonSize
             radius: Theme.gearButtonSize / 2
-            color: Theme.surfaceHover
+            flat: true
             Layout.alignment: Qt.AlignVCenter
-            scale: gearMouse.pressed ? Theme.pressScale : 1.0
 
-            Behavior on scale {
-                SpringAnimation { spring: 4; damping: 0.6 }
+            background: Rectangle {
+                radius: Theme.gearButtonSize / 2
+                color: Theme.surfaceHover
+                scale: parent.pressed ? Theme.pressScale : 1.0
+                Behavior on scale { SpringAnimation { spring: 4; damping: 0.6 } }
             }
 
-            Text {
+            contentItem: Text {
                 anchors.centerIn: parent
                 text: "\u2699"
                 color: Theme.textSecondary
                 font.pixelSize: 34
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
             }
 
-            MouseArea {
-                id: gearMouse
-                anchors.fill: parent
-                anchors.margins: -8
-                onClicked: root.gearClicked()
-            }
+            onClicked: root.gearClicked()
         }
     }
 
@@ -97,12 +103,12 @@ Rectangle {
                 spacing: 6
                 anchors.horizontalCenter: parent.horizontalCenter
                 Repeater {
-                    model: [100, 200, 400, 800, 1600, 3200, 6400, 12800]
+                    model: CameraPresets.isoValues
                     delegate: PopupGridItem {
                         itemWidth: Theme.popupItemWidth
                         text: modelData.toString()
-                        selected: camera.iso === modelData
-                        onItemClicked: { camera.setISO(modelData); isoPopup.close() }
+                        checked: root.iso === modelData
+                        onClicked: { root.isoChangeRequested(modelData); isoPopup.close() }
                     }
                 }
             }
@@ -140,12 +146,12 @@ Rectangle {
                 spacing: 6
                 anchors.horizontalCenter: parent.horizontalCenter
                 Repeater {
-                    model: [11, 22, 45, 72, 90, 144, 172, 180, 270, 360]
+                    model: CameraPresets.shutterAngles
                     delegate: PopupGridItem {
                         itemWidth: Theme.popupItemWidth
                         text: modelData + "\u00B0"
-                        selected: camera.shutterAngle === modelData
-                        onItemClicked: { camera.setShutterAngle(modelData); shutterPopup.close() }
+                        checked: root.shutterAngle === modelData
+                        onClicked: { root.shutterAngleChangeRequested(modelData); shutterPopup.close() }
                     }
                 }
             }
@@ -183,29 +189,22 @@ Rectangle {
                 spacing: 6
                 anchors.horizontalCenter: parent.horizontalCenter
                 Repeater {
-                    model: ListModel {
-                        ListElement { label: "AUTO"; val: 0 }
-                        ListElement { label: "2800K"; val: 2800 }
-                        ListElement { label: "3200K"; val: 3200 }
-                        ListElement { label: "4000K"; val: 4000 }
-                        ListElement { label: "4500K"; val: 4500 }
-                        ListElement { label: "5600K"; val: 5600 }
-                        ListElement { label: "6500K"; val: 6500 }
-                        ListElement { label: "7500K"; val: 7500 }
-                        ListElement { label: "9000K"; val: 9000 }
-                    }
+                    model: CameraPresets.whiteBalancePresets.length
                     delegate: PopupGridItem {
                         itemWidth: Theme.popupItemWidthWB
-                        text: model.label
-                        selected: camera.whiteBalance === model.val
-                        onItemClicked: { camera.setWhiteBalance(model.val); wbPopup.close() }
+                        text: CameraPresets.whiteBalancePresets[index].label
+                        checked: root.whiteBalance === CameraPresets.whiteBalancePresets[index].value
+                        onClicked: {
+                            root.whiteBalanceChangeRequested(CameraPresets.whiteBalancePresets[index].value)
+                            wbPopup.close()
+                        }
                     }
                 }
             }
         }
     }
 
-    // --- Shared popup enter/exit transitions ---
+    // --- Shared popup transitions ---
     Transition {
         id: popupEnterTransition
         ParallelAnimation {
@@ -219,104 +218,6 @@ Rectangle {
         ParallelAnimation {
             NumberAnimation { property: "opacity"; from: 1; to: 0; duration: 120; easing.type: Easing.InCubic }
             NumberAnimation { property: "scale"; from: 1.0; to: 0.9; duration: 120; easing.type: Easing.InCubic }
-        }
-    }
-
-    // --- Popup grid item component ---
-    component PopupGridItem: Rectangle {
-        property int itemWidth: Theme.popupItemWidth
-        property string text: ""
-        property bool selected: false
-        signal itemClicked()
-
-        width: itemWidth
-        height: Theme.popupItemHeight
-        radius: Theme.radiusMedium
-        color: selected ? Theme.accent : Theme.surfaceHover
-        scale: itemMouse.pressed ? Theme.pressScale : 1.0
-
-        Behavior on scale {
-            SpringAnimation { spring: 4; damping: 0.6 }
-        }
-
-        Text {
-            anchors.centerIn: parent
-            text: parent.text
-            color: Theme.textPrimary
-            font.pixelSize: 15
-            font.family: Theme.fontValue
-            font.weight: Font.Medium
-        }
-
-        MouseArea {
-            id: itemMouse
-            anchors.fill: parent
-            onClicked: parent.itemClicked()
-        }
-    }
-
-    // --- Control button component ---
-    component ControlButton: Rectangle {
-        property string label: ""
-        property string value: ""
-        property var values: []
-        property var currentValue
-        property var setter
-        signal clicked()
-
-        Layout.fillHeight: true
-        Layout.fillWidth: true
-        Layout.margins: 4
-        radius: Theme.radiusMedium
-        color: Theme.surfaceHover
-        scale: btnMouse.pressed ? Theme.pressScale : 1.0
-
-        Behavior on scale {
-            SpringAnimation { spring: 4; damping: 0.6 }
-        }
-
-        Column {
-            anchors.centerIn: parent
-            spacing: 2
-
-            Text {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: label
-                color: Theme.textSecondary
-                font.pixelSize: 12
-                font.family: Theme.fontLabel
-                font.weight: Font.DemiBold
-                font.letterSpacing: 1.2
-            }
-
-            Text {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: value
-                color: Theme.textPrimary
-                font.pixelSize: 20
-                font.family: Theme.fontValue
-                font.weight: Font.Bold
-            }
-        }
-
-        MouseArea {
-            id: btnMouse
-            anchors.fill: parent
-            onClicked: parent.clicked()
-        }
-
-        DragHandler {
-            target: null
-            yAxis.enabled: true
-            xAxis.enabled: false
-            onTranslationChanged: {
-                if (!values || values.length === 0 || !setter) return
-                var idx = values.indexOf(currentValue)
-                if (idx < 0) return
-                var steps = Math.round(-translation.y / 80)
-                var newIdx = Math.max(0, Math.min(values.length - 1, idx + steps))
-                if (newIdx !== idx) setter(values[newIdx])
-            }
         }
     }
 }

@@ -5,6 +5,39 @@ import QtQuick.Layouts
 Rectangle {
     id: root
     color: Theme.surface
+
+    // Camera state
+    property int fps: 30
+    property int compression: 0
+    property bool cameraConnected: true
+    property int cameraWidth: 1920
+    property int cameraHeight: 1080
+
+    // Config state
+    property bool zebraEnabled: false
+    property double zebraThreshold: 0.95
+    property bool falseColorEnabled: false
+    property bool focusPeakingEnabled: false
+    property bool grayscaleEnabled: false
+    property bool thirdsGridEnabled: false
+    property bool crosshairEnabled: false
+    property bool cinematicGuideEnabled: false
+    property bool cinematicGuide185Enabled: false
+    property bool cinematicGuide43Enabled: false
+
+    // Signals
+    signal fpsChangeRequested(int val)
+    signal compressionChangeRequested(int val)
+    signal zebraEnabledToggled(bool val)
+    signal zebraThresholdChangeRequested(real val)
+    signal falseColorEnabledToggled(bool val)
+    signal focusPeakingEnabledToggled(bool val)
+    signal grayscaleEnabledToggled(bool val)
+    signal thirdsGridEnabledToggled(bool val)
+    signal crosshairEnabledToggled(bool val)
+    signal cinematicGuideEnabledToggled(bool val)
+    signal cinematicGuide185EnabledToggled(bool val)
+    signal cinematicGuide43EnabledToggled(bool val)
     signal closeRequested()
 
     Flickable {
@@ -34,27 +67,27 @@ Rectangle {
                     Layout.fillWidth: true
                 }
 
-                Rectangle {
-                    width: 40; height: 40; radius: 20
-                    color: closeMouse.pressed ? Theme.surfacePressed : Theme.surfaceHover
-                    scale: closeMouse.pressed ? Theme.pressScale : 1.0
+                RoundButton {
+                    width: 40; height: 40
+                    radius: 20
+                    flat: true
 
-                    Behavior on scale {
-                        SpringAnimation { spring: 4; damping: 0.6 }
+                    background: Rectangle {
+                        radius: 20
+                        color: parent.pressed ? Theme.surfacePressed : Theme.surfaceHover
+                        scale: parent.pressed ? Theme.pressScale : 1.0
+                        Behavior on scale { SpringAnimation { spring: 4; damping: 0.6 } }
                     }
 
-                    Text {
-                        anchors.centerIn: parent
+                    contentItem: Text {
                         text: "\u2715"
                         color: Theme.textSecondary
                         font.pixelSize: 18
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
                     }
 
-                    MouseArea {
-                        id: closeMouse
-                        anchors.fill: parent
-                        onClicked: root.closeRequested()
-                    }
+                    onClicked: root.closeRequested()
                 }
             }
 
@@ -62,15 +95,15 @@ Rectangle {
 
             SettingToggle {
                 label: "Zebra (Overexposure)"
-                checked: config.zebraEnabled
-                onToggled: function(val) { config.zebraEnabled = val }
+                checked: root.zebraEnabled
+                onToggled: function(val) { root.zebraEnabledToggled(val) }
             }
 
-            Item { width: 1; height: 4; visible: config.zebraEnabled }
+            Item { width: 1; height: 4; visible: root.zebraEnabled }
 
             RowLayout {
                 width: parent.width
-                visible: config.zebraEnabled
+                visible: root.zebraEnabled
                 spacing: 8
 
                 Text {
@@ -85,8 +118,8 @@ Rectangle {
                     id: zebraSlider
                     Layout.fillWidth: true
                     from: 0.5; to: 1.0; stepSize: 0.01
-                    value: config.zebraThreshold
-                    onMoved: config.zebraThreshold = value
+                    value: root.zebraThreshold
+                    onMoved: root.zebraThresholdChangeRequested(value)
 
                     background: Rectangle {
                         x: zebraSlider.leftPadding
@@ -107,7 +140,7 @@ Rectangle {
                 }
 
                 Text {
-                    text: (config.zebraThreshold * 100).toFixed(0) + "%"
+                    text: Math.round(root.zebraThreshold * 100) + "%"
                     color: Theme.textSecondary
                     font.pixelSize: 12
                     font.family: Theme.fontValue
@@ -115,56 +148,56 @@ Rectangle {
                 }
             }
 
-            Item { width: 1; height: 4; visible: config.zebraEnabled }
+            Item { width: 1; height: 4; visible: root.zebraEnabled }
 
             SettingToggle {
                 label: "False Color"
-                checked: config.falseColorEnabled
-                onToggled: function(val) { config.falseColorEnabled = val }
+                checked: root.falseColorEnabled
+                onToggled: function(val) { root.falseColorEnabledToggled(val) }
             }
 
             SettingToggle {
                 label: "Focus Peaking"
-                checked: config.focusPeakingEnabled
-                onToggled: function(val) { config.focusPeakingEnabled = val }
+                checked: root.focusPeakingEnabled
+                onToggled: function(val) { root.focusPeakingEnabledToggled(val) }
             }
 
             SettingToggle {
                 label: "Grayscale"
-                checked: config.grayscaleEnabled
-                onToggled: function(val) { config.grayscaleEnabled = val }
+                checked: root.grayscaleEnabled
+                onToggled: function(val) { root.grayscaleEnabledToggled(val) }
             }
 
             SectionHeader { text: "COMPOSITION GUIDES" }
 
             SettingToggle {
                 label: "Rule of Thirds"
-                checked: config.thirdsGridEnabled
-                onToggled: function(val) { config.thirdsGridEnabled = val }
+                checked: root.thirdsGridEnabled
+                onToggled: function(val) { root.thirdsGridEnabledToggled(val) }
             }
 
             SettingToggle {
                 label: "Center Crosshair"
-                checked: config.crosshairEnabled
-                onToggled: function(val) { config.crosshairEnabled = val }
+                checked: root.crosshairEnabled
+                onToggled: function(val) { root.crosshairEnabledToggled(val) }
             }
 
             SettingToggle {
                 label: "16:9 Guide"
-                checked: config.cinematicGuideEnabled
-                onToggled: function(val) { config.cinematicGuideEnabled = val }
+                checked: root.cinematicGuideEnabled
+                onToggled: function(val) { root.cinematicGuideEnabledToggled(val) }
             }
 
             SettingToggle {
                 label: "1.85:1 Guide"
-                checked: config.cinematicGuide185Enabled
-                onToggled: function(val) { config.cinematicGuide185Enabled = val }
+                checked: root.cinematicGuide185Enabled
+                onToggled: function(val) { root.cinematicGuide185EnabledToggled(val) }
             }
 
             SettingToggle {
                 label: "4:3 Guide"
-                checked: config.cinematicGuide43Enabled
-                onToggled: function(val) { config.cinematicGuide43Enabled = val }
+                checked: root.cinematicGuide43Enabled
+                onToggled: function(val) { root.cinematicGuide43EnabledToggled(val) }
             }
 
             SectionHeader { text: "CAMERA" }
@@ -193,30 +226,31 @@ Rectangle {
                         spacing: 6
 
                         Repeater {
-                            model: [24, 25, 30, 48, 50, 60]
-                            delegate: Rectangle {
+                            model: CameraPresets.fpsOptions
+                            delegate: Button {
                                 width: 56; height: 40
-                                radius: 20
-                                color: camera.fps === modelData ? Theme.accent : Theme.surfaceHover
-                                scale: fpsMouse.pressed ? Theme.pressScale : 1.0
+                                checkable: true
+                                checked: root.fps === modelData
+                                flat: true
 
-                                Behavior on scale {
-                                    SpringAnimation { spring: 4; damping: 0.6 }
+                                background: Rectangle {
+                                    radius: 20
+                                    color: parent.checked ? Theme.accent : Theme.surfaceHover
+                                    scale: parent.pressed ? Theme.pressScale : 1.0
+                                    Behavior on scale { SpringAnimation { spring: 4; damping: 0.6 } }
                                 }
 
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: modelData
+                                contentItem: Text {
+                                    text: modelData.toString()
                                     color: Theme.textPrimary
                                     font.pixelSize: 14
                                     font.family: Theme.fontValue
                                     font.weight: Font.Medium
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
                                 }
-                                MouseArea {
-                                    id: fpsMouse
-                                    anchors.fill: parent
-                                    onClicked: camera.setFPS(modelData)
-                                }
+
+                                onClicked: root.fpsChangeRequested(modelData)
                             }
                         }
                     }
@@ -247,35 +281,32 @@ Rectangle {
                         spacing: 6
 
                         Repeater {
-                            model: [
-                                { label: "None", val: 0 },
-                                { label: "Lossy", val: 1 },
-                                { label: "Lossless", val: 2 }
-                            ]
-                            delegate: Rectangle {
-                                width: compLabel.implicitWidth + 32; height: 40
-                                radius: 20
-                                color: camera.compression === modelData.val ? Theme.accent : Theme.surfaceHover
-                                scale: compMouse.pressed ? Theme.pressScale : 1.0
+                            model: CameraPresets.compressionOptions.length
+                            delegate: Button {
+                                width: compText.implicitWidth + 32; height: 40
+                                checkable: true
+                                checked: root.compression === CameraPresets.compressionOptions[index].value
+                                flat: true
 
-                                Behavior on scale {
-                                    SpringAnimation { spring: 4; damping: 0.6 }
+                                background: Rectangle {
+                                    radius: 20
+                                    color: parent.checked ? Theme.accent : Theme.surfaceHover
+                                    scale: parent.pressed ? Theme.pressScale : 1.0
+                                    Behavior on scale { SpringAnimation { spring: 4; damping: 0.6 } }
                                 }
 
-                                Text {
-                                    id: compLabel
-                                    anchors.centerIn: parent
-                                    text: modelData.label
+                                contentItem: Text {
+                                    id: compText
+                                    text: CameraPresets.compressionOptions[index].label
                                     color: Theme.textPrimary
                                     font.pixelSize: 13
                                     font.family: Theme.fontBody
                                     font.weight: Font.Medium
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
                                 }
-                                MouseArea {
-                                    id: compMouse
-                                    anchors.fill: parent
-                                    onClicked: camera.setCompression(modelData.val)
-                                }
+
+                                onClicked: root.compressionChangeRequested(CameraPresets.compressionOptions[index].value)
                             }
                         }
                     }
@@ -285,14 +316,14 @@ Rectangle {
             SectionHeader { text: "SYSTEM" }
 
             Text {
-                text: "Camera: " + (camera.connected ? "Connected" : "Disconnected")
-                color: camera.connected ? Theme.success : Theme.danger
+                text: "Camera: " + (root.cameraConnected ? "Connected" : "Disconnected")
+                color: root.cameraConnected ? Theme.success : Theme.danger
                 font.pixelSize: 13
                 font.family: Theme.fontBody
             }
 
             Text {
-                text: "Resolution: " + (camera.width > 0 ? camera.width + "x" + camera.height : "N/A")
+                text: "Resolution: " + (root.cameraWidth > 0 ? root.cameraWidth + "x" + root.cameraHeight : "N/A")
                 color: Theme.textSecondary
                 font.pixelSize: 13
                 font.family: Theme.fontBody
@@ -300,95 +331,33 @@ Rectangle {
 
             Item { width: 1; height: 16 }
 
-            Rectangle {
+            Button {
                 width: parent.width
                 height: 52
-                radius: Theme.radiusMedium
-                color: exitMouse.pressed ? "#CC2222" : "#882222"
-                scale: exitMouse.pressed ? Theme.pressScale : 1.0
+                flat: true
 
-                Behavior on scale {
-                    SpringAnimation { spring: 4; damping: 0.6 }
+                background: Rectangle {
+                    radius: Theme.radiusMedium
+                    color: parent.pressed ? "#CC2222" : "#882222"
+                    scale: parent.pressed ? Theme.pressScale : 1.0
+                    Behavior on scale { SpringAnimation { spring: 4; damping: 0.6 } }
                 }
 
-                Text {
-                    anchors.centerIn: parent
+                contentItem: Text {
                     text: "EXIT APPLICATION"
                     color: Theme.textPrimary
                     font.pixelSize: 14
                     font.weight: Font.Bold
                     font.family: Theme.fontLabel
                     font.letterSpacing: 1.5
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
                 }
 
-                MouseArea {
-                    id: exitMouse
-                    anchors.fill: parent
-                    onClicked: Qt.quit()
-                }
+                onClicked: Qt.quit()
             }
 
             Item { width: 1; height: 32 }
-        }
-    }
-
-    component SectionHeader: Item {
-        property string text: ""
-        width: parent.width
-        height: 36
-
-        Rectangle {
-            anchors.bottom: parent.bottom
-            width: parent.width
-            height: 1
-            color: Theme.separator
-        }
-
-        Text {
-            anchors.verticalCenter: parent.verticalCenter
-            text: parent.text
-            color: Theme.textTertiary
-            font.pixelSize: 11
-            font.weight: Font.DemiBold
-            font.family: Theme.fontLabel
-            font.letterSpacing: 2
-        }
-    }
-
-    component SettingToggle: RowLayout {
-        property string label: ""
-        property bool checked: false
-        signal toggled(bool newValue)
-
-        width: parent.width
-        spacing: 8
-
-        Text {
-            text: label
-            color: Theme.textPrimary
-            font.pixelSize: 13
-            font.family: Theme.fontBody
-            Layout.fillWidth: true
-        }
-
-        Switch {
-            checked: parent.checked
-            onToggled: function() { parent.toggled(checked) }
-
-            indicator: Rectangle {
-                width: 48; height: 28; radius: 14
-                color: parent.checked ? Theme.accent : Theme.surfacePressed
-                x: parent.leftPadding
-                y: parent.height / 2 - height / 2
-
-                Rectangle {
-                    x: parent.parent.checked ? parent.width - width - 3 : 3
-                    y: 3
-                    width: 22; height: 22; radius: 11
-                    color: Theme.textPrimary
-                    Behavior on x { SpringAnimation { spring: 4; damping: 0.6 } }
-                }
-            }
         }
     }
 }

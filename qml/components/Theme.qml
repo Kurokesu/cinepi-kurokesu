@@ -7,7 +7,7 @@ QtObject {
     readonly property color surface:        "#1A1A1A"
     readonly property color surfaceHover:   "#252525"
     readonly property color surfacePressed: "#333333"
-    readonly property color barOverlay:     "#DD141414"
+    readonly property color barOverlay:     "#141414"
     readonly property color accent:         "#FF5722"
     readonly property color accentDim:      "#CC4400"
     readonly property color textPrimary:    "#F0F0F0"
