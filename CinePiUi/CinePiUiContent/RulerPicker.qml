@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Controls.Material
 import CinePiUi
 
 Item {
@@ -62,7 +63,7 @@ Item {
                 anchors.horizontalCenter: parent.horizontalCenter
                 y: root.labelBottomY - implicitHeight
                 text: delegateItem.modelData
-                color: Constants.textColor
+                color: Material.foreground
                 font.pixelSize: root.labelFontSize
                 opacity: {
                     var centerFade = delegateItem.displacement < 0.3
@@ -93,7 +94,7 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         y: root.labelBottomY - implicitHeight
         text: root.displayText
-        color: Constants.accentColor
+        color: Material.accent
         font.pixelSize: root.centerFontSize
         font.bold: true
     }
@@ -105,6 +106,6 @@ Item {
         y: root.tickBottomY - height
         width: 3
         height: root.indicatorHeight
-        color: Constants.accentColor
+        color: Material.accent
     }
 }

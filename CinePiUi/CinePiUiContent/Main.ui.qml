@@ -15,7 +15,7 @@ Rectangle {
     id: root
     width: Constants.width
     height: Constants.height
-    color: Constants.backgroundColor
+    color: Material.background
     border.width: 0
     property alias previewArea: previewArea
     property alias isoButton: isoButton
@@ -37,7 +37,7 @@ Rectangle {
 
     Rectangle {
         id: preview
-        color: Constants.backgroundColor
+        color: Material.background
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: statusBar.bottom
@@ -73,7 +73,7 @@ Rectangle {
             background: Item {}
             contentItem: Label {
                 text: isoModeButton.text
-                color: isoModeButton.checked ? Constants.textColor : Constants.accentColor
+                color: isoModeButton.checked ? Material.foreground : Material.accent
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
             }
@@ -106,7 +106,7 @@ Rectangle {
             checkable: true
             background: Item {}
             Material.foreground: isoButton.checked
-                                 || !root.isoAuto ? Constants.accentColor : Constants.textColor
+                                 || !root.isoAuto ? Material.accent : controlsBar.Material.foreground
             contentItem: Column {
                 id: column
                 anchors.centerIn: parent
