@@ -63,10 +63,10 @@ Rectangle {
 
         Button {
             id: isoModeButton
+            width: 81
             text: checked ? qsTr("MANUAL") : qsTr("AUTO")
             anchors.verticalCenter: parent.verticalCenter
             anchors.left: parent.left
-            implicitWidth: manualMetrics.width + leftPadding + rightPadding
             flat: true
             checkable: true
             checked: !root.isoAuto
@@ -74,16 +74,8 @@ Rectangle {
             contentItem: Label {
                 text: isoModeButton.text
                 color: isoModeButton.checked ? Constants.textColor : Constants.accentColor
-                font: manualMetrics.font
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
-            }
-
-            TextMetrics {
-                id: manualMetrics
-                font.bold: true
-                font.pixelSize: 13
-                text: qsTr("MANUAL")
             }
         }
 
@@ -179,7 +171,7 @@ Rectangle {
 
 /*##^##
 Designer {
-    D{i:0}D{i:19;transitionDuration:2000}
+    D{i:0}D{i:18;transitionDuration:2000}
 }
 ##^##*/
 
