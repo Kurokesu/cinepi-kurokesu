@@ -1,3 +1,5 @@
+
+
 /*
 This is a UI file (.ui.qml) that is intended to be edited in Qt Design Studio only.
 It is supposed to be strictly declarative and only uses a subset of QML. If you edit
@@ -15,13 +17,15 @@ Rectangle {
     height: Constants.height
     color: Constants.backgroundColor
     border.width: 0
+    property alias previewArea: previewArea
     property alias isoButton: isoButton
     property alias isoModeButton: isoModeButton
     property alias rulerPicker: rulerPicker
-    property alias isoPanelDismiss: isoPanelDismiss
-    property string isoDisplayText: isoAuto ? "A " + rulerPicker.currentValue : rulerPicker.currentValue
+    property string isoDisplayText: isoAuto ? "A "
+                                              + rulerPicker.currentValue : rulerPicker.currentValue
     property bool isoAuto: true
-    property int isoValue: rulerPicker.currentIndex >= 0 ? rulerPicker.values[rulerPicker.currentIndex] : 0
+    property int isoValue: rulerPicker.currentIndex
+                           >= 0 ? rulerPicker.values[rulerPicker.currentIndex] : 0
 
 
     Pane {
@@ -39,23 +43,22 @@ Rectangle {
         anchors.right: parent.right
         anchors.top: statusBar.bottom
         anchors.bottom: controlsBar.top
-    }
 
-    MouseArea {
-        id: isoPanelDismiss
-        anchors.fill: parent
-        visible: isoButton.checked
-        z: 2
+        MouseArea {
+            id: previewArea
+            anchors.fill: parent
+        }
     }
 
     Pane {
         id: isoPanel
         height: 60
-        visible: isoButton.checked
+        opacity: 0
+        visible: opacity > 0
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: controlsBar.top
-        z: 3
+        z: 1
         topPadding: 0
         bottomPadding: 0
 
@@ -119,7 +122,8 @@ Rectangle {
             flat: true
             checkable: true
             background: Item {}
-            Material.foreground: isoButton.checked || !root.isoAuto ? Constants.accentColor : Constants.textColor
+            Material.foreground: isoButton.checked
+                                 || !root.isoAuto ? Constants.accentColor : Constants.textColor
             contentItem: Column {
                 id: column
                 anchors.centerIn: parent
@@ -147,4 +151,42 @@ Rectangle {
             }
         }
     }
+    states: [
+        State {
+            name: "iso"
+            when: isoButton.checked
+
+            PropertyChanges {
+                target: isoPanel
+                opacity: 1
+            }
+        }
+    ]
+    transitions: [
+        Transition {
+            id: transition
+            ParallelAnimation {
+                SequentialAnimation {
+                    PauseAnimation {
+                        duration: 0
+                    }
+
+                    PropertyAnimation {
+                        target: isoPanel
+                        property: "opacity"
+                        duration: 250
+                    }
+                }
+            }
+            to: "*"
+            from: "*"
+        }
+    ]
 }
+
+/*##^##
+Designer {
+    D{i:0}D{i:4}D{i:20;transitionDuration:2000}
+}
+##^##*/
+
