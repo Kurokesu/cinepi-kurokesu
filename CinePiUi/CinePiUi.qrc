@@ -1,0 +1,13 @@
+<RCC>
+    <qresource>
+        <file>CinePiUi.qmlproject</file>
+        <file>CinePiUi/Constants.qml</file>
+        <file>CinePiUi/EventListModel.qml</file>
+        <file>CinePiUi/EventListSimulator.qml</file>
+        <file>CinePiUi/qmldir</file>
+        <file>CinePiUiContent/App.qml</file>
+        <file>CinePiUiContent/Main.ui.qml</file>
+        <file>CinePiUiContent/RulerPicker.qml</file>
+        <file>qtquickcontrols2.conf</file>
+    </qresource>
+</RCC>
