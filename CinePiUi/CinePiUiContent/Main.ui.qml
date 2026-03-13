@@ -27,7 +27,6 @@ Rectangle {
     property int isoValue: rulerPicker.currentIndex
                            >= 0 ? rulerPicker.values[rulerPicker.currentIndex] : 0
 
-
     Pane {
         id: statusBar
         height: 100
@@ -106,19 +105,11 @@ Rectangle {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
 
-        RoundButton {
-            id: recordButton
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.right: parent.right
-            checkable: true
-            display: AbstractButton.IconOnly
-        }
-
         Button {
             id: isoButton
+            width: 86
             anchors.verticalCenter: parent.verticalCenter
             anchors.left: parent.left
-            implicitWidth: isoWidthMetrics.width + leftPadding + rightPadding
             flat: true
             checkable: true
             background: Item {}
@@ -143,12 +134,14 @@ Rectangle {
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
             }
+        }
 
-            TextMetrics {
-                id: isoWidthMetrics
-                font: isoValueLabel.font
-                text: "A 00000"
-            }
+        RoundButton {
+            id: recordButton
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.right: parent.right
+            checkable: true
+            display: AbstractButton.IconOnly
         }
     }
     states: [
@@ -186,7 +179,7 @@ Rectangle {
 
 /*##^##
 Designer {
-    D{i:0}D{i:4}D{i:20;transitionDuration:2000}
+    D{i:0}D{i:19;transitionDuration:2000}
 }
 ##^##*/
 
