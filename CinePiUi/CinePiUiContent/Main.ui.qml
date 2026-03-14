@@ -50,17 +50,17 @@ Rectangle {
         }
     }
 
-    Pane {
+    Rectangle {
         id: isoPanel
         height: 60
         opacity: 0
         visible: opacity > 0
+        color: "#4d000000"
+        border.width: 0
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: controlsBar.top
         z: 1
-        topPadding: 0
-        bottomPadding: 0
 
         Button {
             id: isoAutoButton
