@@ -64,7 +64,7 @@ Rectangle {
 
         Button {
             id: isoAutoButton
-            width: 81
+            width: 117
             text: checked ? qsTr("AUTO") : qsTr("MANUAL")
             anchors.verticalCenter: parent.verticalCenter
             anchors.left: parent.left
@@ -75,6 +75,7 @@ Rectangle {
             contentItem: Label {
                 id: label
                 text: isoAutoButton.text
+                font.pixelSize: 24
                 color: isoAutoButton.checked ? Material.accent : Material.foreground
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
@@ -107,7 +108,7 @@ Rectangle {
 
             Button {
                 id: isoButton
-                width: 86
+                Layout.minimumWidth: 86
                 flat: true
                 checkable: true
                 background: Item {}
@@ -120,16 +121,17 @@ Rectangle {
                     Label {
                         id: isoLabel
                         text: qsTr("ISO")
-                        font.pixelSize: Constants.fontSizeLabelLarge
+                        font.pixelSize: 24
+                        font.weight: Font.Normal
                         font.capitalization: Font.AllUppercase
-                        font.weight: Font.Medium
                         anchors.horizontalCenter: parent.horizontalCenter
                     }
 
                     Label {
                         id: isoValueLabel
                         text: root.isoDisplayText
-                        font.pixelSize: Constants.fontSizeTitleMedium
+                        font.pixelSize: 22
+                        font.weight: Font.ExtraBold
                         font.capitalization: Font.AllUppercase
                         anchors.horizontalCenter: parent.horizontalCenter
                     }

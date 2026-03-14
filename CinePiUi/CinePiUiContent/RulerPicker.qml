@@ -92,10 +92,10 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         y: root.labelBottomY - implicitHeight
         text: root.displayText
+        font.pixelSize: 26
         color: Material.accent
-        font.pixelSize: Constants.fontSizeHeadlineSmall
         font.capitalization: Font.AllUppercase
-        font.weight: Font.Medium
+        font.weight: Font.Normal
     }
 
     Rectangle {
