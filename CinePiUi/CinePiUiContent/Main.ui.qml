@@ -10,6 +10,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 import CinePiUi
+import QtQuick.Layouts
 
 Rectangle {
     id: root
@@ -95,50 +96,51 @@ Rectangle {
 
     Pane {
         id: controlsBar
-        height: 100
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
 
-        Button {
-            id: isoButton
-            width: 86
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.left: parent.left
-            flat: true
-            checkable: true
-            background: Item {}
-            Material.foreground: isoButton.checked
-                                 || !root.isoAuto ? Material.accent : controlsBar.Material.foreground
-            contentItem: Column {
-                id: column
-                anchors.centerIn: parent
+        RowLayout {
+            id: controlsRow
+            anchors.fill: parent
 
-                Label {
-                    id: isoLabel
-                    text: qsTr("ISO")
-                    font.pixelSize: Constants.fontSizeLabelLarge
-                    font.capitalization: Font.AllUppercase
-                    font.weight: Font.Medium
-                    anchors.horizontalCenter: parent.horizontalCenter
-                }
+            Button {
+                id: isoButton
+                width: 86
+                flat: true
+                checkable: true
+                background: Item {}
+                Material.foreground: isoButton.checked
+                                     || !root.isoAuto ? Material.accent : controlsBar.Material.foreground
+                contentItem: Column {
+                    id: column
+                    anchors.centerIn: parent
 
-                Label {
-                    id: isoValueLabel
-                    text: root.isoDisplayText
-                    font.pixelSize: Constants.fontSizeTitleMedium
-                    font.capitalization: Font.AllUppercase
-                    anchors.horizontalCenter: parent.horizontalCenter
+                    Label {
+                        id: isoLabel
+                        text: qsTr("ISO")
+                        font.pixelSize: Constants.fontSizeLabelLarge
+                        font.capitalization: Font.AllUppercase
+                        font.weight: Font.Medium
+                        anchors.horizontalCenter: parent.horizontalCenter
+                    }
+
+                    Label {
+                        id: isoValueLabel
+                        text: root.isoDisplayText
+                        font.pixelSize: Constants.fontSizeTitleMedium
+                        font.capitalization: Font.AllUppercase
+                        anchors.horizontalCenter: parent.horizontalCenter
+                    }
                 }
             }
-        }
 
-        RoundButton {
-            id: recordButton
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.right: parent.right
-            checkable: true
-            display: AbstractButton.IconOnly
+            RoundButton {
+                id: recordButton
+                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                checkable: true
+                display: AbstractButton.IconOnly
+            }
         }
     }
     states: [
