@@ -6,8 +6,8 @@ import CinePiUi
 Item {
     id: root
 
-    property var values: [50, 64, 80, 100, 125, 160, 200, 250, 320, 400, 500, 640, 800, 1600, 3200]
-    property var labeledValues: [50, 100, 200, 400, 800, 3200]
+    property list<int> values: [50, 64, 80, 100, 125, 160, 200, 250, 320, 400, 500, 640, 800, 1600, 3200]
+    property list<int> labeledValues: [50, 100, 200, 400, 800, 3200]
     property int currentIndex: 5
     property int visibleItemCount: 11
     property bool autoMode: true
@@ -32,7 +32,6 @@ Item {
         orientation: ListView.Horizontal
         model: root.values
         currentIndex: root.currentIndex
-        clip: true
 
         snapMode: ListView.SnapToItem
         highlightRangeMode: ListView.StrictlyEnforceRange
@@ -52,18 +51,17 @@ Item {
             required property var modelData
 
             readonly property real displacement: {
-                var center = listView.contentX + listView.width / 2
-                var itemCenter = x + width / 2
+                let center = listView.contentX + listView.width / 2
+                let itemCenter = x + width / 2
                 return Math.abs((itemCenter - center) / width)
             }
-            readonly property bool isLabeled: root.labeledValues.indexOf(modelData) !== -1
+            readonly property bool isLabeled: root.labeledValues.includes(modelData)
 
             Label {
                 visible: delegateItem.isLabeled && !root.autoMode
                 anchors.horizontalCenter: parent.horizontalCenter
                 y: root.labelBottomY - implicitHeight
                 text: delegateItem.modelData
-                color: Material.foreground
                 font.pixelSize: root.labelFontSize
                 opacity: {
                     var centerFade = delegateItem.displacement < 0.3
@@ -95,8 +93,9 @@ Item {
         y: root.labelBottomY - implicitHeight
         text: root.displayText
         color: Material.accent
-        font.pixelSize: root.centerFontSize
-        font.bold: true
+        font.pixelSize: Constants.fontSizeHeadlineSmall
+        font.capitalization: Font.AllUppercase
+        font.weight: Font.Medium
     }
 
     Rectangle {
