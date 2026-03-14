@@ -14,7 +14,7 @@ Window {
 
         anchors.centerIn: parent
 
-        isoModeButton.onClicked: isoAuto = !isoAuto
+        isoAutoButton.onClicked: isoAuto = !isoAuto
         previewArea.onClicked: isoButton.checked = false
         rulerPicker.onManualModeRequested: isoAuto = false
     }

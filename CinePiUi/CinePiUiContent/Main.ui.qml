@@ -18,9 +18,9 @@ Rectangle {
     height: Constants.height
     color: Material.background
     border.width: 0
+    property alias isoAutoButton: isoAutoButton
     property alias previewArea: previewArea
     property alias isoButton: isoButton
-    property alias isoModeButton: isoModeButton
     property alias rulerPicker: rulerPicker
     property string isoDisplayText: isoAuto ? "A "
                                               + rulerPicker.currentValue : rulerPicker.currentValue
@@ -63,19 +63,19 @@ Rectangle {
         bottomPadding: 0
 
         Button {
-            id: isoModeButton
+            id: isoAutoButton
             width: 81
-            text: checked ? qsTr("MANUAL") : qsTr("AUTO")
+            text: checked ? qsTr("AUTO") : qsTr("MANUAL")
             anchors.verticalCenter: parent.verticalCenter
             anchors.left: parent.left
             flat: true
             checkable: true
-            checked: !root.isoAuto
+            checked: root.isoAuto
             background: Item {}
             contentItem: Label {
-                text: isoModeButton.text
-                font.pixelSize: Constants.fontSizeLabelLarge
-                color: isoModeButton.checked ? Material.foreground : Material.accent
+                id: label
+                text: isoAutoButton.text
+                color: isoAutoButton.checked ? Material.accent : Material.foreground
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
                 font.weight: Font.Medium
@@ -87,7 +87,8 @@ Rectangle {
             id: rulerPicker
             anchors.top: parent.top
             anchors.bottom: parent.bottom
-            anchors.left: isoModeButton.right
+            anchors.rightMargin: isoAutoButton.width
+            anchors.left: isoAutoButton.right
             anchors.right: parent.right
             autoMode: root.isoAuto
             displayText: root.isoDisplayText
@@ -145,12 +146,21 @@ Rectangle {
     }
     states: [
         State {
-            name: "iso"
+            name: "isoAuto"
             when: isoButton.checked
 
             PropertyChanges {
                 target: isoPanel
                 opacity: 1
+            }
+        },
+        State {
+            name: "isoManual"
+            extend: "isoAuto"
+
+            PropertyChanges {
+                target: isoAutoButton
+                checked: false
             }
         }
     ]
