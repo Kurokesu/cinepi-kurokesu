@@ -121,7 +121,7 @@ Project {
         files: [ "CinePiUiContent/shaders/*" ]
     }
 
-    multilanguageSupport: true
+    multilanguageSupport: false
     supportedLanguages: ["en"]
     primaryLanguage: "en"
 
