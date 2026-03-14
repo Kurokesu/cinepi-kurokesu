@@ -1,10 +1,11 @@
+
+
 /*
 This is a UI file (.ui.qml) that is intended to be edited in Qt Design Studio only.
 It is supposed to be strictly declarative and only uses a subset of QML. If you edit
 this file manually, you might introduce QML code that is not supported by Qt Design Studio.
 Check out https://doc.qt.io/qtcreator/creator-quick-ui-forms.html for details on .ui.qml files.
 */
-
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
@@ -72,9 +73,12 @@ Rectangle {
             background: Item {}
             contentItem: Label {
                 text: isoModeButton.text
+                font.pixelSize: Constants.fontSizeLabelLarge
                 color: isoModeButton.checked ? Material.foreground : Material.accent
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
+                font.weight: Font.Medium
+                font.capitalization: Font.AllUppercase
             }
         }
 
@@ -113,15 +117,17 @@ Rectangle {
                 Label {
                     id: isoLabel
                     text: qsTr("ISO")
-                    font.weight: Font.DemiBold
+                    font.pixelSize: Constants.fontSizeLabelLarge
+                    font.capitalization: Font.AllUppercase
+                    font.weight: Font.Medium
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
 
                 Label {
                     id: isoValueLabel
                     text: root.isoDisplayText
-                    font.styleName: "Bold"
-                    font.pointSize: 14
+                    font.pixelSize: Constants.fontSizeTitleMedium
+                    font.capitalization: Font.AllUppercase
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
             }
