@@ -8,18 +8,25 @@ QtObject {
 
     property string relativeFontDirectory: "fonts"
 
-    /* Edit this comment to add your custom font */
-    readonly property font font: Qt.font({
-                                             family: Qt.application.font.family,
-                                             pixelSize: Qt.application.font.pixelSize
-                                         })
-    readonly property font largeFont: Qt.font({
-                                                  family: Qt.application.font.family,
-                                                  pixelSize: Qt.application.font.pixelSize * 1.6
-                                              })
+    readonly property string fontFamily: "Roboto"
 
-    readonly property color textSecondaryColor: "#888888"
+    readonly property int fontSizeHeadlineSmall: 32
+    readonly property int fontSizeTitleMedium: 20
+    readonly property int fontSizeBodyLarge: 20
+    readonly property int fontSizeBodyMedium: 18
+    readonly property int fontSizeLabelLarge: 18
+    readonly property int fontSizeLabelMedium: 16
 
+    readonly property color textSecondaryColor: "#B3FFFFFF"
+    readonly property color textDisabledColor: "#61FFFFFF"
+
+    readonly property int touchTargetMin: 48
+    readonly property int controlsBarHeight: 100
+    readonly property int statusBarHeight: 100
+    readonly property int panelHeight: 60
+    readonly property int spacingSmall: 4
+    readonly property int spacingMedium: 8
+    readonly property int spacingLarge: 16
 
     property StudioApplication application: StudioApplication {
         fontPath: Qt.resolvedUrl("../CinePiUiContent/" + relativeFontDirectory)

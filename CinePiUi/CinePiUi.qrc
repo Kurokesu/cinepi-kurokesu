@@ -6,6 +6,7 @@
         <file>CinePiUi/EventListSimulator.qml</file>
         <file>CinePiUi/qmldir</file>
         <file>CinePiUiContent/App.qml</file>
+        <file>CinePiUiContent/fonts/Roboto-Variable.ttf</file>
         <file>CinePiUiContent/Main.ui.qml</file>
         <file>CinePiUiContent/RulerPicker.qml</file>
         <file>qtquickcontrols2.conf</file>
