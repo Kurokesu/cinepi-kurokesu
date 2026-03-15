@@ -101,8 +101,10 @@ Rectangle {
         }
     }
 
-    Pane {
+    Rectangle {
         id: controlsBar
+        height: controlsRow.implicitHeight
+        color: "#40000000"
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
