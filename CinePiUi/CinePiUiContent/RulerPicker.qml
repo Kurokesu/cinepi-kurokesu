@@ -14,7 +14,7 @@ Item {
     property string displayText: currentValue
     signal manualModeRequested()
 
-    readonly property real delegateWidth: listView.width / visibleItemCount
+    readonly property real delegateWidth: rulerView.width / visibleItemCount
     readonly property real tickHeight: height * 0.27
     readonly property real indicatorHeight: height * 0.45
     readonly property real labelFontSize: height * 0.22
@@ -27,7 +27,7 @@ Item {
                                            ? values[currentIndex].toString() : ""
 
     ListView {
-        id: listView
+        id: rulerView
         anchors.fill: parent
         clip: true
         orientation: ListView.Horizontal
@@ -46,13 +46,13 @@ Item {
         delegate: Item {
             id: delegateItem
             width: root.delegateWidth
-            height: listView.height
+            height: rulerView.height
 
             required property int index
             required property var modelData
 
             readonly property real displacement: {
-                let center = listView.contentX + listView.width / 2
+                let center = rulerView.contentX + rulerView.width / 2
                 let itemCenter = x + width / 2
                 return Math.abs((itemCenter - center) / width)
             }
