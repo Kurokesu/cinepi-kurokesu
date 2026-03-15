@@ -52,47 +52,52 @@ Rectangle {
 
     Rectangle {
         id: isoPanel
-        height: 60
+        height: 98
         opacity: 0
         visible: opacity > 0
-        color: "#4d000000"
+        color: "#40000000"
         border.width: 0
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: controlsBar.top
         z: 1
 
-        Button {
-            id: isoAutoButton
-            width: 117
-            text: checked ? qsTr("AUTO") : qsTr("MANUAL")
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.left: parent.left
-            flat: true
-            checkable: true
-            checked: root.isoAuto
-            background: Item {}
-            contentItem: Label {
-                id: label
-                text: isoAutoButton.text
-                font.pixelSize: 24
-                color: isoAutoButton.checked ? Material.accent : Material.foreground
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-                font.weight: Font.Medium
-                font.capitalization: Font.AllUppercase
-            }
-        }
+        RowLayout {
+            id: isoPanelRow
+            anchors.fill: parent
+            anchors.leftMargin: Constants.spacingLarge
+            anchors.rightMargin: Constants.spacingLarge
 
-        RulerPicker {
-            id: rulerPicker
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.rightMargin: isoAutoButton.width
-            anchors.left: isoAutoButton.right
-            anchors.right: parent.right
-            autoMode: root.isoAuto
-            displayText: root.isoDisplayText
+            Button {
+                id: isoAutoButton
+                text: checked ? qsTr("AUTO") : qsTr("MANUAL")
+                Layout.preferredWidth: 108
+                checkable: true
+                checked: root.isoAuto
+                background: Rectangle {
+                    color: "#50000000"
+                    radius: height / 5
+                }
+                contentItem: Label {
+                    id: label
+                    text: isoAutoButton.text
+                    font.pixelSize: 24
+                    color: isoAutoButton.checked ? Material.accent : Material.foreground
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    font.weight: Font.Medium
+                    font.capitalization: Font.AllUppercase
+                }
+            }
+
+            RulerPicker {
+                id: rulerPicker
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.rightMargin: isoAutoButton.width + isoPanelRow.spacing
+                autoMode: root.isoAuto
+                displayText: root.isoDisplayText
+            }
         }
     }
 
