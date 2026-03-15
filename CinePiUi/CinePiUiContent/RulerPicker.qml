@@ -5,6 +5,8 @@ import CinePiUi
 
 Item {
     id: root
+    implicitWidth: 462
+    implicitHeight: 98
 
     property list<int> values: [50, 64, 80, 100, 125, 160, 200, 250, 320, 400, 500, 640, 800, 1600, 3200]
     property list<int> labeledValues: [50, 100, 200, 400, 800, 3200]
