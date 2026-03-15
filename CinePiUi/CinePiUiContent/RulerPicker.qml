@@ -40,6 +40,7 @@ Item {
     ListView {
         id: listView
         anchors.fill: parent
+        clip: true
         orientation: ListView.Horizontal
         model: root.values
         currentIndex: root.currentIndex
