@@ -56,15 +56,15 @@ Item {
                 id: tickLabel
                 visible: tickItem.isLabeled && !root.autoMode
                 anchors.horizontalCenter: parent.horizontalCenter
-                y: centerIndicator.y - 7 - implicitHeight
+                y: centerValueLabel.y
                 text: tickItem.modelData
                 font.pixelSize: 26
                 style: Text.Outline
                 styleColor: "#40000000"
                 opacity: {
-                    var centerFade = tickItem.displacement < 0.3
-                                     ? 0
-                                     : Math.min(1, (tickItem.displacement - 0.3) * 1.5)
+                    var centerFade = tickItem.displacement < 0.5
+                                    ? 0
+                                    : Math.min(1, (tickItem.displacement - 0.5) * 0.5)
                     var distFade = Math.max(0.1, 1.0 - tickItem.displacement * 0.18)
                     return centerFade * distFade
                 }
@@ -74,11 +74,9 @@ Item {
                 id: tickMark
                 anchors.horizontalCenter: parent.horizontalCenter
                 y: centerIndicator.y + centerIndicator.height - height
-                width: 2
+                width: 3
                 height: 26
-                color: Constants.textSecondaryColor
-                border.color: "#40000000"
-                border.width: 1
+                color: "#e1ffffff"
                 opacity: Math.max(0.1, 1.0 - tickItem.displacement * 0.18)
             }
         }
@@ -90,8 +88,8 @@ Item {
     Label {
         id: centerValueLabel
         anchors.horizontalCenter: parent.horizontalCenter
-        y: centerIndicator.y - 7 - implicitHeight
         text: root.centerText
+        anchors.top: parent.top
         font.pixelSize: 26
         color: Material.accent
         font.capitalization: Font.AllUppercase
@@ -101,14 +99,15 @@ Item {
     Rectangle {
         id: centerIndicator
         visible: !root.autoMode
-        width: 3
+        width: 6
         height: 44
         color: Material.accent
-        border.color: "#40000000"
-        border.width: 1
-        anchors.verticalCenterOffset: 12
-        anchors.centerIn: parent
+        anchors.top: centerValueLabel.bottom
+        anchors.topMargin: 7
+        anchors.horizontalCenter: parent.horizontalCenter
     }
+
+
     states: [
         State {
             name: "manual"
@@ -120,3 +119,5 @@ Item {
         }
     ]
 }
+
+
