@@ -26,17 +26,6 @@ Item {
     readonly property string currentValue: values[currentIndex] !== undefined
                                            ? values[currentIndex].toString() : ""
 
-    Label {
-        id: centerValueLabel
-        anchors.horizontalCenter: parent.horizontalCenter
-        y: root.labelBottomY - implicitHeight
-        text: root.displayText
-        font.pixelSize: 26
-        color: Material.accent
-        font.capitalization: Font.AllUppercase
-        font.weight: Font.Normal
-    }
-
     ListView {
         id: listView
         anchors.fill: parent
@@ -99,6 +88,16 @@ Item {
         onMovementStarted: root.manualModeRequested()
     }
 
+    Label {
+        id: centerValueLabel
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: root.labelBottomY - implicitHeight
+        text: root.displayText
+        font.pixelSize: 26
+        color: Material.accent
+        font.capitalization: Font.AllUppercase
+        font.weight: Font.Normal
+    }
 
     Rectangle {
         id: centerIndicator
