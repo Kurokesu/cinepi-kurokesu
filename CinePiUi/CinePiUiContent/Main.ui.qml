@@ -131,6 +131,8 @@ Rectangle {
                         font.pixelSize: 24
                         font.weight: Font.Normal
                         font.capitalization: Font.AllUppercase
+                        style: Text.Outline
+                        styleColor: "#40000000"
                         anchors.horizontalCenter: parent.horizontalCenter
                     }
 
@@ -140,6 +142,8 @@ Rectangle {
                         font.pixelSize: 22
                         font.weight: Font.ExtraBold
                         font.capitalization: Font.AllUppercase
+                        style: Text.Outline
+                        styleColor: "#40000000"
                         anchors.horizontalCenter: parent.horizontalCenter
                     }
                 }
