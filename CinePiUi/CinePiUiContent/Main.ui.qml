@@ -17,7 +17,6 @@ Rectangle {
     width: Constants.width
     height: Constants.height
     color: Material.background
-    border.width: 0
     property alias isoAutoButton: isoAutoButton
     property alias previewArea: previewArea
     property alias isoButton: isoButton
@@ -56,7 +55,6 @@ Rectangle {
         opacity: 0
         visible: opacity > 0
         color: "#40000000"
-        border.width: 0
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: controlsBar.top
