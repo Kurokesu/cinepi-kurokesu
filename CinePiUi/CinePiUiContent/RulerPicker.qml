@@ -65,7 +65,7 @@ Item {
                     var centerFade = tickItem.displacement < 0.5
                                     ? 0
                                     : Math.min(1, (tickItem.displacement - 0.5) * 0.5)
-                    var distFade = Math.max(0.1, 1.0 - tickItem.displacement * 0.18)
+                    var distFade = Math.max(0, 1.0 - tickItem.displacement * 0.21)
                     return centerFade * distFade
                 }
             }
@@ -77,7 +77,7 @@ Item {
                 width: 3
                 height: 26
                 color: "#e1ffffff"
-                opacity: Math.max(0.1, 1.0 - tickItem.displacement * 0.18)
+                opacity: Math.max(0, 1.0 - tickItem.displacement * 0.21)
             }
         }
 
