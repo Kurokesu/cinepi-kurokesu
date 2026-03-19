@@ -72,13 +72,14 @@ Rectangle {
                 checkable: true
                 checked: root.isoAuto
                 background: Rectangle {
-                    color: "#50000000"
+                    id: rectangle
+                    color: "#66545454"
                     radius: height / 5
                 }
                 contentItem: Label {
                     id: label
                     text: isoAutoButton.text
-                    font.pixelSize: 24
+                    font.pixelSize: 22
                     color: isoAutoButton.checked ? Material.accent : Material.foreground
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
@@ -171,8 +172,8 @@ Rectangle {
             extend: "isoAuto"
 
             PropertyChanges {
-                target: isoAutoButton
-                checked: false
+                target: root
+                isoAuto: false
             }
         }
     ]
