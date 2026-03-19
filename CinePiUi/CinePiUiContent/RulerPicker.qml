@@ -61,12 +61,23 @@ Item {
                 font.pixelSize: 26
                 style: Text.Outline
                 styleColor: "#40000000"
+                property real restFade: 1
+
                 opacity: {
                     var centerFade = tickItem.displacement < 0.5
                                     ? 0
                                     : Math.min(1, (tickItem.displacement - 0.5) * 0.5)
                     var distFade = Math.max(0, 1.0 - tickItem.displacement * 0.21)
-                    return centerFade * distFade
+                    return centerFade * distFade * restFade
+                }
+
+                states: State {
+                    name: "resting"
+                    when: !rulerView.moving && tickItem.displacement < 1.5
+                    PropertyChanges { target: tickLabel; restFade: 0 }
+                }
+                transitions: Transition {
+                    NumberAnimation { property: "restFade"; duration: 100 }
                 }
             }
 
