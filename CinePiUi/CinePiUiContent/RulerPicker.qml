@@ -36,7 +36,7 @@ Item {
         preferredHighlightBegin: width / 2 - tickInterval / 2
         preferredHighlightEnd: width / 2 + tickInterval / 2
 
-        highlightMoveDuration: 300
+        highlightMoveDuration: 0
 
         onCurrentIndexChanged: root.currentIndex = currentIndex
 
@@ -79,7 +79,10 @@ Item {
                     PropertyChanges { target: tickLabel; restFade: 0 }
                 }
                 transitions: Transition {
-                    NumberAnimation { property: "restFade"; duration: 100 }
+                    SequentialAnimation {
+                        PauseAnimation { duration: 200 }
+                        NumberAnimation { property: "restFade"; duration: 100 }
+                    }
                 }
             }
 
@@ -122,6 +125,14 @@ Item {
 
 
     states: [
+        State {
+            name: "centered"
+            when: root.centered
+
+            PropertyChanges {
+                target: root;
+                currentIndex: Math.floor(values.length / 2) }
+        },
         State {
             name: "manual"
 
