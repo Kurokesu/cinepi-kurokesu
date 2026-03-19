@@ -11,10 +11,12 @@ Item {
     property list<int> values: [50, 64, 80, 100, 125, 160, 200, 250, 320, 400, 500, 640, 800, 1600, 3200]
     property list<int> labeledValues: [50, 100, 200, 400, 800, 3200]
     property int currentIndex: 5
-    property int visibleItemCount: 11
-    property bool autoMode: true
-    property string centerText: "A 160"
-    signal manualModeRequested()
+    property int visibleTickCount: 11
+    property bool showLabels: false
+    property bool showIndicator: false
+    property bool centered: false
+    property string displayText: "A 160"
+    signal movementStarted()
 
     readonly property string currentValue: values[currentIndex] !== undefined
                                            ? values[currentIndex].toString() : ""
@@ -27,7 +29,7 @@ Item {
         model: root.values
         currentIndex: root.currentIndex
 
-        readonly property real tickInterval: width / root.visibleItemCount
+        readonly property real tickInterval: width / root.visibleTickCount
 
         snapMode: ListView.SnapToItem
         highlightRangeMode: ListView.StrictlyEnforceRange
@@ -54,7 +56,7 @@ Item {
 
             Label {
                 id: tickLabel
-                visible: tickItem.isLabeled && !root.autoMode
+                visible: tickItem.isLabeled && root.showLabels
                 anchors.horizontalCenter: parent.horizontalCenter
                 y: centerValueLabel.y
                 text: tickItem.modelData
@@ -93,13 +95,13 @@ Item {
         }
 
         highlight: Item {}
-        onMovementStarted: root.manualModeRequested()
+        onMovementStarted: root.movementStarted()
     }
 
     Label {
         id: centerValueLabel
         anchors.horizontalCenter: parent.horizontalCenter
-        text: root.centerText
+        text: root.displayText
         anchors.top: parent.top
         font.pixelSize: 26
         color: Material.accent
@@ -109,7 +111,7 @@ Item {
 
     Rectangle {
         id: centerIndicator
-        visible: !root.autoMode
+        visible: root.showIndicator
         width: 6
         height: 44
         color: Material.accent
@@ -125,7 +127,8 @@ Item {
 
             PropertyChanges {
                 target: root
-                autoMode: false
+                showLabels: true
+                showIndicator: true
             }
         }
     ]

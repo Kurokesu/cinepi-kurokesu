@@ -20,12 +20,11 @@ Rectangle {
     property alias isoAutoButton: isoAutoButton
     property alias previewArea: previewArea
     property alias isoButton: isoButton
-    property alias rulerPicker: rulerPicker
-    property string isoDisplayText: isoAuto ? "A "
-                                              + rulerPicker.currentValue : rulerPicker.currentValue
+    property alias isoPicker: isoPicker
+    property string isoDisplayText: isoAuto ? "A " + isoPicker.currentValue : isoPicker.currentValue
     property bool isoAuto: true
-    property int isoValue: rulerPicker.currentIndex
-                           >= 0 ? rulerPicker.values[rulerPicker.currentIndex] : 0
+    property int isoValue: isoPicker.currentIndex
+                           >= 0 ? isoPicker.values[isoPicker.currentIndex] : 0
 
     Pane {
         id: statusBar
@@ -89,11 +88,13 @@ Rectangle {
             }
 
             RulerPicker {
-                id: rulerPicker
+                id: isoPicker
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 Layout.rightMargin: isoAutoButton.width + isoPanelRow.spacing
-                autoMode: root.isoAuto
+                showLabels: !root.isoAuto
+                showIndicator: !root.isoAuto
+                centered: root.isoAuto
                 displayText: root.isoDisplayText
             }
         }

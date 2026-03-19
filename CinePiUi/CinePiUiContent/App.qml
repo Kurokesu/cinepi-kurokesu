@@ -16,7 +16,7 @@ Window {
 
         isoAutoButton.onClicked: isoAuto = !isoAuto
         previewArea.onClicked: isoButton.checked = false
-        rulerPicker.onManualModeRequested: isoAuto = false
+        isoPicker.onMovementStarted: isoAuto = false
     }
 
     InputPanel {
