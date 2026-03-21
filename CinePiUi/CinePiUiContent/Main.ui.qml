@@ -57,6 +57,7 @@ Rectangle {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: controlsBar.top
+        anchors.bottomMargin: -20
         z: 1
         values: [50, 64, 80, 100, 125, 160, 200, 250, 320, 400, 500, 640, 800, 1600, 3200]
         labeledValues: [50, 100, 200, 400, 800, 3200]
@@ -69,6 +70,7 @@ Rectangle {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: controlsBar.top
+        anchors.bottomMargin: -20
         z: 1
         values: [11.25, 15, 22.5, 30, 37.5, 45, 60, 72, 75, 90, 108, 120, 144, 150, 172.8, 180, 216, 270, 324, 360]
         labeledValues: [45, 90, 180, 360]
@@ -83,6 +85,7 @@ Rectangle {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: controlsBar.top
+        anchors.bottomMargin: -20
         z: 1
         minValue: 2300
         maxValue: 10000
@@ -152,6 +155,7 @@ Rectangle {
             PropertyChanges {
                 target: isoPanel
                 opacity: 1
+                anchors.bottomMargin: 0
             }
         },
         State {
@@ -170,6 +174,7 @@ Rectangle {
             PropertyChanges {
                 target: shutterPanel
                 opacity: 1
+                anchors.bottomMargin: 0
             }
         },
         State {
@@ -188,6 +193,7 @@ Rectangle {
             PropertyChanges {
                 target: wbPanel
                 opacity: 1
+                anchors.bottomMargin: 0
             }
         },
         State {
@@ -205,8 +211,9 @@ Rectangle {
         Transition {
             PropertyAnimation {
                 targets: [isoPanel, shutterPanel, wbPanel]
-                property: "opacity"
-                duration: 250
+                properties: "opacity,anchors.bottomMargin"
+                duration: 200
+                easing.type: Easing.OutCubic
             }
             to: "*"
             from: "*"
