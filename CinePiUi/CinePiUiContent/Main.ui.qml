@@ -101,10 +101,10 @@ Rectangle {
         }
     }
 
-    Rectangle {
+    Pane {
         id: controlsBar
-        height: controlsRow.implicitHeight
-        color: "#40000000"
+        padding: 8
+        background: Rectangle { color: "#40000000" }
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
@@ -115,7 +115,7 @@ Rectangle {
 
             Button {
                 id: isoButton
-                Layout.minimumWidth: 86
+                Layout.minimumWidth: 89
                 flat: true
                 checkable: true
                 background: Item {}
