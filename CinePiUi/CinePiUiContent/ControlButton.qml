@@ -5,10 +5,15 @@ Button {
     id: controlButton
     flat: true
     checkable: true
+    autoExclusive: true
     implicitWidth: 89
 
     property string label: "LABEL"
     property string value: "- ---"
+    property bool wasChecked: false
+
+    onPressed: wasChecked = checked
+    onReleased: if (wasChecked) checked = false
     Material.foreground: controlButton.checked || controlButton.highlighted ? Material.accent : controlButton.parent.Material.foreground
 
     background: Item {}
