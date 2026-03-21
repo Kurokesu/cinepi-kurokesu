@@ -29,7 +29,7 @@ Button {
         Label {
             text: controlButton.value
             font.pixelSize: 22
-            font.weight: Font.ExtraBold
+            font.weight: Font.Bold
             font.capitalization: Font.AllUppercase
             style: Text.Outline
             styleColor: "#40000000"
