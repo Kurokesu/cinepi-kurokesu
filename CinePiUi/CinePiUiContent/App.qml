@@ -14,9 +14,10 @@ Window {
 
         anchors.centerIn: parent
 
-        isoAutoButton.onClicked: isoAuto = !isoAuto
-        previewArea.onClicked: isoButton.checked = false
-        isoPicker.onMovementStarted: isoAuto = false
+        previewArea.onClicked: {
+            isoButton.checked = false
+            shutterButton.checked = false
+        }
     }
 
     InputPanel {

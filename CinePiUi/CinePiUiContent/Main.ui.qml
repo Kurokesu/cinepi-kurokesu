@@ -20,10 +20,11 @@ Rectangle {
     property alias isoAutoButton: isoAutoButton
     property alias previewArea: previewArea
     property alias isoButton: isoButton
-    property alias isoPicker: isoPicker
-    property string isoDisplayText: isoAuto ? "A " + isoPicker.currentValue : isoPicker.currentValue
-    property bool isoAuto: true
-    property int isoValue: isoPicker.currentIndex >= 0 ? isoPicker.values[isoPicker.currentIndex] : 0
+    property alias shutterButton: shutterButton
+    property alias isoPanel: isoPanel
+    property alias shutterPanel: shutterPanel
+
+    property int isoValue: isoPanel.currentIndex >= 0 ? isoPanel.values[isoPanel.currentIndex] : 0
 
     Pane {
         id: statusBar
@@ -47,57 +48,29 @@ Rectangle {
         }
     }
 
-    Rectangle {
+    PickerPanel {
         id: isoPanel
-        height: 98
         opacity: 0
         visible: opacity > 0
-        color: "#40000000"
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: controlsBar.top
         z: 1
+        values: [50, 64, 80, 100, 125, 160, 200, 250, 320, 400, 500, 640, 800, 1600, 3200]
+        labeledValues: [50, 100, 200, 400, 800, 3200]
+    }
 
-        RowLayout {
-            id: isoPanelRow
-            anchors.fill: parent
-            anchors.leftMargin: Constants.spacingLarge
-            anchors.rightMargin: Constants.spacingLarge
-
-            Button {
-                id: isoAutoButton
-                text: checked ? qsTr("AUTO") : qsTr("MANUAL")
-                Layout.preferredWidth: 108
-                checkable: true
-                checked: root.isoAuto
-                background: Rectangle {
-                    id: rectangle
-                    color: "#66545454"
-                    radius: height / 5
-                }
-                contentItem: Label {
-                    id: label
-                    text: isoAutoButton.text
-                    font.pixelSize: 22
-                    color: isoAutoButton.checked ? Material.accent : Material.foreground
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                    font.weight: Font.Medium
-                    font.capitalization: Font.AllUppercase
-                }
-            }
-
-            RulerPicker {
-                id: isoPicker
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                Layout.rightMargin: isoAutoButton.width + isoPanelRow.spacing
-                showLabels: !root.isoAuto
-                showIndicator: !root.isoAuto
-                centered: root.isoAuto
-                displayText: root.isoDisplayText
-            }
-        }
+    PickerPanel {
+        id: shutterPanel
+        opacity: 0
+        visible: opacity > 0
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: controlsBar.top
+        z: 1
+        values: [15, 22, 30, 45, 60, 72, 90, 120, 144, 150, 172, 180, 270, 330, 360]
+        labeledValues: [30, 90, 180, 360]
+        suffix: "°"
     }
 
     Pane {
@@ -119,15 +92,16 @@ Rectangle {
                 id: isoButton
                 Layout.minimumWidth: 89
                 label: "ISO"
-                value: root.isoDisplayText
-                highlighted: !root.isoAuto
+                value: isoPanel.displayText
+                highlighted: !isoPanel.autoMode
             }
 
             ControlButton {
                 id: shutterButton
                 Layout.minimumWidth: 89
                 label: "SA"
-                value: "A 180°"
+                value: shutterPanel.displayText
+                highlighted: !shutterPanel.autoMode
             }
 
             Item {
@@ -162,21 +136,13 @@ Rectangle {
             }
         }
     ]
+
     transitions: [
         Transition {
-            id: transition
-            ParallelAnimation {
-                SequentialAnimation {
-                    PauseAnimation {
-                        duration: 0
-                    }
-
-                    PropertyAnimation {
-                        target: isoPanel
-                        property: "opacity"
-                        duration: 250
-                    }
-                }
+            PropertyAnimation {
+                targets: [isoPanel, shutterPanel]
+                property: "opacity"
+                duration: 250
             }
             to: "*"
             from: "*"
