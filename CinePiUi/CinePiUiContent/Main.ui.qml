@@ -113,6 +113,7 @@ Rectangle {
         RowLayout {
             id: controlsRow
             anchors.fill: parent
+            spacing: 34
 
             ControlButton {
                 id: isoButton
@@ -120,6 +121,17 @@ Rectangle {
                 label: "ISO"
                 value: root.isoDisplayText
                 highlighted: !root.isoAuto
+            }
+
+            ControlButton {
+                id: shutterButton
+                Layout.minimumWidth: 89
+                label: "SA"
+                value: "A 180°"
+            }
+
+            Item {
+                Layout.fillWidth: true
             }
 
             RecordButton {
