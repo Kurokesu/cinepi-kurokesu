@@ -8,8 +8,8 @@ Item {
     implicitWidth: 462
     implicitHeight: 98
 
-    property list<int> values: [50, 64, 80, 100, 125, 160, 200, 250, 320, 400, 500, 640, 800, 1600, 3200]
-    property list<int> labeledValues: [50, 100, 200, 400, 800, 3200]
+    property var values: [50, 64, 80, 100, 125, 160, 200, 250, 320, 400, 500, 640, 800, 1600, 3200]
+    property var labeledValues: [50, 100, 200, 400, 800, 3200]
     property int currentIndex: 5
     property int visibleTickCount: 11
     property bool showLabels: false
@@ -66,14 +66,16 @@ Item {
                 property real restFade: 1
 
                 opacity: {
-                    var centerFade = tickItem.displacement < 0.5 ? 0 : Math.min(1, (tickItem.displacement - 0.5) * 0.5)
-                    var distFade = Math.max(0, 1.0 - tickItem.displacement * 0.21)
+                    var pixelDistance = tickItem.displacement * rulerView.tickInterval
+                    var hideZone = centerValueLabel.implicitWidth / 3
+                    var centerFade = pixelDistance < hideZone ? 0 : Math.min(1, (pixelDistance - hideZone) / 60)
+                    var distFade = Math.max(0, 1.0 - tickItem.displacement / (root.visibleTickCount * 0.45))
                     return centerFade * distFade * restFade
                 }
 
                 states: State {
                     name: "resting"
-                    when: !rulerView.moving && tickItem.displacement < 1.5
+                    when: !rulerView.moving && (tickItem.displacement * rulerView.tickInterval) < centerValueLabel.implicitWidth
                     PropertyChanges {
                         target: tickLabel
                         restFade: 0
@@ -99,7 +101,7 @@ Item {
                 width: 3
                 height: 26
                 color: "#e1ffffff"
-                opacity: Math.max(0, 1.0 - tickItem.displacement * 0.21)
+                opacity: Math.max(0, 1.0 - tickItem.displacement / (root.visibleTickCount * 0.45))
             }
         }
 

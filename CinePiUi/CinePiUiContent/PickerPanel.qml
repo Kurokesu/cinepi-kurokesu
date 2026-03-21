@@ -9,13 +9,27 @@ Rectangle {
     implicitHeight: 98
     color: "#40000000"
 
-    property list<int> values
-    property list<int> labeledValues
+    property var values: []
+    property var labeledValues: []
     property int currentIndex: 5
     property int visibleTickCount: 11
     property bool showAutoButton: true
     property bool autoMode: true
     property string suffix: ""
+
+    property int minValue: 0
+    property int maxValue: 0
+    property int step: 0
+
+    readonly property var effectiveValues: {
+        if (step > 0 && maxValue > minValue) {
+            let arr = []
+            for (let v = minValue; v <= maxValue; v += step)
+                arr.push(v)
+            return arr
+        }
+        return values
+    }
 
     readonly property string currentValue: picker.currentValue
     readonly property string displayText: (autoMode ? "A " : "") + currentValue + suffix
@@ -54,7 +68,7 @@ Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.rightMargin: panel.showAutoButton ? autoButton.width + panelRow.spacing : 0
-            values: panel.values
+            values: panel.effectiveValues
             labeledValues: panel.labeledValues
             currentIndex: panel.currentIndex
             visibleTickCount: panel.visibleTickCount

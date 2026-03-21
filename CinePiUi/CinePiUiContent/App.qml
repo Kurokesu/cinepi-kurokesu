@@ -17,6 +17,7 @@ Window {
         previewArea.onClicked: {
             isoButton.checked = false
             shutterButton.checked = false
+            wbButton.checked = false
         }
     }
 

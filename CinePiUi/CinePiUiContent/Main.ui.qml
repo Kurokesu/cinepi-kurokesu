@@ -21,8 +21,10 @@ Rectangle {
     property alias previewArea: previewArea
     property alias isoButton: isoButton
     property alias shutterButton: shutterButton
+    property alias wbButton: wbButton
     property alias isoPanel: isoPanel
     property alias shutterPanel: shutterPanel
+    property alias wbPanel: wbPanel
 
     property int isoValue: isoPanel.currentIndex >= 0 ? isoPanel.values[isoPanel.currentIndex] : 0
 
@@ -73,6 +75,22 @@ Rectangle {
         suffix: "°"
     }
 
+    PickerPanel {
+        id: wbPanel
+        opacity: 0
+        visible: opacity > 0
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: controlsBar.top
+        z: 1
+        minValue: 2300
+        maxValue: 10000
+        step: 100
+        visibleTickCount: 34
+        labeledValues: [2300, 3600, 4900, 6200, 7500, 8800, 10000]
+        suffix: "K"
+    }
+
     Pane {
         id: controlsBar
         padding: 8
@@ -102,6 +120,14 @@ Rectangle {
                 label: "SA"
                 value: shutterPanel.displayText
                 highlighted: !shutterPanel.autoMode
+            }
+
+            ControlButton {
+                id: wbButton
+                Layout.minimumWidth: 89
+                label: "WB"
+                value: wbPanel.displayText
+                highlighted: !wbPanel.autoMode
             }
 
             Item {
@@ -153,13 +179,31 @@ Rectangle {
                 target: shutterPanel
                 autoMode: false
             }
+        },
+        State {
+            name: "wbOpen"
+            when: wbButton.checked
+
+            PropertyChanges {
+                target: wbPanel
+                opacity: 1
+            }
+        },
+        State {
+            name: "wbManual"
+            extend: "wbOpen"
+
+            PropertyChanges {
+                target: wbPanel
+                autoMode: false
+            }
         }
     ]
 
     transitions: [
         Transition {
             PropertyAnimation {
-                targets: [isoPanel, shutterPanel]
+                targets: [isoPanel, shutterPanel, wbPanel]
                 property: "opacity"
                 duration: 250
             }
