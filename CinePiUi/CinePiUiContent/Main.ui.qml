@@ -70,8 +70,9 @@ Rectangle {
         anchors.right: parent.right
         anchors.bottom: controlsBar.top
         z: 1
-        values: [15, 22, 30, 45, 60, 72, 90, 120, 144, 150, 172, 180, 270, 330, 360]
-        labeledValues: [30, 90, 180, 360]
+        values: [11.25, 15, 22.5, 30, 37.5, 45, 60, 72, 75, 90, 108, 120, 144, 150, 172.8, 180, 216, 270, 324, 360]
+        labeledValues: [45, 90, 180, 360]
+        visibleTickCount: 16
         suffix: "°"
     }
 
