@@ -21,7 +21,7 @@ Window {
 
     InputPanel {
         id: inputPanel
-        property bool showKeyboard :  active
+        property bool showKeyboard: active
         y: showKeyboard ? parent.height - height : parent.height
         Behavior on y {
             NumberAnimation {
@@ -29,10 +29,9 @@ Window {
                 easing.type: Easing.InOutQuad
             }
         }
-        anchors.leftMargin: Constants.width/10
-        anchors.rightMargin: Constants.width/10
+        anchors.leftMargin: Constants.width / 10
+        anchors.rightMargin: Constants.width / 10
         anchors.left: parent.left
         anchors.right: parent.right
     }
 }
-

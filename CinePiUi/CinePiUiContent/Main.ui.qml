@@ -23,8 +23,7 @@ Rectangle {
     property alias isoPicker: isoPicker
     property string isoDisplayText: isoAuto ? "A " + isoPicker.currentValue : isoPicker.currentValue
     property bool isoAuto: true
-    property int isoValue: isoPicker.currentIndex
-                           >= 0 ? isoPicker.values[isoPicker.currentIndex] : 0
+    property int isoValue: isoPicker.currentIndex >= 0 ? isoPicker.values[isoPicker.currentIndex] : 0
 
     Pane {
         id: statusBar
@@ -104,7 +103,9 @@ Rectangle {
     Pane {
         id: controlsBar
         padding: 8
-        background: Rectangle { color: "#40000000" }
+        background: Rectangle {
+            color: "#40000000"
+        }
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
@@ -119,8 +120,7 @@ Rectangle {
                 flat: true
                 checkable: true
                 background: Item {}
-                Material.foreground: isoButton.checked
-                                     || !root.isoAuto ? Material.accent : controlsBar.Material.foreground
+                Material.foreground: isoButton.checked || !root.isoAuto ? Material.accent : controlsBar.Material.foreground
                 contentItem: Column {
                     id: column
                     anchors.centerIn: parent

@@ -16,10 +16,9 @@ Item {
     property bool showIndicator: false
     property bool centered: false
     property string displayText: "A 160"
-    signal movementStarted()
+    signal movementStarted
 
-    readonly property string currentValue: values[currentIndex] !== undefined
-                                           ? values[currentIndex].toString() : ""
+    readonly property string currentValue: values[currentIndex] !== undefined ? values[currentIndex].toString() : ""
 
     ListView {
         id: rulerView
@@ -66,9 +65,7 @@ Item {
                 property real restFade: 1
 
                 opacity: {
-                    var centerFade = tickItem.displacement < 0.5
-                                    ? 0
-                                    : Math.min(1, (tickItem.displacement - 0.5) * 0.5)
+                    var centerFade = tickItem.displacement < 0.5 ? 0 : Math.min(1, (tickItem.displacement - 0.5) * 0.5)
                     var distFade = Math.max(0, 1.0 - tickItem.displacement * 0.21)
                     return centerFade * distFade * restFade
                 }
@@ -76,12 +73,20 @@ Item {
                 states: State {
                     name: "resting"
                     when: !rulerView.moving && tickItem.displacement < 1.5
-                    PropertyChanges { target: tickLabel; restFade: 0 }
+                    PropertyChanges {
+                        target: tickLabel
+                        restFade: 0
+                    }
                 }
                 transitions: Transition {
                     SequentialAnimation {
-                        PauseAnimation { duration: 200 }
-                        NumberAnimation { property: "restFade"; duration: 100 }
+                        PauseAnimation {
+                            duration: 200
+                        }
+                        NumberAnimation {
+                            property: "restFade"
+                            duration: 100
+                        }
                     }
                 }
             }
@@ -123,15 +128,15 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
     }
 
-
     states: [
         State {
             name: "centered"
             when: root.centered
 
             PropertyChanges {
-                target: root;
-                currentIndex: Math.floor(values.length / 2) }
+                target: root
+                currentIndex: Math.floor(values.length / 2)
+            }
         },
         State {
             name: "manual"
@@ -144,5 +149,3 @@ Item {
         }
     ]
 }
-
-
