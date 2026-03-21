@@ -16,6 +16,7 @@ Item {
     property bool showIndicator: false
     property bool centered: false
     property string displayText: "A 160"
+    property string displaySuffix: ""
     signal movementStarted
 
     readonly property string currentValue: values[currentIndex] !== undefined ? values[currentIndex].toString() : ""
@@ -106,15 +107,32 @@ Item {
         onMovementStarted: root.movementStarted()
     }
 
-    Label {
+    Row {
         id: centerValueLabel
         anchors.horizontalCenter: parent.horizontalCenter
-        text: root.displayText
         anchors.top: parent.top
-        font.pixelSize: 26
-        color: Material.accent
-        font.capitalization: Font.AllUppercase
-        font.weight: Font.Normal
+
+        Item {
+            width: suffixLabel.implicitWidth
+            height: 1
+        }
+
+        Label {
+            text: root.displayText
+            font.pixelSize: 26
+            color: Material.accent
+            font.capitalization: Font.AllUppercase
+            font.weight: Font.Normal
+        }
+
+        Label {
+            id: suffixLabel
+            text: root.displaySuffix
+            font.pixelSize: 26
+            color: Material.accent
+            font.capitalization: Font.AllUppercase
+            font.weight: Font.Normal
+        }
     }
 
     Rectangle {
