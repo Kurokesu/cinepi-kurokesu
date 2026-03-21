@@ -116,9 +116,10 @@ Rectangle {
             }
         }
     }
+
     states: [
         State {
-            name: "isoAuto"
+            name: "isoOpen"
             when: isoButton.checked
 
             PropertyChanges {
@@ -128,11 +129,29 @@ Rectangle {
         },
         State {
             name: "isoManual"
-            extend: "isoAuto"
+            extend: "isoOpen"
 
             PropertyChanges {
-                target: root
-                isoAuto: false
+                target: isoPanel
+                autoMode: false
+            }
+        },
+        State {
+            name: "shutterOpen"
+            when: shutterButton.checked
+
+            PropertyChanges {
+                target: shutterPanel
+                opacity: 1
+            }
+        },
+        State {
+            name: "shutterManual"
+            extend: "shutterOpen"
+
+            PropertyChanges {
+                target: shutterPanel
+                autoMode: false
             }
         }
     ]
