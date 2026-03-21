@@ -114,39 +114,12 @@ Rectangle {
             id: controlsRow
             anchors.fill: parent
 
-            Button {
+            ControlButton {
                 id: isoButton
                 Layout.minimumWidth: 89
-                flat: true
-                checkable: true
-                background: Item {}
-                Material.foreground: isoButton.checked || !root.isoAuto ? Material.accent : controlsBar.Material.foreground
-                contentItem: Column {
-                    id: column
-                    anchors.centerIn: parent
-
-                    Label {
-                        id: isoLabel
-                        text: qsTr("ISO")
-                        font.pixelSize: 24
-                        font.weight: Font.Normal
-                        font.capitalization: Font.AllUppercase
-                        style: Text.Outline
-                        styleColor: "#40000000"
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-
-                    Label {
-                        id: isoValueLabel
-                        text: root.isoDisplayText
-                        font.pixelSize: 22
-                        font.weight: Font.ExtraBold
-                        font.capitalization: Font.AllUppercase
-                        style: Text.Outline
-                        styleColor: "#40000000"
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-                }
+                label: "ISO"
+                value: root.isoDisplayText
+                highlighted: !root.isoAuto
             }
 
             RecordButton {
