@@ -149,11 +149,11 @@ Rectangle {
                 }
             }
 
-            RoundButton {
+            RecordButton {
                 id: recordButton
                 Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                checkable: true
-                display: AbstractButton.IconOnly
+                Layout.preferredHeight: 89
+                Layout.preferredWidth: 89
             }
         }
     }
