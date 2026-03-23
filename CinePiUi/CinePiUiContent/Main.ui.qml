@@ -29,11 +29,119 @@ Rectangle {
     property int isoValue: isoPanel.currentIndex >= 0 ? isoPanel.values[isoPanel.currentIndex] : 0
 
     Pane {
-        id: statusBar
-        height: 100
+        id: topBar
+        padding: 8
+        background: Rectangle {
+            color: "#40000000"
+        }
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
+
+        RowLayout {
+            id: topBarRow
+            anchors.fill: parent
+            spacing: 34
+
+            Button {
+                id: resFpsButton
+                flat: true
+
+                contentItem: Column {
+                    id: column
+                    anchors.centerIn: parent
+                    Label {
+                        text: "4K"
+                        font.pixelSize: 21
+                        font.weight: Font.Medium
+                        anchors.horizontalCenter: parent.horizontalCenter
+                    }
+
+                    Label {
+                        width: 44
+                        text: "30"
+                        font.pixelSize: 18
+                        horizontalAlignment: Text.AlignHCenter
+                        font.weight: Font.Bold
+                        color: "#000000"
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        background: Rectangle {
+                            color: "white"
+                            radius: height / 4
+                        }
+                    }
+                }
+            }
+
+            Button {
+                id: ratioButton
+                flat: true
+
+                background: Rectangle {
+                    color: "transparent"
+                    radius: height / 4
+                    border.color: "white"
+                    border.width: 2
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.leftMargin: 12
+                    anchors.rightMargin: 12
+                }
+
+                contentItem: Item {
+                    implicitWidth: 49
+                    implicitHeight: ratioLabel.implicitHeight
+
+                    Rectangle {
+                        anchors.centerIn: parent
+                        width: ratioButton.width
+                        height: ratioLabel.implicitHeight
+                        color: "black"
+                    }
+
+                    Label {
+                        id: ratioLabel
+                        anchors.centerIn: parent
+                        text: "16:9"
+                        font.pixelSize: 21
+                        font.weight: Font.Bold
+                        color: "white"
+                    }
+                }
+            }
+
+            Item {
+                Layout.fillWidth: true
+            }
+
+            Rectangle {
+                id: recordingPill
+                visible: false
+                Layout.alignment: Qt.AlignCenter
+                Layout.fillWidth: true
+                implicitHeight: 36
+                radius: 18
+                color: Material.accent
+
+                Label {
+                    anchors.centerIn: parent
+                    text: "00:00:00:00"
+                    font.pixelSize: 18
+                    font.weight: Font.Bold
+                    font.family: "monospace"
+                    color: "white"
+                }
+            }
+
+            Button {
+                id: settingsButton
+                text: "\u22ee"
+                flat: true
+                font.pixelSize: 34
+                rightPadding: 0
+                font.weight: Font.Bold
+            }
+        }
     }
 
     Rectangle {
@@ -41,7 +149,7 @@ Rectangle {
         color: Material.background
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.top: statusBar.bottom
+        anchors.top: topBar.bottom
         anchors.bottom: controlsBar.top
 
         MouseArea {
