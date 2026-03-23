@@ -29,7 +29,7 @@ Rectangle {
     property int isoValue: isoPanel.currentIndex >= 0 ? isoPanel.values[isoPanel.currentIndex] : 0
 
     Pane {
-        id: topBar
+        id: configBar
         height: 91
         padding: 8
         background: Rectangle {
@@ -40,12 +40,12 @@ Rectangle {
         anchors.top: parent.top
 
         RowLayout {
-            id: topBarRow
+            id: configBarRow
             anchors.fill: parent
             spacing: 34
 
             Button {
-                id: resFpsButton
+                id: formatButton
                 flat: true
                 background: Item {}
 
@@ -76,7 +76,7 @@ Rectangle {
             }
 
             Button {
-                id: ratioButton
+                id: aspectButton
                 flat: true
 
                 background: Rectangle {
@@ -96,7 +96,7 @@ Rectangle {
 
                     Rectangle {
                         anchors.centerIn: parent
-                        width: ratioButton.width
+                        width: aspectButton.width
                         height: ratioLabel.implicitHeight
                         color: "black"
                     }
@@ -113,7 +113,7 @@ Rectangle {
             }
 
             Item {
-                id: topBarSpacer
+                id: configBarSpacer
                 Layout.fillWidth: true
             }
 
@@ -129,7 +129,7 @@ Rectangle {
                 bottomPadding: 6
                 Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                 background: Rectangle {
-                    id: recordingPill
+                    id: recordingBadge
                     color: Material.accent
                     radius: height / 2
                     opacity: 0
@@ -137,7 +137,7 @@ Rectangle {
             }
 
             Button {
-                id: settingsButton
+                id: menuButton
                 text: "\u22ee"
                 flat: true
                 font.pixelSize: 34
@@ -153,7 +153,7 @@ Rectangle {
         color: Material.background
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.top: topBar.bottom
+        anchors.top: configBar.bottom
         anchors.bottom: controlsBar.top
 
         MouseArea {
@@ -331,19 +331,19 @@ Rectangle {
             when: recordButton.checked
 
             PropertyChanges {
-                target: resFpsButton
+                target: formatButton
                 visible: false
             }
             PropertyChanges {
-                target: ratioButton
+                target: aspectButton
                 visible: false
             }
             PropertyChanges {
-                target: topBarSpacer
+                target: configBarSpacer
                 visible: false
             }
             PropertyChanges {
-                target: settingsButton
+                target: menuButton
                 visible: false
             }
             PropertyChanges {
@@ -351,7 +351,7 @@ Rectangle {
                 visible: true
             }
             PropertyChanges {
-                target: recordingPill
+                target: recordingBadge
                 opacity: 1
             }
         }
@@ -366,7 +366,7 @@ Rectangle {
                 easing.type: Easing.OutCubic
             }
             PropertyAnimation {
-                target: recordingPill
+                target: recordingBadge
                 property: "opacity"
                 duration: 1000
                 easing.type: Easing.OutCubic
