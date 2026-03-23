@@ -159,7 +159,7 @@ Rectangle {
     }
 
     Item {
-        id: panelContainer
+        id: pickerContainer
         z: 1
         height: 98
         opacity: 0
@@ -258,7 +258,7 @@ Rectangle {
             when: isoButton.checked
 
             PropertyChanges {
-                target: panelContainer
+                target: pickerContainer
                 opacity: 1
                 anchors.bottomMargin: 0
             }
@@ -281,7 +281,7 @@ Rectangle {
             when: shutterButton.checked
 
             PropertyChanges {
-                target: panelContainer
+                target: pickerContainer
                 opacity: 1
                 anchors.bottomMargin: 0
             }
@@ -304,7 +304,7 @@ Rectangle {
             when: wbButton.checked
 
             PropertyChanges {
-                target: panelContainer
+                target: pickerContainer
                 opacity: 1
                 anchors.bottomMargin: 0
             }
@@ -327,7 +327,7 @@ Rectangle {
     transitions: [
         Transition {
             PropertyAnimation {
-                target: panelContainer
+                target: pickerContainer
                 properties: "opacity,anchors.bottomMargin"
                 duration: 200
                 easing.type: Easing.OutCubic
