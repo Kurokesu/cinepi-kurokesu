@@ -13,12 +13,15 @@ Button {
     property bool wasChecked: false
 
     onPressed: wasChecked = checked
-    onReleased: if (wasChecked) checked = false
-    Material.foreground: controlButton.checked || controlButton.highlighted ? Material.accent : controlButton.parent.Material.foreground
+    onReleased: if (wasChecked)
+                    checked = false
+    Material.foreground: controlButton.checked
+                         || controlButton.highlighted ? Material.accent : controlButton.parent.Material.foreground
 
     background: Item {}
 
     contentItem: Column {
+        spacing: 5
         anchors.centerIn: parent
 
         Label {
