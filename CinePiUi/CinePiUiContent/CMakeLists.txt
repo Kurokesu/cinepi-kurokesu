@@ -12,9 +12,9 @@ qt6_add_qml_module(CinePiUiContent
         "App.qml"
         "ControlButton.qml"
         "Main.ui.qml"
-        "ControlSheet.qml"
         "RecordButton.qml"
         "RulerPicker.qml"
+        "ControlSheet.qml"
     RESOURCES
         "fonts/Roboto-Variable.ttf"
 )
