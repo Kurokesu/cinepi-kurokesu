@@ -30,6 +30,7 @@ Rectangle {
 
     Pane {
         id: topBar
+        height: 91
         padding: 8
         background: Rectangle {
             color: "#40000000"
@@ -46,6 +47,7 @@ Rectangle {
             Button {
                 id: resFpsButton
                 flat: true
+                background: Item {}
 
                 contentItem: Column {
                     id: column
@@ -140,6 +142,7 @@ Rectangle {
                 font.pixelSize: 34
                 rightPadding: 0
                 font.weight: Font.Bold
+                background: Item {}
             }
         }
     }
