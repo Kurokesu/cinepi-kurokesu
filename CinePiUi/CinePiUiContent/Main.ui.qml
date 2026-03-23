@@ -113,25 +113,26 @@ Rectangle {
             }
 
             Item {
+                id: topBarSpacer
                 Layout.fillWidth: true
             }
 
-            Rectangle {
-                id: recordingPill
+            Label {
+                id: recordingTimer
                 visible: false
-                Layout.alignment: Qt.AlignCenter
-                Layout.fillWidth: true
-                implicitHeight: 36
-                radius: 18
-                color: Material.accent
-
-                Label {
-                    anchors.centerIn: parent
-                    text: "00:00:00:00"
-                    font.pixelSize: 18
-                    font.weight: Font.Bold
-                    font.family: "monospace"
-                    color: "white"
+                text: "00:00:00:00"
+                font.pixelSize: 21
+                font.weight: Font.Bold
+                leftPadding: 16
+                rightPadding: 16
+                topPadding: 6
+                bottomPadding: 6
+                Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                background: Rectangle {
+                    id: recordingPill
+                    color: Material.accent
+                    radius: height / 2
+                    opacity: 0
                 }
             }
 
@@ -324,6 +325,35 @@ Rectangle {
                 target: wbPanel
                 autoMode: false
             }
+        },
+        State {
+            name: "recording"
+            when: recordButton.checked
+
+            PropertyChanges {
+                target: resFpsButton
+                visible: false
+            }
+            PropertyChanges {
+                target: ratioButton
+                visible: false
+            }
+            PropertyChanges {
+                target: topBarSpacer
+                visible: false
+            }
+            PropertyChanges {
+                target: settingsButton
+                visible: false
+            }
+            PropertyChanges {
+                target: recordingTimer
+                visible: true
+            }
+            PropertyChanges {
+                target: recordingPill
+                opacity: 1
+            }
         }
     ]
 
@@ -333,6 +363,12 @@ Rectangle {
                 target: pickerContainer
                 properties: "opacity,anchors.bottomMargin"
                 duration: 200
+                easing.type: Easing.OutCubic
+            }
+            PropertyAnimation {
+                target: recordingPill
+                property: "opacity"
+                duration: 1000
                 easing.type: Easing.OutCubic
             }
             to: "*"
