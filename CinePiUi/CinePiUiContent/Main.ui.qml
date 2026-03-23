@@ -149,15 +149,16 @@ Rectangle {
     }
 
     Rectangle {
-        id: preview
+        id: viewfinder
+        // color: "white"
         color: Material.background
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: configBar.bottom
-        anchors.bottom: controlsBar.top
+        anchors.bottom: controlBar.top
 
         MouseArea {
-            id: previewArea
+            id: viewfinderArea
             anchors.fill: parent
         }
     }

@@ -14,7 +14,7 @@ Window {
 
         anchors.centerIn: parent
 
-        previewArea.onClicked: {
+        viewfinderArea.onClicked: {
             isoButton.checked = false
             shutterButton.checked = false
             wbButton.checked = false
