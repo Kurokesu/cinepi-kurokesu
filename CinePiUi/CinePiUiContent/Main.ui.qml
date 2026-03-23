@@ -22,11 +22,11 @@ Rectangle {
     property alias isoButton: isoButton
     property alias shutterButton: shutterButton
     property alias wbButton: wbButton
-    property alias isoPanel: isoPanel
-    property alias shutterPanel: shutterPanel
-    property alias wbPanel: wbPanel
+    property alias isoControl: isoControl
+    property alias shutterControl: shutterControl
+    property alias wbControl: wbControl
 
-    property int isoValue: isoPanel.currentIndex >= 0 ? isoPanel.values[isoPanel.currentIndex] : 0
+    property int isoValue: isoControl.currentIndex >= 0 ? isoControl.values[isoControl.currentIndex] : 0
 
     Pane {
         id: configBar
@@ -163,26 +163,26 @@ Rectangle {
     }
 
     Item {
-        id: pickerContainer
+        id: controlSheet
         z: 1
         height: 98
         opacity: 0
         visible: opacity > 0
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.bottom: controlsBar.top
+        anchors.bottom: controlBar.top
         anchors.bottomMargin: -20
 
-        PickerPanel {
-            id: isoPanel
+        ControlSheet {
+            id: isoControl
             anchors.fill: parent
             visible: false
             values: [50, 64, 80, 100, 125, 160, 200, 250, 320, 400, 500, 640, 800, 1600, 3200]
             labeledValues: [50, 100, 200, 400, 800, 3200]
         }
 
-        PickerPanel {
-            id: shutterPanel
+        ControlSheet {
+            id: shutterControl
             anchors.fill: parent
             visible: false
             values: [11.25, 15, 22.5, 30, 37.5, 45, 60, 72, 75, 90, 108, 120, 144, 150, 172.8, 180, 216, 270, 324, 360]
@@ -191,8 +191,8 @@ Rectangle {
             suffix: "°"
         }
 
-        PickerPanel {
-            id: wbPanel
+        ControlSheet {
+            id: wbControl
             anchors.fill: parent
             visible: false
             minValue: 2300
@@ -205,7 +205,7 @@ Rectangle {
     }
 
     Pane {
-        id: controlsBar
+        id: controlBar
         padding: 8
         background: Rectangle {
             color: "#40000000"
@@ -223,24 +223,24 @@ Rectangle {
                 id: isoButton
                 Layout.minimumWidth: 89
                 label: "ISO"
-                value: isoPanel.displayText
-                highlighted: !isoPanel.autoMode
+                value: isoControl.displayText
+                highlighted: !isoControl.autoMode
             }
 
             ControlButton {
                 id: shutterButton
                 Layout.minimumWidth: 89
                 label: "SA"
-                value: shutterPanel.displayText
-                highlighted: !shutterPanel.autoMode
+                value: shutterControl.displayText
+                highlighted: !shutterControl.autoMode
             }
 
             ControlButton {
                 id: wbButton
                 Layout.minimumWidth: 89
                 label: "WB"
-                value: wbPanel.displayText
-                highlighted: !wbPanel.autoMode
+                value: wbControl.displayText
+                highlighted: !wbControl.autoMode
             }
 
             Item {
@@ -262,12 +262,12 @@ Rectangle {
             when: isoButton.checked
 
             PropertyChanges {
-                target: pickerContainer
+                target: controlSheet
                 opacity: 1
                 anchors.bottomMargin: 0
             }
             PropertyChanges {
-                target: isoPanel
+                target: isoControl
                 visible: true
             }
         },
@@ -276,7 +276,7 @@ Rectangle {
             extend: "isoOpen"
 
             PropertyChanges {
-                target: isoPanel
+                target: isoControl
                 autoMode: false
             }
         },
@@ -285,12 +285,12 @@ Rectangle {
             when: shutterButton.checked
 
             PropertyChanges {
-                target: pickerContainer
+                target: controlSheet
                 opacity: 1
                 anchors.bottomMargin: 0
             }
             PropertyChanges {
-                target: shutterPanel
+                target: shutterControl
                 visible: true
             }
         },
@@ -299,7 +299,7 @@ Rectangle {
             extend: "shutterOpen"
 
             PropertyChanges {
-                target: shutterPanel
+                target: shutterControl
                 autoMode: false
             }
         },
@@ -308,12 +308,12 @@ Rectangle {
             when: wbButton.checked
 
             PropertyChanges {
-                target: pickerContainer
+                target: controlSheet
                 opacity: 1
                 anchors.bottomMargin: 0
             }
             PropertyChanges {
-                target: wbPanel
+                target: wbControl
                 visible: true
             }
         },
@@ -322,7 +322,7 @@ Rectangle {
             extend: "wbOpen"
 
             PropertyChanges {
-                target: wbPanel
+                target: wbControl
                 autoMode: false
             }
         },
@@ -360,7 +360,7 @@ Rectangle {
     transitions: [
         Transition {
             PropertyAnimation {
-                target: pickerContainer
+                target: controlSheet
                 properties: "opacity,anchors.bottomMargin"
                 duration: 200
                 easing.type: Easing.OutCubic
