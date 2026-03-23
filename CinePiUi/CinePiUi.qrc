@@ -9,7 +9,7 @@
         <file>CinePiUiContent/ControlButton.qml</file>
         <file>CinePiUiContent/fonts/Roboto-Variable.ttf</file>
         <file>CinePiUiContent/Main.ui.qml</file>
-        <file>CinePiUiContent/PickerPanel.qml</file>
+        <file>CinePiUiContent/ControlSheet.qml</file>
         <file>CinePiUiContent/RecordButton.qml</file>
         <file>CinePiUiContent/RulerPicker.qml</file>
         <file>qtquickcontrols2.conf</file>

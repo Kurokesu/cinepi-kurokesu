@@ -12,7 +12,7 @@ qt6_add_qml_module(CinePiUiContent
         "App.qml"
         "ControlButton.qml"
         "Main.ui.qml"
-        "PickerPanel.qml"
+        "ControlSheet.qml"
         "RecordButton.qml"
         "RulerPicker.qml"
     RESOURCES
