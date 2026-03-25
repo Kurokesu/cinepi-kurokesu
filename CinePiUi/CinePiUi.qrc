@@ -7,6 +7,7 @@
         <file>CinePiUi/qmldir</file>
         <file>CinePiUiContent/App.qml</file>
         <file>CinePiUiContent/ButtonToggleGroup.qml</file>
+        <file>CinePiUiContent/ConfigBar.qml</file>
         <file>CinePiUiContent/ControlButton.qml</file>
         <file>CinePiUiContent/ControlSheet.qml</file>
         <file>CinePiUiContent/fonts/Roboto-Variable.ttf</file>

@@ -19,6 +19,14 @@ ApplicationWindow {
         viewfinderArea.onClicked: mainScreen.state = ""
     }
 
+    Connections {
+        target: mainScreen.recordButton
+        function onCheckedChanged() {
+            if (mainScreen.recordButton.checked && mainScreen.state === "formatOpen")
+                mainScreen.state = ""
+        }
+    }
+
     ButtonGroup {
         exclusive: false
         buttons: [mainScreen.formatButton, mainScreen.isoButton,
