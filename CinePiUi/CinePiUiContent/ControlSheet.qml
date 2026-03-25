@@ -4,10 +4,15 @@ import QtQuick.Controls.Material
 import QtQuick.Layouts
 import CinePiUi
 
-Rectangle {
+Pane {
     id: sheet
     implicitHeight: 98
-    color: "#40000000"
+    padding: 0
+    leftPadding: Constants.spacingLarge
+    rightPadding: Constants.spacingLarge
+    background: Rectangle {
+        color: "#40000000"
+    }
 
     property var values: []
     property var labeledValues: []
@@ -37,8 +42,6 @@ Rectangle {
     RowLayout {
         id: sheetRow
         anchors.fill: parent
-        anchors.leftMargin: Constants.spacingLarge
-        anchors.rightMargin: Constants.spacingLarge
 
         Button {
             id: autoButton
