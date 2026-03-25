@@ -1,13 +1,15 @@
 import QtQuick
 import CinePiUi
+import QtQuick.Controls
 import QtQuick.VirtualKeyboard
 
-Window {
+ApplicationWindow {
     width: mainScreen.width
     height: mainScreen.height
 
     visible: true
     title: "CinePiUi"
+    font.family: Constants.fontFamily
 
     Main {
         id: mainScreen
@@ -18,6 +20,7 @@ Window {
             isoButton.checked = false
             shutterButton.checked = false
             wbButton.checked = false
+            formatButton.checked = false
         }
     }
 
