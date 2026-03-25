@@ -55,6 +55,7 @@ Rectangle {
             id: viewfinderArea
             anchors.fill: parent
         }
+    }
 
     Item {
         id: configSheet

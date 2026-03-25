@@ -25,7 +25,7 @@ Pane {
             "maxFps": 60
         }]
 
-    readonly property var fpsOptions: [60, 50, 30, 25, 24]
+    readonly property list<int> fpsOptions: [60, 50, 30, 25, 24]
 
     property int selectedResolutionIndex: 0
     property int selectedFps: 24
