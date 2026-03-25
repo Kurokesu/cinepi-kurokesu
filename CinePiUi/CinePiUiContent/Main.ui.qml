@@ -19,6 +19,7 @@ Rectangle {
     color: Material.background
     property alias viewfinderArea: viewfinderArea
     property alias formatButton: configBar.formatButton
+    property alias aspectButton: configBar.aspectButton
     property alias isoButton: isoButton
     property alias shutterButton: shutterButton
     property alias wbButton: wbButton
@@ -35,6 +36,7 @@ Rectangle {
         recording: recordButton.checked
         resolution: formatControl.selectedResolution
         fps: formatControl.selectedFps
+        aspectRatio: aspectControl.selectedRatio
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
@@ -56,7 +58,6 @@ Rectangle {
 
     Item {
         id: configSheet
-        implicitHeight: formatControl.height
         opacity: 0
         visible: opacity > 0
         anchors.left: parent.left
@@ -67,7 +68,15 @@ Rectangle {
 
         FormatSheet {
             id: formatControl
-            anchors.fill: parent
+            anchors.left: parent.left
+            anchors.right: parent.right
+            visible: false
+        }
+
+        AspectSheet {
+            id: aspectControl
+            anchors.left: parent.left
+            anchors.right: parent.right
             visible: false
         }
     }
@@ -262,6 +271,23 @@ Rectangle {
             }
             PropertyChanges {
                 target: formatControl
+                visible: true
+            }
+        },
+        State {
+            name: "aspectOpen"
+
+            PropertyChanges {
+                target: aspectButton
+                checked: true
+            }
+            PropertyChanges {
+                target: configSheet
+                opacity: 1
+                anchors.topMargin: 0
+            }
+            PropertyChanges {
+                target: aspectControl
                 visible: true
             }
         },

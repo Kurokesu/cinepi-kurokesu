@@ -22,15 +22,17 @@ ApplicationWindow {
     Connections {
         target: mainScreen.recordButton
         function onCheckedChanged() {
-            if (mainScreen.recordButton.checked && mainScreen.state === "formatOpen")
+            if (mainScreen.recordButton.checked
+                    && (mainScreen.state === "formatOpen" || mainScreen.state === "aspectOpen"))
                 mainScreen.state = ""
         }
     }
 
     ButtonGroup {
         exclusive: false
-        buttons: [mainScreen.formatButton, mainScreen.isoButton,
-                  mainScreen.shutterButton, mainScreen.wbButton]
+        buttons: [mainScreen.formatButton, mainScreen.aspectButton,
+                  mainScreen.isoButton, mainScreen.shutterButton,
+                  mainScreen.wbButton]
         onClicked: button => mainScreen.state = mainScreen.state === button.objectName ? "" : button.objectName
     }
 

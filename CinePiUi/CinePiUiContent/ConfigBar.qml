@@ -15,8 +15,10 @@ Pane {
     property bool recording: false
     property string resolution: "4K"
     property int fps: 24
+    property string aspectRatio: "16:9"
 
     property alias formatButton: formatButton
+    property alias aspectButton: aspectButton
 
     RowLayout {
         id: configBarRow
@@ -56,6 +58,7 @@ Pane {
 
         Button {
             id: aspectButton
+            objectName: "aspectOpen"
             flat: true
 
             background: Rectangle {
@@ -83,7 +86,7 @@ Pane {
                 Label {
                     id: ratioLabel
                     anchors.centerIn: parent
-                    text: "16:9"
+                    text: root.aspectRatio
                     font.pixelSize: 21
                     font.weight: Font.Bold
                     color: "white"
