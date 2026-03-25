@@ -26,7 +26,8 @@ Rectangle {
     property alias shutterControl: shutterControl
     property alias wbControl: wbControl
 
-    property int isoValue: isoControl.currentIndex >= 0 ? isoControl.values[isoControl.currentIndex] : 0
+    property int isoValue: isoControl.currentIndex
+                           >= 0 ? isoControl.values[isoControl.currentIndex] : 0
 
     Pane {
         id: configBar
@@ -47,13 +48,13 @@ Rectangle {
             Button {
                 id: formatButton
                 flat: true
+                checkable: true
                 background: Item {}
 
                 contentItem: Column {
-                    id: column
                     anchors.centerIn: parent
                     Label {
-                        text: "4K"
+                        text: formatControl.selectedResolution
                         font.pixelSize: 21
                         font.weight: Font.Medium
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -61,11 +62,11 @@ Rectangle {
 
                     Label {
                         width: 44
-                        text: "30"
+                        text: formatControl.selectedFps.toString()
                         font.pixelSize: 18
                         horizontalAlignment: Text.AlignHCenter
                         font.weight: Font.Bold
-                        color: "#000000"
+                        color: "black"
                         anchors.horizontalCenter: parent.horizontalCenter
                         background: Rectangle {
                             color: "white"
@@ -160,6 +161,23 @@ Rectangle {
         MouseArea {
             id: viewfinderArea
             anchors.fill: parent
+        }
+
+    Item {
+        id: configSheet
+        implicitHeight: formatControl.height
+        opacity: 0
+        visible: opacity > 0
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: configBar.bottom
+        anchors.topMargin: -20
+        z: 1
+
+        FormatSheet {
+            id: formatControl
+            anchors.fill: parent
+            visible: false
         }
     }
 
@@ -328,6 +346,20 @@ Rectangle {
             }
         },
         State {
+            name: "formatOpen"
+            when: formatButton.checked
+
+            PropertyChanges {
+                target: configSheet
+                opacity: 1
+                anchors.topMargin: 0
+            }
+            PropertyChanges {
+                target: formatControl
+                visible: true
+            }
+        },
+        State {
             name: "recording"
             when: recordButton.checked
 
@@ -363,6 +395,12 @@ Rectangle {
             PropertyAnimation {
                 target: controlSheet
                 properties: "opacity,anchors.bottomMargin"
+                duration: 200
+                easing.type: Easing.OutCubic
+            }
+            PropertyAnimation {
+                target: configSheet
+                properties: "opacity,anchors.topMargin"
                 duration: 200
                 easing.type: Easing.OutCubic
             }
