@@ -10,6 +10,7 @@
         <file>CinePiUiContent/ControlButton.qml</file>
         <file>CinePiUiContent/ControlSheet.qml</file>
         <file>CinePiUiContent/fonts/Roboto-Variable.ttf</file>
+        <file>CinePiUiContent/FormatSheet.qml</file>
         <file>CinePiUiContent/Main.ui.qml</file>
         <file>CinePiUiContent/RecordButton.qml</file>
         <file>CinePiUiContent/RulerPicker.qml</file>

@@ -12,6 +12,8 @@ qt6_add_qml_module(CinePiUiContent
         "App.qml"
         "ButtonToggleGroup.qml"
         "ControlButton.qml"
+        "ControlSheet.qml"
+        "FormatSheet.qml"
         "Main.ui.qml"
         "RecordButton.qml"
         "RulerPicker.qml"
