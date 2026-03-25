@@ -10,6 +10,7 @@ qt6_add_qml_module(CinePiUiContent
     RESOURCE_PREFIX "/qt/qml"
     QML_FILES
         "App.qml"
+        "ButtonToggleGroup.qml"
         "ControlButton.qml"
         "Main.ui.qml"
         "RecordButton.qml"
