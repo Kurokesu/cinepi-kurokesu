@@ -16,12 +16,14 @@ ApplicationWindow {
 
         anchors.centerIn: parent
 
-        viewfinderArea.onClicked: {
-            isoButton.checked = false
-            shutterButton.checked = false
-            wbButton.checked = false
-            formatButton.checked = false
-        }
+        viewfinderArea.onClicked: mainScreen.state = ""
+    }
+
+    ButtonGroup {
+        exclusive: false
+        buttons: [mainScreen.formatButton, mainScreen.isoButton,
+                  mainScreen.shutterButton, mainScreen.wbButton]
+        onClicked: button => mainScreen.state = mainScreen.state === button.objectName ? "" : button.objectName
     }
 
     InputPanel {

@@ -17,8 +17,8 @@ Rectangle {
     width: Constants.width
     height: Constants.height
     color: Material.background
-    property alias isoAutoButton: isoAutoButton
-    property alias previewArea: previewArea
+    property alias viewfinderArea: viewfinderArea
+    property alias formatButton: formatButton
     property alias isoButton: isoButton
     property alias shutterButton: shutterButton
     property alias wbButton: wbButton
@@ -47,8 +47,8 @@ Rectangle {
 
             Button {
                 id: formatButton
+                objectName: "formatOpen"
                 flat: true
-                checkable: true
                 background: Item {}
 
                 contentItem: Column {
@@ -240,6 +240,7 @@ Rectangle {
 
             ControlButton {
                 id: isoButton
+                objectName: "isoOpen"
                 Layout.minimumWidth: 89
                 label: "ISO"
                 value: isoControl.displayText
@@ -248,6 +249,7 @@ Rectangle {
 
             ControlButton {
                 id: shutterButton
+                objectName: "shutterOpen"
                 Layout.minimumWidth: 89
                 label: "SA"
                 value: shutterControl.displayText
@@ -256,6 +258,7 @@ Rectangle {
 
             ControlButton {
                 id: wbButton
+                objectName: "wbOpen"
                 Layout.minimumWidth: 89
                 label: "WB"
                 value: wbControl.displayText
@@ -278,8 +281,11 @@ Rectangle {
     states: [
         State {
             name: "isoOpen"
-            when: isoButton.checked
 
+            PropertyChanges {
+                target: isoButton
+                checked: true
+            }
             PropertyChanges {
                 target: controlSheet
                 opacity: 1
@@ -301,8 +307,11 @@ Rectangle {
         },
         State {
             name: "shutterOpen"
-            when: shutterButton.checked
 
+            PropertyChanges {
+                target: shutterButton
+                checked: true
+            }
             PropertyChanges {
                 target: controlSheet
                 opacity: 1
@@ -324,8 +333,11 @@ Rectangle {
         },
         State {
             name: "wbOpen"
-            when: wbButton.checked
 
+            PropertyChanges {
+                target: wbButton
+                checked: true
+            }
             PropertyChanges {
                 target: controlSheet
                 opacity: 1
@@ -347,8 +359,11 @@ Rectangle {
         },
         State {
             name: "formatOpen"
-            when: formatButton.checked
 
+            PropertyChanges {
+                target: formatButton
+                checked: true
+            }
             PropertyChanges {
                 target: configSheet
                 opacity: 1
