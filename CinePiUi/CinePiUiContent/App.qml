@@ -4,6 +4,7 @@ import QtQuick.Controls
 import QtQuick.VirtualKeyboard
 
 ApplicationWindow {
+    id: applicationWindow
     width: mainScreen.width
     height: mainScreen.height
 
@@ -23,17 +24,18 @@ ApplicationWindow {
         target: mainScreen.recordButton
         function onCheckedChanged() {
             if (mainScreen.recordButton.checked
-                    && (mainScreen.state === "formatOpen" || mainScreen.state === "aspectOpen"))
+                    && (mainScreen.state === "formatOpen"
+                        || mainScreen.state === "aspectOpen"
+                        || mainScreen.state === "guideOpen"))
                 mainScreen.state = ""
         }
     }
 
     ButtonGroup {
         exclusive: false
-        buttons: [mainScreen.formatButton, mainScreen.aspectButton,
-                  mainScreen.isoButton, mainScreen.shutterButton,
-                  mainScreen.wbButton]
-        onClicked: button => mainScreen.state = mainScreen.state === button.objectName ? "" : button.objectName
+        buttons: [mainScreen.formatButton, mainScreen.aspectButton, mainScreen.guideButton, mainScreen.isoButton, mainScreen.shutterButton, mainScreen.wbButton]
+        onClicked: button => mainScreen.state = mainScreen.state
+                   === button.objectName ? "" : button.objectName
     }
 
     InputPanel {

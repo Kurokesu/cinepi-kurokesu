@@ -1,5 +1,4 @@
 
-
 /*
 This is a UI file (.ui.qml) that is intended to be edited in Qt Design Studio only.
 It is supposed to be strictly declarative and only uses a subset of QML. If you edit
@@ -20,6 +19,7 @@ Rectangle {
     property alias viewfinderArea: viewfinderArea
     property alias formatButton: configBar.formatButton
     property alias aspectButton: configBar.aspectButton
+    property alias guideButton: configBar.guideButton
     property alias isoButton: isoButton
     property alias shutterButton: shutterButton
     property alias wbButton: wbButton
@@ -76,6 +76,13 @@ Rectangle {
 
         AspectSheet {
             id: aspectControl
+            anchors.left: parent.left
+            anchors.right: parent.right
+            visible: false
+        }
+
+        GuideSheet {
+            id: guideControl
             anchors.left: parent.left
             anchors.right: parent.right
             visible: false
@@ -289,6 +296,23 @@ Rectangle {
             }
             PropertyChanges {
                 target: aspectControl
+                visible: true
+            }
+        },
+        State {
+            name: "guideOpen"
+
+            PropertyChanges {
+                target: guideButton
+                checked: true
+            }
+            PropertyChanges {
+                target: configSheet
+                opacity: 1
+                anchors.topMargin: 0
+            }
+            PropertyChanges {
+                target: guideControl
                 visible: true
             }
         },

@@ -19,6 +19,7 @@ Pane {
 
     property alias formatButton: formatButton
     property alias aspectButton: aspectButton
+    property alias guideButton: guideButton
 
     RowLayout {
         id: configBarRow
@@ -94,6 +95,18 @@ Pane {
             }
         }
 
+        Button {
+            id: guideButton
+            objectName: "guideOpen"
+            flat: true
+            display: AbstractButton.IconOnly
+            icon.source: "images/grid_guides_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
+            icon.width: 59
+            icon.height: 59
+            icon.color: "transparent"
+            background: Item {}
+        }
+
         Item {
             id: configBarSpacer
             Layout.fillWidth: true
@@ -140,6 +153,10 @@ Pane {
             }
             PropertyChanges {
                 target: aspectButton
+                visible: false
+            }
+            PropertyChanges {
+                target: guideButton
                 visible: false
             }
             PropertyChanges {
