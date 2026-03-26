@@ -31,28 +31,28 @@ Pane {
             Layout.alignment: Qt.AlignVCenter
         }
 
-        GuideButton {
+        IconToggle {
             icon.source: "images/grid_3x3_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
             text: "Thirds"
             checked: sheet.thirdsEnabled
             onClicked: sheet.thirdsEnabled = checked
         }
 
-        GuideButton {
+        IconToggle {
             icon.source: "images/grid_goldenratio_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
             text: "Golden"
             checked: sheet.goldenEnabled
             onClicked: sheet.goldenEnabled = checked
         }
 
-        GuideButton {
+        IconToggle {
             icon.source: "images/point_scan_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
             text: "Crosshair"
             checked: sheet.crosshairEnabled
             onClicked: sheet.crosshairEnabled = checked
         }
 
-        GuideButton {
+        IconToggle {
             icon.source: "images/adjust_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
             text: "Center"
             checked: sheet.centerDotEnabled
