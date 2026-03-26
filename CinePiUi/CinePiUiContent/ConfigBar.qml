@@ -20,6 +20,7 @@ Pane {
     property alias formatButton: formatButton
     property alias aspectButton: aspectButton
     property alias guideButton: guideButton
+    property alias monitorButton: monitorButton
 
     RowLayout {
         id: configBarRow
@@ -103,7 +104,17 @@ Pane {
             icon.source: "images/grid_guides_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
             icon.width: 59
             icon.height: 59
-            icon.color: "transparent"
+            background: Item {}
+        }
+
+        Button {
+            id: monitorButton
+            objectName: "monitorOpen"
+            flat: true
+            display: AbstractButton.IconOnly
+            icon.source: "images/visibility_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
+            icon.width: 59
+            icon.height: 59
             background: Item {}
         }
 
@@ -157,6 +168,10 @@ Pane {
             }
             PropertyChanges {
                 target: guideButton
+                visible: false
+            }
+            PropertyChanges {
+                target: monitorButton
                 visible: false
             }
             PropertyChanges {

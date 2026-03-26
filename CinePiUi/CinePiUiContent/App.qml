@@ -26,14 +26,15 @@ ApplicationWindow {
             if (mainScreen.recordButton.checked
                     && (mainScreen.state === "formatOpen"
                         || mainScreen.state === "aspectOpen"
-                        || mainScreen.state === "guideOpen"))
+                        || mainScreen.state === "guideOpen"
+                        || mainScreen.state === "monitorOpen"))
                 mainScreen.state = ""
         }
     }
 
     ButtonGroup {
         exclusive: false
-        buttons: [mainScreen.formatButton, mainScreen.aspectButton, mainScreen.guideButton, mainScreen.isoButton, mainScreen.shutterButton, mainScreen.wbButton]
+        buttons: [mainScreen.formatButton, mainScreen.aspectButton, mainScreen.guideButton, mainScreen.monitorButton, mainScreen.isoButton, mainScreen.shutterButton, mainScreen.wbButton]
         onClicked: button => mainScreen.state = mainScreen.state
                    === button.objectName ? "" : button.objectName
     }

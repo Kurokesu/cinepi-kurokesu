@@ -20,6 +20,7 @@ Rectangle {
     property alias formatButton: configBar.formatButton
     property alias aspectButton: configBar.aspectButton
     property alias guideButton: configBar.guideButton
+    property alias monitorButton: configBar.monitorButton
     property alias isoButton: isoButton
     property alias shutterButton: shutterButton
     property alias wbButton: wbButton
@@ -83,6 +84,13 @@ Rectangle {
 
         GuideSheet {
             id: guideControl
+            anchors.left: parent.left
+            anchors.right: parent.right
+            visible: false
+        }
+
+        MonitorSheet {
+            id: monitorControl
             anchors.left: parent.left
             anchors.right: parent.right
             visible: false
@@ -313,6 +321,23 @@ Rectangle {
             }
             PropertyChanges {
                 target: guideControl
+                visible: true
+            }
+        },
+        State {
+            name: "monitorOpen"
+
+            PropertyChanges {
+                target: monitorButton
+                checked: true
+            }
+            PropertyChanges {
+                target: configSheet
+                opacity: 1
+                anchors.topMargin: 0
+            }
+            PropertyChanges {
+                target: monitorControl
                 visible: true
             }
         },

@@ -19,8 +19,9 @@ qt6_add_qml_module(CinePiUiContent
         "Main.ui.qml"
         "RecordButton.qml"
         "RulerPicker.qml"
-        "GuideButton.qml"
         "GuideSheet.qml"
+        "IconToggle.qml"
+        "MonitorSheet.qml"
     RESOURCES
         "fonts/Roboto-Variable.ttf"
         "images/adjust_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
@@ -28,6 +29,11 @@ qt6_add_qml_module(CinePiUiContent
         "images/grid_goldenratio_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
         "images/grid_guides_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
         "images/point_scan_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
+        "images/filter_b_and_w_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
+        "images/texture_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
+        "images/palette_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
+        "images/center_focus_weak_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
+        "images/visibility_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
 )
 
 
