@@ -3,7 +3,7 @@
 #include <QQmlContext>
 #include <QQuickStyle>
 #include <QCursor>
-#include <QtPlugin>
+#include <QtQml/qqmlextensionplugin.h>
 
 #include "logging.h"
 #include "CameraWorker.h"
