@@ -54,8 +54,8 @@ void CameraWorker::run()
             "--mode", "2784:1828:12:U",
             "--width", "960",
             "--height", "630",
-            "--lores-width", "960",
-            "--lores-height", "630",
+            "--lores-width", "720",
+            "--lores-height", "474",
         };
         int fake_argc = static_cast<int>(args.size());
         options->Parse(fake_argc, const_cast<char **>(args.data()));

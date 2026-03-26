@@ -104,6 +104,10 @@ void ConfigManager::loadOverlay()
         m_crosshairEnabled = data["CrosshairEnabled"].toInt() != 0;
     if (data.contains("ThirdsGridEnabled"))
         m_thirdsGridEnabled = data["ThirdsGridEnabled"].toInt() != 0;
+    if (data.contains("GoldenEnabled"))
+        m_goldenEnabled = data["GoldenEnabled"].toInt() != 0;
+    if (data.contains("CenterDotEnabled"))
+        m_centerDotEnabled = data["CenterDotEnabled"].toInt() != 0;
     if (data.contains("CinematicGuideEnabled"))
         m_cinematicGuideEnabled = data["CinematicGuideEnabled"].toInt() != 0;
     if (data.contains("CinematicGuide185Enabled"))
@@ -113,6 +117,8 @@ void ConfigManager::loadOverlay()
 
     Q_EMIT crosshairEnabledChanged();
     Q_EMIT thirdsGridEnabledChanged();
+    Q_EMIT goldenEnabledChanged();
+    Q_EMIT centerDotEnabledChanged();
     Q_EMIT cinematicGuideEnabledChanged();
     Q_EMIT cinematicGuide185EnabledChanged();
     Q_EMIT cinematicGuide43EnabledChanged();
@@ -135,6 +141,8 @@ void ConfigManager::saveOverlay()
     QVariantMap data;
     data["CrosshairEnabled"] = m_crosshairEnabled ? 1 : 0;
     data["ThirdsGridEnabled"] = m_thirdsGridEnabled ? 1 : 0;
+    data["GoldenEnabled"] = m_goldenEnabled ? 1 : 0;
+    data["CenterDotEnabled"] = m_centerDotEnabled ? 1 : 0;
     data["CinematicGuideEnabled"] = m_cinematicGuideEnabled ? 1 : 0;
     data["CinematicGuide185Enabled"] = m_cinematicGuide185Enabled ? 1 : 0;
     data["CinematicGuide43Enabled"] = m_cinematicGuide43Enabled ? 1 : 0;
@@ -162,6 +170,12 @@ void ConfigManager::setCrosshairEnabled(bool v) {
 }
 void ConfigManager::setThirdsGridEnabled(bool v) {
     if (m_thirdsGridEnabled != v) { m_thirdsGridEnabled = v; Q_EMIT thirdsGridEnabledChanged(); saveOverlay(); }
+}
+void ConfigManager::setGoldenEnabled(bool v) {
+    if (m_goldenEnabled != v) { m_goldenEnabled = v; Q_EMIT goldenEnabledChanged(); saveOverlay(); }
+}
+void ConfigManager::setCenterDotEnabled(bool v) {
+    if (m_centerDotEnabled != v) { m_centerDotEnabled = v; Q_EMIT centerDotEnabledChanged(); saveOverlay(); }
 }
 void ConfigManager::setCinematicGuideEnabled(bool v) {
     if (m_cinematicGuideEnabled != v) { m_cinematicGuideEnabled = v; Q_EMIT cinematicGuideEnabledChanged(); saveOverlay(); }

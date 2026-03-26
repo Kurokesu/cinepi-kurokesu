@@ -24,6 +24,7 @@ class CameraController : public QObject
     Q_PROPERTY(int compression READ compression NOTIFY compressionChanged)
     Q_PROPERTY(int frameCount READ frameCount NOTIFY statsChanged)
     Q_PROPERTY(int bufferSize READ bufferSize NOTIFY statsChanged)
+    Q_PROPERTY(QString errorString READ errorString NOTIFY errorChanged)
 
 public:
     explicit CameraController(CameraWorker *worker, QObject *parent = nullptr);
@@ -42,6 +43,7 @@ public:
     int compression() const { return m_compression; }
     int frameCount() const { return m_frameCount; }
     int bufferSize() const { return m_bufferSize; }
+    QString errorString() const { return m_errorString; }
 
     Q_INVOKABLE void setISO(int value);
     Q_INVOKABLE void setShutterAngle(int value);
@@ -63,6 +65,7 @@ Q_SIGNALS:
     void colorGainsChanged();
     void compressionChanged();
     void statsChanged();
+    void errorChanged();
 
     void controlRequested(const QString &key, const QString &value);
 
@@ -93,4 +96,5 @@ private:
     int m_compression = 0;
     int m_frameCount = 0;
     int m_bufferSize = 0;
+    QString m_errorString;
 };

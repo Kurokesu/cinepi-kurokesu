@@ -13,7 +13,29 @@ endif()
 # ── Qt6 ──────────────────────────────────────────────────────────────────────
 set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL TRUE)
 set(XKB_FIND_QUIETLY TRUE)
-find_package(Qt6 REQUIRED COMPONENTS Core Quick QuickControls2 Network Gui)
+find_package(Qt6 REQUIRED COMPONENTS Core Qml Quick QuickControls2 Network Gui)
+
+# ── QDS UI modules ───────────────────────────────────────────────────────────
+# CinePiUi (Constants singleton) and CinePiUiContent (all UI components).
+# These create static QML module targets that we link into the executable.
+
+add_subdirectory(CinePiUi/CinePiUi)
+add_subdirectory(CinePiUi/CinePiUiContent)
+target_link_libraries(CinePiUiContent PRIVATE CinePiUi)
+
+# StudioApplication compat shim -- provides the QtQuick.Studio.Application
+# QML module that Constants.qml imports. Built as a separate static lib so
+# it is NOT compiled with QT_NO_KEYWORDS (which would break the Qt signals
+# keyword in the upstream header).
+add_library(studio_app_compat STATIC
+    CinePiUi/Dependencies/Components/imports/application/quickstudioapplication.cpp
+    src/studio_app_compat.cpp
+)
+target_include_directories(studio_app_compat PRIVATE
+    CinePiUi/Dependencies/Components/imports/application
+)
+target_link_libraries(studio_app_compat PRIVATE Qt6::Core Qt6::Qml Qt6::Gui)
+set_target_properties(studio_app_compat PROPERTIES AUTOMOC ON)
 
 # ── System libraries via pkg-config ──────────────────────────────────────────
 find_package(PkgConfig REQUIRED)
@@ -64,13 +86,14 @@ set(MAIN_SOURCES
 set(HEADERS
     src/CameraWorker.h
     src/logging.h
+    src/studio_app_compat.h
     src/ui/CameraController.h
     src/ui/DmaBufPreview.h
     src/ui/FrameProvider.h
     src/ui/ConfigManager.h
 )
 
-qt_add_resources(QRC_SOURCES qml.qrc)
+qt_add_resources(QRC_SOURCES qml.qrc app.qrc)
 
 # ── Executable ───────────────────────────────────────────────────────────────
 
@@ -102,10 +125,16 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt6::Core
+    Qt6::Qml
     Qt6::Quick
     Qt6::QuickControls2
     Qt6::Network
     Qt6::Gui
+    CinePiUi
+    CinePiUiplugin
+    CinePiUiContent
+    CinePiUiContentplugin
+    studio_app_compat
     ${LIBCAMERA_LIBRARIES}
     ${RPICAM_APP_LIBRARIES}
     ${EGL_LIBRARIES}

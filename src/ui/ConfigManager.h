@@ -29,6 +29,8 @@ class ConfigManager : public QObject
     // Grid/guide overlay toggles (overlay.ini)
     Q_PROPERTY(bool crosshairEnabled READ crosshairEnabled WRITE setCrosshairEnabled NOTIFY crosshairEnabledChanged)
     Q_PROPERTY(bool thirdsGridEnabled READ thirdsGridEnabled WRITE setThirdsGridEnabled NOTIFY thirdsGridEnabledChanged)
+    Q_PROPERTY(bool goldenEnabled READ goldenEnabled WRITE setGoldenEnabled NOTIFY goldenEnabledChanged)
+    Q_PROPERTY(bool centerDotEnabled READ centerDotEnabled WRITE setCenterDotEnabled NOTIFY centerDotEnabledChanged)
     Q_PROPERTY(bool cinematicGuideEnabled READ cinematicGuideEnabled WRITE setCinematicGuideEnabled NOTIFY cinematicGuideEnabledChanged)
     Q_PROPERTY(bool cinematicGuide185Enabled READ cinematicGuide185Enabled WRITE setCinematicGuide185Enabled NOTIFY cinematicGuide185EnabledChanged)
     Q_PROPERTY(bool cinematicGuide43Enabled READ cinematicGuide43Enabled WRITE setCinematicGuide43Enabled NOTIFY cinematicGuide43EnabledChanged)
@@ -52,12 +54,16 @@ public:
     // Grid overlays
     bool crosshairEnabled() const { return m_crosshairEnabled; }
     bool thirdsGridEnabled() const { return m_thirdsGridEnabled; }
+    bool goldenEnabled() const { return m_goldenEnabled; }
+    bool centerDotEnabled() const { return m_centerDotEnabled; }
     bool cinematicGuideEnabled() const { return m_cinematicGuideEnabled; }
     bool cinematicGuide185Enabled() const { return m_cinematicGuide185Enabled; }
     bool cinematicGuide43Enabled() const { return m_cinematicGuide43Enabled; }
 
     void setCrosshairEnabled(bool v);
     void setThirdsGridEnabled(bool v);
+    void setGoldenEnabled(bool v);
+    void setCenterDotEnabled(bool v);
     void setCinematicGuideEnabled(bool v);
     void setCinematicGuide185Enabled(bool v);
     void setCinematicGuide43Enabled(bool v);
@@ -73,6 +79,8 @@ Q_SIGNALS:
     void focusPeakingEnabledChanged();
     void crosshairEnabledChanged();
     void thirdsGridEnabledChanged();
+    void goldenEnabledChanged();
+    void centerDotEnabledChanged();
     void cinematicGuideEnabledChanged();
     void cinematicGuide185EnabledChanged();
     void cinematicGuide43EnabledChanged();
@@ -98,6 +106,8 @@ private:
     // overlay.ini values
     bool m_crosshairEnabled = false;
     bool m_thirdsGridEnabled = false;
+    bool m_goldenEnabled = false;
+    bool m_centerDotEnabled = false;
     bool m_cinematicGuideEnabled = false;
     bool m_cinematicGuide185Enabled = false;
     bool m_cinematicGuide43Enabled = true;

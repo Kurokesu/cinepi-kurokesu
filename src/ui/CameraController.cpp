@@ -174,6 +174,8 @@ void CameraController::onSettingsLoaded(int iso, int shutterAngle, int fps, int 
 void CameraController::onCameraError(const QString &msg)
 {
     logger()->error("Camera error: {}", msg.toStdString());
+    m_errorString = msg;
     m_connected = false;
+    Q_EMIT errorChanged();
     Q_EMIT connectedChanged();
 }

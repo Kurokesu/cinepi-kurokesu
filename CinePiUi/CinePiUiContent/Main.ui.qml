@@ -16,6 +16,7 @@ Rectangle {
     width: Constants.width
     height: Constants.height
     color: Material.background
+    // color: "white"
     property alias viewfinderArea: viewfinderArea
     property alias formatButton: configBar.formatButton
     property alias aspectButton: configBar.aspectButton
@@ -28,6 +29,9 @@ Rectangle {
     property alias isoControl: isoControl
     property alias shutterControl: shutterControl
     property alias wbControl: wbControl
+    property alias guideControl: guideControl
+    property alias monitorControl: monitorControl
+    property alias viewfinder: viewfinder
 
     property int isoValue: isoControl.currentIndex
                            >= 0 ? isoControl.values[isoControl.currentIndex] : 0
@@ -45,7 +49,6 @@ Rectangle {
 
     Rectangle {
         id: viewfinder
-        // color: "white"
         color: Material.background
         anchors.left: parent.left
         anchors.right: parent.right
@@ -55,6 +58,19 @@ Rectangle {
         MouseArea {
             id: viewfinderArea
             anchors.fill: parent
+        }
+
+        Rectangle {
+            anchors.fill: parent
+            color: "#1A1A1A"
+
+            Label {
+                anchors.centerIn: parent
+                text: "NO SIGNAL"
+                color: "#444444"
+                font.pixelSize: 24
+                font.weight: Font.Medium
+            }
         }
     }
 
@@ -370,10 +386,3 @@ Rectangle {
         }
     ]
 }
-
-/*##^##
-Designer {
-    D{i:0}D{i:18;transitionDuration:2000}
-}
-##^##*/
-
