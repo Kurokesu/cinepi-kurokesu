@@ -11,10 +11,10 @@ QtObject {
     readonly property string fontFamily: "Roboto"
 
     readonly property int fontSizeHeadlineSmall: 32
-    readonly property int fontSizeTitleMedium: 20
+    readonly property int fontSizeTitleMedium: 28
     readonly property int fontSizeBodyLarge: 20
     readonly property int fontSizeBodyMedium: 18
-    readonly property int fontSizeLabelLarge: 18
+    readonly property int fontSizeLabelLarge: 28
     readonly property int fontSizeLabelMedium: 16
 
     readonly property color textSecondaryColor: "#B3FFFFFF"

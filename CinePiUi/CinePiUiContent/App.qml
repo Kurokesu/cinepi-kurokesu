@@ -42,6 +42,7 @@ ApplicationWindow {
     InputPanel {
         id: inputPanel
         property bool showKeyboard: active
+        visible: active
         y: showKeyboard ? parent.height - height : parent.height
         Behavior on y {
             NumberAnimation {
