@@ -40,6 +40,7 @@ Pane {
                     font.pixelSize: 21
                     font.weight: Font.Medium
                     anchors.horizontalCenter: parent.horizontalCenter
+                    color: formatButton.checked ? Material.accent : "white"
                 }
 
                 Label {
@@ -51,7 +52,7 @@ Pane {
                     color: "black"
                     anchors.horizontalCenter: parent.horizontalCenter
                     background: Rectangle {
-                        color: "white"
+                        color: formatButton.checked ? Material.accent : "white"
                         radius: height / 4
                     }
                 }
@@ -66,7 +67,7 @@ Pane {
             background: Rectangle {
                 color: "transparent"
                 radius: height / 4
-                border.color: "white"
+                border.color: parent.checked ? Material.accent : "white"
                 border.width: 2
                 anchors.left: parent.left
                 anchors.right: parent.right
@@ -76,22 +77,22 @@ Pane {
 
             contentItem: Item {
                 implicitWidth: 49
-                implicitHeight: ratioLabel.implicitHeight
+                implicitHeight: aspectLabel.implicitHeight
 
                 Rectangle {
                     anchors.centerIn: parent
                     width: aspectButton.width
-                    height: ratioLabel.implicitHeight
+                    height: aspectLabel.implicitHeight
                     color: "black"
                 }
 
                 Label {
-                    id: ratioLabel
+                    id: aspectLabel
                     anchors.centerIn: parent
                     text: root.aspectRatio
                     font.pixelSize: 21
                     font.weight: Font.Bold
-                    color: "white"
+                    color: aspectButton.checked ? Material.accent : "white"
                 }
             }
         }
