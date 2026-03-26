@@ -1,6 +1,6 @@
 <RCC>
     <qresource prefix="/">
-        <file alias="main.qml">src/qml/main.qml</file>
+        <file alias="main.qml">app/qml/main.qml</file>
         <file alias="ShaderOverlays.qml">qml/ShaderOverlays.qml</file>
     </qresource>
 </RCC>

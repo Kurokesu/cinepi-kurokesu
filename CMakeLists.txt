@@ -29,7 +29,7 @@ target_link_libraries(CinePiUiContent PRIVATE CinePiUi)
 # keyword in the upstream header).
 add_library(studio_app_compat STATIC
     CinePiUi/Dependencies/Components/imports/application/quickstudioapplication.cpp
-    src/studio_app_compat.cpp
+    app/studio_app_compat.cpp
 )
 target_include_directories(studio_app_compat PRIVATE
     CinePiUi/Dependencies/Components/imports/application
@@ -63,34 +63,34 @@ find_package(Threads REQUIRED)
 # ── Sources ──────────────────────────────────────────────────────────────────
 
 set(CAMERA_SOURCES
-    src/camera/cinepi_controller.cpp
-    src/camera/cinepi_sound.cpp
-    src/camera/cinepi_state.cpp
-    src/camera/dng_encoder.cpp
-    src/camera/utils.cpp
+    app/camera/cinepi_controller.cpp
+    app/camera/cinepi_sound.cpp
+    app/camera/cinepi_state.cpp
+    app/camera/dng_encoder.cpp
+    app/camera/utils.cpp
 )
 
 set(UI_SOURCES
-    src/ui/CameraController.cpp
-    src/ui/DmaBufPreview.cpp
-    src/ui/FrameProvider.cpp
-    src/ui/ConfigManager.cpp
+    app/ui/CameraController.cpp
+    app/ui/DmaBufPreview.cpp
+    app/ui/FrameProvider.cpp
+    app/ui/ConfigManager.cpp
 )
 
 set(MAIN_SOURCES
-    src/main.cpp
-    src/CameraWorker.cpp
-    src/logging.cpp
+    app/main.cpp
+    app/CameraWorker.cpp
+    app/logging.cpp
 )
 
 set(HEADERS
-    src/CameraWorker.h
-    src/logging.h
-    src/studio_app_compat.h
-    src/ui/CameraController.h
-    src/ui/DmaBufPreview.h
-    src/ui/FrameProvider.h
-    src/ui/ConfigManager.h
+    app/CameraWorker.h
+    app/logging.h
+    app/studio_app_compat.h
+    app/ui/CameraController.h
+    app/ui/DmaBufPreview.h
+    app/ui/FrameProvider.h
+    app/ui/ConfigManager.h
 )
 
 qt_add_resources(QRC_SOURCES qml.qrc app.qrc)
@@ -106,8 +106,8 @@ add_executable(${PROJECT_NAME}
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
-    src
-    src/camera
+    app
+    app/camera
     ${LIBCAMERA_INCLUDE_DIRS}
     ${RPICAM_APP_INCLUDE_DIRS}
     /usr/include/rpicam-apps
