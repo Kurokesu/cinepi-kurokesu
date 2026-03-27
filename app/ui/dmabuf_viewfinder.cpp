@@ -296,8 +296,6 @@ void DmaBufRenderer::render()
     update();
 }
 
-// ─── DmaBufViewfinder (QML item) ─────────────────────────────────────────────
-
 DmaBufViewfinder::DmaBufViewfinder(QQuickItem *parent)
     : QQuickFramebufferObject(parent)
 {

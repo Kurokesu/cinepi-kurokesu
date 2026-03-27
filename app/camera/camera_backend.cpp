@@ -1,9 +1,11 @@
 #include "camera_backend.hpp"
 #include "logging.hpp"
 
-// IMX283 sensor-calibrated colour gains derived from the ct_curve in
-// /usr/share/libcamera/ipa/rpi/pisp/imx283.json.  Values are 1/ct_ratio
-// (the reciprocal of the raw R/G and B/G ratios at each colour temperature).
+/*
+ * IMX283 sensor-calibrated colour gains derived from the ct_curve in
+ * /usr/share/libcamera/ipa/rpi/pisp/imx283.json.  Values are 1/ct_ratio
+ * (the reciprocal of the raw R/G and B/G ratios at each colour temperature).
+ */
 static void kelvinToColourGains(int kelvin, float &r_gain, float &b_gain)
 {
     struct { int k; float r; float b; } const table[] = {

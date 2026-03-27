@@ -10,15 +10,12 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type (Debug or Release)" FORCE)
 endif()
 
-# ── Qt6 ──────────────────────────────────────────────────────────────────────
 set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL TRUE)
 set(XKB_FIND_QUIETLY TRUE)
 find_package(Qt6 REQUIRED COMPONENTS Core Qml Quick QuickControls2 Network Gui)
 
-# ── QDS UI modules ───────────────────────────────────────────────────────────
 # CinePiUi (Constants singleton) and CinePiUiContent (all UI components).
 # These create static QML module targets that we link into the executable.
-
 add_subdirectory(CinePiUi/CinePiUi)
 add_subdirectory(CinePiUi/CinePiUiContent)
 target_link_libraries(CinePiUiContent PRIVATE CinePiUi)
@@ -37,7 +34,6 @@ target_include_directories(studio_app_compat PRIVATE
 target_link_libraries(studio_app_compat PRIVATE Qt6::Core Qt6::Qml Qt6::Gui)
 set_target_properties(studio_app_compat PROPERTIES AUTOMOC ON)
 
-# ── System libraries via pkg-config ──────────────────────────────────────────
 find_package(PkgConfig REQUIRED)
 
 # Camera / rpicam-apps
@@ -58,8 +54,6 @@ pkg_check_modules(UDEV REQUIRED libudev)
 
 find_package(Boost REQUIRED COMPONENTS program_options)
 find_package(Threads REQUIRED)
-
-# ── Sources ──────────────────────────────────────────────────────────────────
 
 set(CAMERA_SOURCES
     app/camera/camera_backend.cpp
@@ -92,8 +86,6 @@ set(HEADERS
 )
 
 qt_add_resources(QRC_SOURCES app.qrc)
-
-# ── Executable ───────────────────────────────────────────────────────────────
 
 add_executable(${PROJECT_NAME}
     ${CAMERA_SOURCES}

@@ -23,8 +23,6 @@ ApplicationWindow {
         viewfinderArea.onClicked: mainScreen.state = ""
     }
 
-    // ── Live viewfinder ──────────────────────────────────────────────────────
-
     DmaBufViewfinder {
         id: viewfinderFeed
         parent: mainScreen.viewfinder
@@ -73,8 +71,6 @@ ApplicationWindow {
         onClicked: button => mainScreen.state = mainScreen.state
                    === button.objectName ? "" : button.objectName
     }
-
-    // ── Camera control wiring ───────────────────────────────────────────────
 
     property bool _initDone: false
 
@@ -154,8 +150,6 @@ ApplicationWindow {
         }
     }
 
-    // ── Monitor sheet <-> config persistence ────────────────────────────────
-
     Connections {
         target: mainScreen.monitorControl
         function onZebraEnabledChanged() {
@@ -172,8 +166,6 @@ ApplicationWindow {
         }
     }
 
-    // ── Guide sheet <-> config persistence ──────────────────────────────────
-
     Connections {
         target: mainScreen.guideControl
         function onThirdsEnabledChanged() {
@@ -189,8 +181,6 @@ ApplicationWindow {
             config.centerDotEnabled = mainScreen.guideControl.centerDotEnabled
         }
     }
-
-    // ── Initial sync from persisted config ──────────────────────────────────
 
     Component.onCompleted: {
         // Monitor overlays

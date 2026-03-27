@@ -9,11 +9,11 @@
 
 namespace cinepi {
 
-// Call once at startup, before creating any loggers.
-// Reads CINEPI_LOG_LEVEL and CINEPI_LOG_FILE env vars.
+/* Call once at startup, before creating any loggers.
+ * Reads CINEPI_LOG_LEVEL and CINEPI_LOG_FILE env vars. */
 void initLogging();
 
-// Convenience: get or create a named logger that shares the global sinks.
+/* Get or create a named logger that shares the global sinks. */
 std::shared_ptr<spdlog::logger> getLogger(const std::string &name);
 
 } // namespace cinepi
