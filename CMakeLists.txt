@@ -62,33 +62,33 @@ find_package(Threads REQUIRED)
 # ── Sources ──────────────────────────────────────────────────────────────────
 
 set(CAMERA_SOURCES
-    app/camera/cinepi_controller.cpp
-    app/camera/cinepi_sound.cpp
+    app/camera/camera_backend.cpp
+    app/camera/cinepi_audio.cpp
     app/camera/dng_encoder.cpp
     app/camera/utils.cpp
 )
 
 set(UI_SOURCES
-    app/ui/CameraController.cpp
-    app/ui/DmaBufViewfinder.cpp
-    app/ui/FrameProvider.cpp
-    app/ui/ConfigManager.cpp
+    app/ui/camera_adapter.cpp
+    app/ui/dmabuf_viewfinder.cpp
+    app/ui/frame_provider.cpp
+    app/ui/config_manager.cpp
 )
 
 set(MAIN_SOURCES
     app/main.cpp
-    app/CameraWorker.cpp
+    app/camera_session.cpp
     app/logging.cpp
 )
 
 set(HEADERS
-    app/CameraWorker.h
-    app/logging.h
-    app/studio_app_compat.h
-    app/ui/CameraController.h
-    app/ui/DmaBufViewfinder.h
-    app/ui/FrameProvider.h
-    app/ui/ConfigManager.h
+    app/camera_session.hpp
+    app/logging.hpp
+    app/studio_app_compat.hpp
+    app/ui/camera_adapter.hpp
+    app/ui/dmabuf_viewfinder.hpp
+    app/ui/frame_provider.hpp
+    app/ui/config_manager.hpp
 )
 
 qt_add_resources(QRC_SOURCES app.qrc)

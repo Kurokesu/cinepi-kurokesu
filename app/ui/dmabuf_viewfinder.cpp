@@ -1,5 +1,5 @@
-#include "DmaBufViewfinder.h"
-#include "logging.h"
+#include "dmabuf_viewfinder.hpp"
+#include "logging.hpp"
 
 #include <QOpenGLFramebufferObject>
 #include <QOpenGLFunctions>

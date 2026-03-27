@@ -1,5 +1,5 @@
-#include "ConfigManager.h"
-#include "logging.h"
+#include "config_manager.hpp"
+#include "logging.hpp"
 #include <QSettings>
 
 static auto &logger()

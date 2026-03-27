@@ -1,31 +1,31 @@
-#include "CameraWorker.h"
-#include "logging.h"
+#include "camera_session.hpp"
+#include "logging.hpp"
 
-#include "camera/cinepi_sound.hpp"
-#include "camera/cinepi_controller.hpp"
+#include "camera/cinepi_audio.hpp"
+#include "camera/camera_backend.hpp"
 #include "camera/dng_encoder.hpp"
 #include <rpicam-apps/output/output.hpp>
 #include <rpicam-apps/core/rpicam_app.hpp>
 
 using namespace std::placeholders;
 
-CameraWorker::CameraWorker(const QString &configDir, QObject *parent)
+CameraSession::CameraSession(const QString &configDir, QObject *parent)
     : QThread(parent), configDir_(configDir)
 {
 }
 
-CameraWorker::~CameraWorker()
+CameraSession::~CameraSession()
 {
     requestStop();
     wait();
 }
 
-void CameraWorker::requestStop()
+void CameraSession::requestStop()
 {
     stopRequested_ = true;
 }
 
-void CameraWorker::setInitialSettings(int isoGain, int shutterAngle,
+void CameraSession::setInitialSettings(int isoGain, int shutterAngle,
                                        int fps, int colorTemp)
 {
     isoGain_ = isoGain;
@@ -34,20 +34,20 @@ void CameraWorker::setInitialSettings(int isoGain, int shutterAngle,
     colorTemp_ = colorTemp;
 }
 
-void CameraWorker::handleControl(const QString &key, const QString &value)
+void CameraSession::handleControl(const QString &key, const QString &value)
 {
     std::lock_guard<std::mutex> lock(controlMutex_);
     pendingControls_.emplace_back(key.toStdString(), value.toStdString());
 }
 
-void CameraWorker::run()
+void CameraSession::run()
 {
-    auto log = cinepi::getLogger("camera.worker");
+    auto log = cinepi::getLogger("camera.session");
 
     try {
         CinePIRecorder app;
-        CinePISound sound(&app);
-        CinePIController controller(&app);
+        CinePIAudio sound(&app);
+        CameraBackend controller(&app);
 
         RawOptions *options = app.GetOptions();
 
@@ -219,7 +219,7 @@ void CameraWorker::run()
         log->info("Camera worker stopped");
     }
     catch (std::exception const &e) {
-        cinepi::getLogger("camera.worker")->error("Camera error: {}", e.what());
+        cinepi::getLogger("camera.session")->error("Camera error: {}", e.what());
         Q_EMIT cameraError(QString::fromStdString(e.what()));
     }
 }

@@ -1,5 +1,5 @@
-#include "cinepi_controller.hpp"
-#include "logging.h"
+#include "camera_backend.hpp"
+#include "logging.hpp"
 
 // IMX283 sensor-calibrated colour gains derived from the ct_curve in
 // /usr/share/libcamera/ipa/rpi/pisp/imx283.json.  Values are 1/ct_ratio
@@ -31,16 +31,16 @@ static void kelvinToColourGains(int kelvin, float &r_gain, float &b_gain)
     }
 }
 
-CinePIController::CinePIController(CinePIRecorder *app)
+CameraBackend::CameraBackend(CinePIRecorder *app)
     : CinePIState(),
       app_(app),
       options_(app->GetOptions())
 {
-    logger_ = cinepi::getLogger("camera.controller");
+    logger_ = cinepi::getLogger("camera.backend");
     initHandlers();
 }
 
-void CinePIController::setInitialValues(int isoGain, float shutterAngle,
+void CameraBackend::setInitialValues(int isoGain, float shutterAngle,
                                          float fps, int awb)
 {
     iso_           = isoGain;
@@ -55,7 +55,7 @@ void CinePIController::setInitialValues(int isoGain, float shutterAngle,
                   gainToIso(iso_), shutter_angle_, framerate_, awb_);
 }
 
-void CinePIController::initHandlers()
+void CameraBackend::initHandlers()
 {
     handlers_ = {
         { CONTROL_KEY_RECORD, [this](const std::string &v) {
@@ -165,7 +165,7 @@ void CinePIController::initHandlers()
     };
 }
 
-void CinePIController::handleControl(const std::string &key, const std::string &value)
+void CameraBackend::handleControl(const std::string &key, const std::string &value)
 {
     auto it = handlers_.find(key);
     if (it != handlers_.end()) {
@@ -175,7 +175,7 @@ void CinePIController::handleControl(const std::string &key, const std::string &
     }
 }
 
-void CinePIController::sync()
+void CameraBackend::sync()
 {
     libcamera::ControlList cl;
     cl.set(libcamera::controls::rpi::StatsOutputEnable, true);
@@ -191,7 +191,7 @@ void CinePIController::sync()
     options_->Set().mode_string = "0:0:0:0";
 }
 
-void CinePIController::applyExposure()
+void CameraBackend::applyExposure()
 {
     libcamera::ControlList cl;
 
@@ -222,7 +222,7 @@ void CinePIController::applyExposure()
     app_->SetControls(cl);
 }
 
-void CinePIController::applyAwb()
+void CameraBackend::applyAwb()
 {
     libcamera::ControlList cl;
     if (awb_ == 0) {
@@ -241,7 +241,7 @@ void CinePIController::applyAwb()
     app_->SetControls(cl);
 }
 
-void CinePIController::process(CompletedRequestPtr &completed_request)
+void CameraBackend::process(CompletedRequestPtr &completed_request)
 {
     CinePIFrameInfo info(completed_request);
 
@@ -258,7 +258,7 @@ void CinePIController::process(CompletedRequestPtr &completed_request)
     }
 }
 
-void CinePIController::process_stream_info(libcamera::StreamConfiguration const &cfg)
+void CameraBackend::process_stream_info(libcamera::StreamConfiguration const &cfg)
 {
     width_  = cfg.size.width;
     height_ = cfg.size.height;

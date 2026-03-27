@@ -5,14 +5,14 @@
 #include <QCursor>
 #include <QtQml/qqmlextensionplugin.h>
 
-#include "logging.h"
-#include "CameraWorker.h"
-#include "ui/CameraController.h"
-#include "ui/DmaBufViewfinder.h"
-#include "ui/FrameProvider.h"
-#include "ui/ConfigManager.h"
-#include "studio_app_compat.h"
-#include "camera/cinepi_controller.hpp"
+#include "logging.hpp"
+#include "camera_session.hpp"
+#include "ui/camera_adapter.hpp"
+#include "ui/dmabuf_viewfinder.hpp"
+#include "ui/frame_provider.hpp"
+#include "ui/config_manager.hpp"
+#include "studio_app_compat.hpp"
+#include "camera/camera_backend.hpp"
 
 Q_IMPORT_QML_PLUGIN(CinePiUiPlugin)
 Q_IMPORT_QML_PLUGIN(CinePiUiContentPlugin)
@@ -60,16 +60,16 @@ int main(int argc, char *argv[])
     int fps = configManager.value("frameRate").toInt();
     int ct  = configManager.value("colorTemperature").toInt();
 
-    CameraWorker cameraWorker(configDir);
-    cameraWorker.setInitialSettings(
+    CameraSession cameraSession(configDir);
+    cameraSession.setInitialSettings(
         isoToGain(iso),
         sht > 0 ? sht : -1,
         fps,
         ct
     );
 
-    CameraController cameraController(&cameraWorker);
-    cameraController.setInitialProperties(iso, sht, fps, ct);
+    CameraAdapter cameraAdapter(&cameraSession);
+    cameraAdapter.setInitialProperties(iso, sht, fps, ct);
 
     FrameProvider *frameProvider = new FrameProvider();
 
@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
 
     engine.addImageProvider("frames", frameProvider);
 
-    engine.rootContext()->setContextProperty("camera", &cameraController);
+    engine.rootContext()->setContextProperty("camera", &cameraAdapter);
     engine.rootContext()->setContextProperty("frameProvider", frameProvider);
     engine.rootContext()->setContextProperty("config", &configManager);
 
@@ -94,20 +94,20 @@ int main(int argc, char *argv[])
     for (auto *obj : rootObjects) {
         auto viewfinders = obj->findChildren<DmaBufViewfinder *>();
         for (auto *viewfinder : viewfinders) {
-            QObject::connect(&cameraWorker, &CameraWorker::frameReady,
+            QObject::connect(&cameraSession, &CameraSession::frameReady,
                              viewfinder, &DmaBufViewfinder::onFrameReady);
         }
     }
 
-    cameraWorker.start();
-    log->info("Camera worker started");
+    cameraSession.start();
+    log->info("Camera session started");
 
     int ret = app.exec();
 
     log->info("Shutting down...");
     configManager.save();
-    cameraWorker.requestStop();
-    cameraWorker.wait();
+    cameraSession.requestStop();
+    cameraSession.wait();
     log->info("CinePI stopped (exit code {})", ret);
 
     return ret;

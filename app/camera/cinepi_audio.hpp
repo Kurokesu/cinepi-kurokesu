@@ -30,10 +30,10 @@ FILE * popen2(std::string command, std::string type, int & pid);
 int pclose2(FILE * fp, pid_t pid);
 uint64_t extractTime(const std::string& line);
 
-class CinePISound{
+class CinePIAudio{
 public:
-    CinePISound(CinePIRecorder *app);
-    ~CinePISound();
+    CinePIAudio(CinePIRecorder *app);
+    ~CinePIAudio();
 
     void start();
     void soundThread();

@@ -8,13 +8,13 @@
 #include <utility>
 #include <vector>
 
-class CameraWorker : public QThread
+class CameraSession : public QThread
 {
     Q_OBJECT
 
 public:
-    explicit CameraWorker(const QString &configDir, QObject *parent = nullptr);
-    ~CameraWorker() override;
+    explicit CameraSession(const QString &configDir, QObject *parent = nullptr);
+    ~CameraSession() override;
 
     void requestStop();
     void setInitialSettings(int isoGain, int shutterAngle, int fps, int colorTemp);

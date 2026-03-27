@@ -31,7 +31,7 @@
 inline int isoToGain(int iso) { return iso > 0 ? std::max(1, iso / 100) : iso; }
 inline int gainToIso(int gain) { return gain > 0 ? gain * 100 : gain; }
 
-class CinePIController : public CinePIState
+class CameraBackend : public CinePIState
 {
 public:
     using StatsCallback = std::function<void(float framerate, int colorTemp,
@@ -41,7 +41,7 @@ public:
                                               float analogueGain)>;
     using StreamInfoCallback = std::function<void(int width, int height)>;
 
-    CinePIController(CinePIRecorder *app);
+    CameraBackend(CinePIRecorder *app);
 
     void setInitialValues(int isoGain, float shutterAngle, float fps, int awb);
     void sync();

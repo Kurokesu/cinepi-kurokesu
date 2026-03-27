@@ -1,5 +1,5 @@
-#include "cinepi_sound.hpp"
-#include "logging.h"
+#include "cinepi_audio.hpp"
+#include "logging.hpp"
 #include <cstdlib>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
@@ -122,7 +122,7 @@ uint64_t extractTime(const std::string& line) {
     return (seconds * 1e+9) + nanoseconds;
 }
 
-CinePISound::CinePISound(CinePIRecorder *app) : 
+CinePIAudio::CinePIAudio(CinePIRecorder *app) : 
     app_(app),
     pid(-1),
     abortThread_(false),
@@ -143,7 +143,7 @@ CinePISound::CinePISound(CinePIRecorder *app) :
     logger_ = cinepi::getLogger("camera.audio");
 }
 
-CinePISound::~CinePISound() {
+CinePIAudio::~CinePIAudio() {
     abortThread_ = true;
     if (sound_thread_.joinable())
         sound_thread_.join();
@@ -151,7 +151,7 @@ CinePISound::~CinePISound() {
         udev_unref(udev);
 }
 
-void CinePISound::start() {
+void CinePIAudio::start() {
     if (std::getenv("CINEPI_SKIP_SOUND")) {
         canRecordAudio = false;
         logger_->info("Sound disabled (CINEPI_SKIP_SOUND)");
@@ -161,7 +161,7 @@ void CinePISound::start() {
         detectRecordingDevices();
         if (canRecordAudio) {
             parseHardwareParams();
-            sound_thread_ = std::thread(std::bind(&CinePISound::soundThread, this));
+            sound_thread_ = std::thread(std::bind(&CinePIAudio::soundThread, this));
         }
     } catch (...) {
         logger_->error("Sound startup failed (continuing without audio)");
@@ -169,7 +169,7 @@ void CinePISound::start() {
     }
 }
 
-void CinePISound::soundThread() {
+void CinePIAudio::soundThread() {
     init_udev();
 
     while(!abortThread_){
@@ -346,7 +346,7 @@ void CinePISound::soundThread() {
     }
 }
 
-void CinePISound::record_start() {
+void CinePIAudio::record_start() {
     if(!canRecordAudio)
         return;
     std::ostringstream oss;
@@ -384,7 +384,7 @@ void CinePISound::record_start() {
     logger_->info("Sound recording started.");
 }
 
-void CinePISound::record_stop() {
+void CinePIAudio::record_stop() {
     if(!canRecordAudio)
         return;
     record_ = false;
@@ -396,7 +396,7 @@ void CinePISound::record_stop() {
     logger_->info("Sound recording stopped.");
 }
 
-bool CinePISound::recording_ended() {
+bool CinePIAudio::recording_ended() {
     bool state = false;
     if((pid < 0) && recording_){
         recording_ = false;
@@ -405,12 +405,12 @@ bool CinePISound::recording_ended() {
     return state;
 }
 
-bool CinePISound::isRecording() {
+bool CinePIAudio::isRecording() {
     return (recording_) || !canRecordAudio;
 }
 
 
-void CinePISound::detectRecordingDevices() {
+void CinePIAudio::detectRecordingDevices() {
     FILE* pipe = popen("arecord -l", "r");
     if(!pipe) {
         logger_->error("Failed to run arecord -l");
@@ -441,7 +441,7 @@ void CinePISound::detectRecordingDevices() {
     logger_->debug("{}", defaultDevice);
 }
 
-void CinePISound::init_udev(){
+void CinePIAudio::init_udev(){
     /* create udev object */
 	udev = udev_new();
 	if (!udev) {
@@ -454,7 +454,7 @@ void CinePISound::init_udev(){
 	udev_fd = udev_monitor_get_fd(udev_mon);
 }
 
-void CinePISound::parseHardwareParams() {
+void CinePIAudio::parseHardwareParams() {
 
     audioFormat = "S16_LE";
     audioSampleRate = 48000;
@@ -524,7 +524,7 @@ void CinePISound::parseHardwareParams() {
 }
 
 
-void CinePISound::generateXML(std::string fn){
+void CinePIAudio::generateXML(std::string fn){
     boost::property_tree::ptree tree;
 
     tree.put("BWFXML.IXML_VERSION", "1.5");

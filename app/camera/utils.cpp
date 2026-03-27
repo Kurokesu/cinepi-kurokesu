@@ -1,5 +1,5 @@
 #include "utils.hpp"
-#include "logging.h"
+#include "logging.hpp"
 
 static auto &logger()
 {

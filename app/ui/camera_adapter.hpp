@@ -3,9 +3,9 @@
 #include <QObject>
 #include <QString>
 
-class CameraWorker;
+class CameraSession;
 
-class CameraController : public QObject
+class CameraAdapter : public QObject
 {
     Q_OBJECT
 
@@ -23,7 +23,7 @@ class CameraController : public QObject
     Q_PROPERTY(QString errorString READ errorString NOTIFY errorChanged)
 
 public:
-    explicit CameraController(CameraWorker *worker, QObject *parent = nullptr);
+    explicit CameraAdapter(CameraSession *session, QObject *parent = nullptr);
 
     int isoSensitivity() const { return isoSensitivity_; }
     int shutterAngle() const { return shutterAngle_; }
@@ -72,7 +72,7 @@ private Q_SLOTS:
 private:
     void sendControl(const QString &key, const QString &value);
 
-    CameraWorker *worker_;
+    CameraSession *session_;
 
     int isoSensitivity_ = 800;
     int shutterAngle_ = 180;

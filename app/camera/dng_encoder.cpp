@@ -10,7 +10,7 @@
 #include <chrono>
 #include <iostream>
 #include <libcamera/control_ids.h>
-#include "logging.h"
+#include "logging.hpp"
 #include <libcamera/formats.h>
 
 #include <tiffio.h>

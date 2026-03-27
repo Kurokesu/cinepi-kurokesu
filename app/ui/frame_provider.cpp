@@ -1,5 +1,5 @@
-#include "FrameProvider.h"
-#include "logging.h"
+#include "frame_provider.hpp"
+#include "logging.hpp"
 
 static auto &logger()
 {
