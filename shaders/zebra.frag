@@ -16,7 +16,7 @@ void main() {
     vec4 color = texture(source, qt_TexCoord0);
     float brightness = dot(color.rgb, vec3(0.299, 0.587, 0.114));
 
-    if (brightness > zebraThreshold) {
+    if (brightness > zebraThreshold / 100.0) {
         float speedFactor = 0.1;
         float stripeSize = 0.01;
         float stripePattern = mod(

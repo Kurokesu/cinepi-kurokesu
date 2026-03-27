@@ -89,6 +89,7 @@ int main(int argc, char *argv[])
     int ret = app.exec();
 
     log->info("Shutting down...");
+    configManager.save();
     cameraWorker.requestStop();
     cameraWorker.wait();
     log->info("CinePI stopped (exit code {})", ret);
