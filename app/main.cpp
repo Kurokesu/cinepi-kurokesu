@@ -12,6 +12,7 @@
 #include "ui/FrameProvider.h"
 #include "ui/ConfigManager.h"
 #include "studio_app_compat.h"
+#include "camera/cinepi_controller.hpp"
 
 Q_IMPORT_QML_PLUGIN(CinePiUiPlugin)
 Q_IMPORT_QML_PLUGIN(CinePiUiContentPlugin)
@@ -52,10 +53,25 @@ int main(int argc, char *argv[])
         QCoreApplication::applicationDirPath() + "/../../config");
     log->info("Config dir: {}", configDir.toStdString());
 
-    CameraWorker cameraWorker(configDir);
-    CameraController cameraController(&cameraWorker);
-    FrameProvider *frameProvider = new FrameProvider();
     ConfigManager configManager(configDir);
+
+    int iso = configManager.value("manualIsoSensitivity").toInt();
+    int sht = configManager.value("manualShutterAngle").toInt();
+    int fps = configManager.value("frameRate").toInt();
+    int ct  = configManager.value("colorTemperature").toInt();
+
+    CameraWorker cameraWorker(configDir);
+    cameraWorker.setInitialSettings(
+        isoToGain(iso),
+        sht > 0 ? sht : -1,
+        fps,
+        ct
+    );
+
+    CameraController cameraController(&cameraWorker);
+    cameraController.setInitialProperties(iso, sht, fps, ct);
+
+    FrameProvider *frameProvider = new FrameProvider();
 
     QQmlApplicationEngine engine;
 

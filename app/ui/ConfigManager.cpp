@@ -10,8 +10,15 @@ static auto &logger()
 
 ConfigManager::ConfigManager(const QString &basePath, QObject *parent)
     : QQmlPropertyMap(this, parent)
-    , m_configPath(basePath + "/config.ini")
+    , m_configPath(basePath + "/settings.ini")
 {
+    // Camera exposure -- -1 = auto, positive = manual
+    insert("manualIsoSensitivity",      800);
+    insert("manualShutterAngle",        180);
+    insert("colorTemperature",          0);
+    insert("frameRate",                 24);
+
+    // Monitor overlays
     insert("zebraEnabled",              true);
     insert("zebraThreshold",            85);
     insert("falseColorEnabled",         false);

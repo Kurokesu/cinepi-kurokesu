@@ -51,7 +51,6 @@ pkg_check_modules(DRM REQUIRED libdrm)
 
 # Camera backend dependencies
 pkg_check_modules(SPDLOG REQUIRED spdlog)
-pkg_check_modules(JSONCPP REQUIRED jsoncpp)
 pkg_check_modules(JPEG REQUIRED libjpeg)
 pkg_check_modules(TIFF REQUIRED libtiff-4)
 pkg_check_modules(ALSA REQUIRED alsa)
@@ -65,7 +64,6 @@ find_package(Threads REQUIRED)
 set(CAMERA_SOURCES
     app/camera/cinepi_controller.cpp
     app/camera/cinepi_sound.cpp
-    app/camera/cinepi_state.cpp
     app/camera/dng_encoder.cpp
     app/camera/utils.cpp
 )
@@ -115,7 +113,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${GLES2_INCLUDE_DIRS}
     ${DRM_INCLUDE_DIRS}
     ${SPDLOG_INCLUDE_DIRS}
-    ${JSONCPP_INCLUDE_DIRS}
     ${JPEG_INCLUDE_DIRS}
     ${TIFF_INCLUDE_DIRS}
     ${ALSA_INCLUDE_DIRS}
@@ -141,7 +138,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     ${GLES2_LIBRARIES}
     ${DRM_LIBRARIES}
     ${SPDLOG_LIBRARIES}
-    ${JSONCPP_LIBRARIES}
     ${JPEG_LIBRARIES}
     ${TIFF_LIBRARIES}
     ${ALSA_LIBRARIES}

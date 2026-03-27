@@ -1,15 +1,11 @@
 #include "cinepi_controller.hpp"
 #include "logging.h"
 
-using namespace std;
-using namespace std::chrono;
-
-#define CP_DEF_WIDTH 1920
-
 // IMX283 sensor-calibrated colour gains derived from the ct_curve in
 // /usr/share/libcamera/ipa/rpi/pisp/imx283.json.  Values are 1/ct_ratio
 // (the reciprocal of the raw R/G and B/G ratios at each colour temperature).
-static void kelvinToColourGains(int kelvin, float& r_gain, float& b_gain) {
+static void kelvinToColourGains(int kelvin, float &r_gain, float &b_gain)
+{
     struct { int k; float r; float b; } const table[] = {
         { 2800, 1.17f, 2.86f },
         { 3200, 1.31f, 2.37f },
@@ -23,11 +19,11 @@ static void kelvinToColourGains(int kelvin, float& r_gain, float& b_gain) {
     const size_t n = sizeof(table) / sizeof(table[0]);
     r_gain = 1.0f;
     b_gain = 1.0f;
-    if (kelvin <= table[0].k)       { r_gain = table[0].r; b_gain = table[0].b; return; }
-    if (kelvin >= table[n-1].k)     { r_gain = table[n-1].r; b_gain = table[n-1].b; return; }
+    if (kelvin <= table[0].k)   { r_gain = table[0].r; b_gain = table[0].b; return; }
+    if (kelvin >= table[n-1].k) { r_gain = table[n-1].r; b_gain = table[n-1].b; return; }
     for (size_t i = 0; i < n - 1; i++) {
         if (kelvin >= table[i].k && kelvin <= table[i+1].k) {
-            float t = (float)(kelvin - table[i].k) / (float)(table[i+1].k - table[i].k);
+            float t = float(kelvin - table[i].k) / float(table[i+1].k - table[i].k);
             r_gain = table[i].r + t * (table[i+1].r - table[i].r);
             b_gain = table[i].b + t * (table[i+1].b - table[i].b);
             return;
@@ -35,26 +31,28 @@ static void kelvinToColourGains(int kelvin, float& r_gain, float& b_gain) {
     }
 }
 
-#define CP_DEF_HEIGHT 1080
-#define CP_DEF_FRAMERATE 30
-#define CP_DEF_ISO 400
-#define CP_DEF_SHUTTER 50
-#define CP_DEF_AWB 0
-#define CP_DEF_COMPRESS 0
-#define CP_DEF_THUMBNAIL 1
-#define CP_DEF_THUMBNAIL_SIZE 3
-
 CinePIController::CinePIController(CinePIRecorder *app)
     : CinePIState(),
       app_(app),
-      folderOpen(false),
-      cameraRunning(false),
-      trigger_(0),
-      options_(app->GetOptions()),
-      cameraInit_(true)
+      options_(app->GetOptions())
 {
     console = cinepi::getLogger("cinepi_controller");
     initHandlers();
+}
+
+void CinePIController::setInitialValues(int isoGain, float shutterAngle,
+                                         float fps, int awb)
+{
+    iso_           = isoGain;
+    shutter_angle_ = shutterAngle;
+    framerate_     = fps;
+    awb_           = awb;
+
+    if (shutter_angle_ > 0)
+        shutter_speed_ = 1.0 / ((framerate_ * 360.0) / shutter_angle_);
+
+    console->info("Initial: ISO={} SHT={} FPS={} AWB={}",
+                  gainToIso(iso_), shutter_angle_, framerate_, awb_);
 }
 
 void CinePIController::initHandlers()
@@ -66,14 +64,27 @@ void CinePIController::initHandlers()
             console->info("Record trigger: {}", is_recording_ ? "START" : "STOP");
         }},
         { CONTROL_KEY_ISO, [this](const std::string &v) {
-            iso_ = (unsigned int)(stoi(v) / 100.0);
-            console->info("ISO: {} (gain={})", stoi(v), iso_);
+            int val = stoi(v);
+            if (val == 0) {
+                console->warn("ISO: invalid value 0, ignoring");
+                return;
+            }
+            iso_ = isoToGain(val);
+            console->info("ISO: {}{}", val < 0 ? "AUTO" : std::to_string(val),
+                          val > 0 ? " (gain=" + std::to_string(iso_) + ")" : "");
             libcamera::ControlList cl;
-            cl.set(libcamera::controls::AnalogueGain, iso_);
+            if (iso_ < 0) {
+                cl.set(libcamera::controls::AnalogueGainMode,
+                       libcamera::controls::AnalogueGainModeAuto);
+            } else {
+                cl.set(libcamera::controls::AnalogueGainMode,
+                       libcamera::controls::AnalogueGainModeManual);
+                cl.set(libcamera::controls::AnalogueGain, iso_);
+            }
             app_->SetControls(cl);
         }},
         { CONTROL_KEY_WB, [this](const std::string &v) {
-            awb_ = (unsigned int)stoi(v);
+            awb_ = stoi(v);
             applyAwb();
         }},
         { CONTROL_KEY_COLORGAINS, [this](const std::string &v) {
@@ -83,7 +94,7 @@ void CinePIController::initHandlers()
             char *ptr = strtok(&cg[0], ",");
             uint8_t i = 0;
             while (ptr != NULL && i < 2) {
-                cg_rb_[i] = (float)stof(ptr);
+                cg_rb_[i] = static_cast<float>(stof(ptr));
                 i++;
                 ptr = strtok(NULL, ",");
             }
@@ -92,35 +103,36 @@ void CinePIController::initHandlers()
             app_->SetControls(cl);
         }},
         { CONTROL_KEY_SHUTTER_ANGLE, [this](const std::string &v) {
-            shutter_angle_ = stof(v);
-            shutter_speed_ = 1.0 / ((framerate_ * 360.0) / shutter_angle_);
-            uint64_t shutterTime = shutter_speed_ * 1e+6;
-            console->info("Shutter: {}° -> {:.0f}us", shutter_angle_, (double)shutterTime);
+            float val = stof(v);
+            shutter_angle_ = val;
             libcamera::ControlList cl;
-            cl.set(libcamera::controls::AeEnable, false);
-            cl.set(libcamera::controls::ExposureTime, shutterTime);
-            app_->SetControls(cl);
-        }},
-        { CONTROL_KEY_SHUTTER_SPEED, [this](const std::string &v) {
-            shutter_speed_ = 1.0 / stof(v);
-            uint64_t shutterTime = shutter_speed_ * 1e+6;
-            libcamera::ControlList cl;
-            cl.set(libcamera::controls::ExposureTime, shutterTime);
+            if (shutter_angle_ < 0) {
+                cl.set(libcamera::controls::ExposureTimeMode,
+                       libcamera::controls::ExposureTimeModeAuto);
+                console->info("Shutter: AUTO");
+            } else if (shutter_angle_ > 0 && framerate_ > 0) {
+                shutter_speed_ = 1.0 / ((framerate_ * 360.0) / shutter_angle_);
+                uint64_t shutterTime = shutter_speed_ * 1e+6;
+                cl.set(libcamera::controls::ExposureTimeMode,
+                       libcamera::controls::ExposureTimeModeManual);
+                cl.set(libcamera::controls::ExposureTime, shutterTime);
+                console->info("Shutter: {}deg -> {}us", shutter_angle_, shutterTime);
+            } else {
+                console->warn("Shutter: invalid angle {}, ignoring", shutter_angle_);
+                return;
+            }
             app_->SetControls(cl);
         }},
         { CONTROL_KEY_WIDTH, [this](const std::string &v) {
-            width_ = (uint16_t)(stoi(v));
+            width_ = static_cast<uint16_t>(stoi(v));
             options_->Set().width = width_;
-            console->debug("Width: {}", width_);
         }},
         { CONTROL_KEY_HEIGHT, [this](const std::string &v) {
-            height_ = (uint16_t)(stoi(v));
+            height_ = static_cast<uint16_t>(stoi(v));
             options_->Set().height = height_;
-            console->debug("Height: {}", height_);
         }},
         { CONTROL_KEY_COMPRESSION, [this](const std::string &v) {
             compression_ = stoi(v);
-            console->debug("Compression: {}", compression_);
             options_->compression = compression_;
             cameraInit_ = true;
         }},
@@ -153,90 +165,11 @@ void CinePIController::initHandlers()
     };
 }
 
-void CinePIController::loadSettings(const std::string &path)
-{
-    settingsPath_ = path;
-
-    Json::Value root;
-    std::ifstream file(path);
-    if (file.is_open()) {
-        Json::CharReaderBuilder builder;
-        std::string errs;
-        if (Json::parseFromStream(builder, file, &root, &errs)) {
-            width_          = root.get("width", CP_DEF_WIDTH).asInt();
-            height_         = root.get("height", CP_DEF_HEIGHT).asInt();
-            framerate_      = root.get("fps", CP_DEF_FRAMERATE).asFloat();
-            iso_            = root.get("iso", CP_DEF_ISO).asInt();
-            shutter_angle_  = root.get("shutter_a", 180.0f).asFloat();
-            shutter_speed_  = 1.0 / ((framerate_ * 360.0) / shutter_angle_);
-            awb_            = root.get("awb", CP_DEF_AWB).asInt();
-            compression_    = root.get("compress", CP_DEF_COMPRESS).asInt();
-            thumbnail_      = root.get("thumbnail", CP_DEF_THUMBNAIL).asInt();
-            thumbnail_size_ = root.get("thumbnail_size", CP_DEF_THUMBNAIL_SIZE).asInt();
-
-            std::string cg = root.get("cg_rb", "").asString();
-            if (!cg.empty()) {
-                auto pos = cg.find(',');
-                if (pos != std::string::npos) {
-                    cg_rb_[0] = stof(cg.substr(0, pos));
-                    cg_rb_[1] = stof(cg.substr(pos + 1));
-                }
-            }
-            console->info("Settings loaded from {}", path);
-            return;
-        }
-        console->warn("Failed to parse {}: {}", path, errs);
-    }
-
-    // Defaults
-    width_          = CP_DEF_WIDTH;
-    height_         = CP_DEF_HEIGHT;
-    framerate_      = CP_DEF_FRAMERATE;
-    iso_            = CP_DEF_ISO;
-    shutter_angle_  = 180.0f;
-    shutter_speed_  = 1.0 / ((framerate_ * 360.0) / shutter_angle_);
-    awb_            = CP_DEF_AWB;
-    compression_    = CP_DEF_COMPRESS;
-    thumbnail_      = CP_DEF_THUMBNAIL;
-    thumbnail_size_ = CP_DEF_THUMBNAIL_SIZE;
-    cg_rb_[0]       = 1.0f;
-    cg_rb_[1]       = 1.0f;
-
-    console->info("Using default settings (no settings file)");
-}
-
-void CinePIController::saveSettings(const std::string &path)
-{
-    Json::Value root;
-    root["width"]          = width_;
-    root["height"]         = height_;
-    root["fps"]            = framerate_;
-    root["iso"]            = (int)iso_;
-    root["shutter_a"]      = shutter_angle_;
-    root["awb"]            = (int)awb_;
-    root["compress"]       = compression_;
-    root["thumbnail"]      = thumbnail_;
-    root["thumbnail_size"] = thumbnail_size_;
-    root["cg_rb"]          = std::to_string(cg_rb_[0]) + "," + std::to_string(cg_rb_[1]);
-
-    std::ofstream file(path);
-    if (file.is_open()) {
-        Json::StreamWriterBuilder builder;
-        builder["indentation"] = "  ";
-        file << Json::writeString(builder, root);
-        console->debug("Settings saved to {}", path);
-    } else {
-        console->warn("Failed to save settings to {}", path);
-    }
-}
-
 void CinePIController::handleControl(const std::string &key, const std::string &value)
 {
     auto it = handlers_.find(key);
     if (it != handlers_.end()) {
         it->second(value);
-        if (!settingsPath_.empty())
-            saveSettings(settingsPath_);
     } else {
         console->warn("Unknown control key: {}", key);
     }
@@ -252,25 +185,45 @@ void CinePIController::sync()
     options_->thumbnailSize = thumbnail_size_;
     options_->compression  = compression_;
     options_->Set().framerate = framerate_;
-    options_->Set().gain     = iso_;
+    options_->Set().gain     = (iso_ < 0) ? 0 : iso_;
     options_->awbEn = (awb_ == 0);
     options_->Set().denoise  = "off";
     options_->Set().mode_string = "0:0:0:0";
 }
 
-void CinePIController::applyExposure() {
-    shutter_speed_ = 1.0 / ((framerate_ * 360.0) / shutter_angle_);
-    uint64_t shutterTime = shutter_speed_ * 1e+6;
-    console->info("Exposure: {}° {:.0f}us, ISO {} (gain={})",
-                  shutter_angle_, (double)shutterTime, iso_ * 100, iso_);
+void CinePIController::applyExposure()
+{
     libcamera::ControlList cl;
-    cl.set(libcamera::controls::AeEnable, false);
-    cl.set(libcamera::controls::ExposureTime, shutterTime);
-    cl.set(libcamera::controls::AnalogueGain, iso_);
+
+    if (shutter_angle_ < 0) {
+        cl.set(libcamera::controls::ExposureTimeMode,
+               libcamera::controls::ExposureTimeModeAuto);
+        console->info("Shutter: AUTO");
+    } else if (shutter_angle_ > 0 && framerate_ > 0) {
+        shutter_speed_ = 1.0 / ((framerate_ * 360.0) / shutter_angle_);
+        uint64_t shutterTime = shutter_speed_ * 1e+6;
+        cl.set(libcamera::controls::ExposureTimeMode,
+               libcamera::controls::ExposureTimeModeManual);
+        cl.set(libcamera::controls::ExposureTime, shutterTime);
+        console->info("Shutter: {}deg -> {}us", shutter_angle_, shutterTime);
+    }
+
+    if (iso_ < 0) {
+        cl.set(libcamera::controls::AnalogueGainMode,
+               libcamera::controls::AnalogueGainModeAuto);
+        console->info("ISO: AUTO");
+    } else {
+        cl.set(libcamera::controls::AnalogueGainMode,
+               libcamera::controls::AnalogueGainModeManual);
+        cl.set(libcamera::controls::AnalogueGain, iso_);
+        console->info("ISO: {} (gain={})", gainToIso(iso_), iso_);
+    }
+
     app_->SetControls(cl);
 }
 
-void CinePIController::applyAwb() {
+void CinePIController::applyAwb()
+{
     libcamera::ControlList cl;
     if (awb_ == 0) {
         console->info("AWB: AUTO");
@@ -298,7 +251,9 @@ void CinePIController::process(CompletedRequestPtr &completed_request)
             info.colorTemp,
             info.focus,
             app_->GetEncoder()->getFrameCount(),
-            app_->GetEncoder()->bufferSize()
+            app_->GetEncoder()->bufferSize(),
+            info.exposure_time,
+            info.analogue_gain
         );
     }
 }

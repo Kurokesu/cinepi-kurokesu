@@ -25,6 +25,15 @@ void CameraWorker::requestStop()
     m_stopRequested = true;
 }
 
+void CameraWorker::setInitialSettings(int isoGain, int shutterAngle,
+                                       int fps, int colorTemp)
+{
+    m_isoGain = isoGain;
+    m_shutterAngle = shutterAngle;
+    m_fps = fps;
+    m_colorTemp = colorTemp;
+}
+
 void CameraWorker::handleControl(const QString &key, const QString &value)
 {
     if (controller_)
@@ -66,13 +75,15 @@ void CameraWorker::run()
         options->rawCrop[2] = 0;
         options->rawCrop[3] = 0;
 
-        std::string settingsPath = (m_configDir + "/settings.json").toStdString();
-        controller.loadSettings(settingsPath);
+        controller.setInitialValues(m_isoGain, m_shutterAngle, m_fps, m_colorTemp);
 
         controller.setStatsCallback(
             [this](float framerate, int colorTemp, float focus,
-                   int frameCount, int bufferSize) {
-                Q_EMIT statsUpdate(framerate, colorTemp, focus, frameCount, bufferSize);
+                   int frameCount, int bufferSize,
+                   float exposureTime, float analogueGain) {
+                Q_EMIT statsUpdate(framerate, colorTemp, focus,
+                                   frameCount, bufferSize,
+                                   exposureTime, analogueGain);
             });
 
         controller.setStreamInfoCallback(
@@ -124,10 +135,10 @@ void CameraWorker::run()
                 if (!initialSync) {
                     initialSync = true;
                     Q_EMIT settingsLoaded(
-                        static_cast<int>(controller.getISO()) * 100,
+                        controller.getISO(),
                         static_cast<int>(controller.getShutterAngle()),
                         static_cast<int>(controller.getFramerate()),
-                        static_cast<int>(controller.getAWB()));
+                        controller.getAWB());
                 }
             }
 

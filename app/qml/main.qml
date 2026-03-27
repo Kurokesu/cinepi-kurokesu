@@ -79,27 +79,20 @@ ApplicationWindow {
     Connections {
         target: mainScreen
         function onIsoValueChanged() {
-            if (!mainScreen.isoControl.autoMode && mainScreen.isoValue > 0)
-                camera.setISO(mainScreen.isoValue)
+            camera.setIsoSensitivity(mainScreen.isoValue)
+            config.manualIsoSensitivity = mainScreen.isoValue
         }
     }
 
     Connections {
         target: mainScreen.shutterControl
         function onCurrentIndexChanged() {
-            if (!mainScreen.shutterControl.autoMode) {
-                var angle = Math.round(
-                    parseFloat(mainScreen.shutterControl.currentValue))
-                if (angle > 0)
-                    camera.setShutterAngle(angle)
-            }
+            var angle = Math.round(
+                parseFloat(mainScreen.shutterControl.currentValue))
+            camera.setShutterAngle(angle)
+            config.manualShutterAngle = angle
         }
     }
-
-    // WB: the UI uses Kelvin (2300-10000) but the backend currently uses AWB
-    // mode indices. A conversion layer in CameraController is needed before
-    // this can be properly wired. For now, keep the WB picker functional in
-    // the UI but don't send values to the backend.
 
     // ── Monitor sheet <-> config persistence ────────────────────────────────
 
@@ -140,14 +133,24 @@ ApplicationWindow {
     // ── Initial sync from persisted config ──────────────────────────────────
 
     Component.onCompleted: {
+        // Monitor overlays
         mainScreen.monitorControl.zebraEnabled = config.zebraEnabled
         mainScreen.monitorControl.peakingEnabled = config.focusPeakingEnabled
         mainScreen.monitorControl.falseColorEnabled = config.falseColorEnabled
         mainScreen.monitorControl.grayscaleEnabled = config.grayscaleEnabled
 
+        // Guide overlays
         mainScreen.guideControl.thirdsEnabled = config.thirdsGridEnabled
         mainScreen.guideControl.goldenEnabled = config.goldenEnabled
         mainScreen.guideControl.crosshairEnabled = config.crosshairEnabled
         mainScreen.guideControl.centerDotEnabled = config.centerDotEnabled
+
+        // Camera ISO auto/manual
+        if (config.manualIsoSensitivity >= 0)
+            mainScreen.isoValue = config.manualIsoSensitivity
+
+        // Camera shutter auto/manual
+        if (config.manualShutterAngle >= 0)
+            mainScreen.shutterControl.currentValue = config.manualShutterAngle
     }
 }

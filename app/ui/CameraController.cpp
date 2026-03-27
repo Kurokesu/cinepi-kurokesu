@@ -2,10 +2,6 @@
 #include "CameraWorker.h"
 #include "logging.h"
 
-#include <QFile>
-#include <QJsonDocument>
-#include <QJsonObject>
-
 static auto &logger()
 {
     static auto l = cinepi::getLogger("ui.camera");
@@ -15,7 +11,6 @@ static auto &logger()
 CameraController::CameraController(CameraWorker *worker, QObject *parent)
     : QObject(parent), m_worker(worker)
 {
-    loadInitialSettings();
     connect(m_worker, &CameraWorker::statsUpdate,
             this, &CameraController::onStatsUpdate);
     connect(m_worker, &CameraWorker::streamInfoUpdate,
@@ -47,40 +42,41 @@ void CameraController::sendControl(const QString &key, const QString &value)
     Q_EMIT controlRequested(key, value);
 }
 
-void CameraController::setISO(int value)
+void CameraController::setInitialProperties(int iso, int shutterAngle,
+                                              int fps, int colorTemp)
+{
+    m_isoSensitivity = iso;
+    m_shutterAngle = shutterAngle;
+    m_frameRate = fps;
+    m_colorTemperature = colorTemp;
+
+    Q_EMIT isoSensitivityChanged();
+    Q_EMIT shutterAngleChanged();
+    Q_EMIT frameRateChanged();
+    Q_EMIT colorTemperatureChanged();
+
+    logger()->info("Initial properties: ISO={} SHT={} FPS={} CT={}",
+                   iso, shutterAngle, fps, colorTemp);
+}
+
+void CameraController::setIsoSensitivity(int value)
 {
     sendControl("iso", QString::number(value));
-    if (value != m_iso) {
-        m_iso = value;
-        Q_EMIT isoChanged();
-    }
 }
 
 void CameraController::setShutterAngle(int value)
 {
     sendControl("shutter_a", QString::number(value));
-    if (value != m_shutterAngle) {
-        m_shutterAngle = value;
-        Q_EMIT shutterAngleChanged();
-    }
 }
 
-void CameraController::setFPS(int value)
+void CameraController::setFrameRate(int value)
 {
     sendControl("fps", QString::number(value));
-    if (value != m_fps) {
-        m_fps = value;
-        Q_EMIT fpsChanged();
-    }
 }
 
-void CameraController::setWhiteBalance(int value)
+void CameraController::setColorTemperature(int value)
 {
     sendControl("awb", QString::number(value));
-    if (value != m_whiteBalance) {
-        m_whiteBalance = value;
-        Q_EMIT whiteBalanceChanged();
-    }
 }
 
 void CameraController::setRecording(bool value)
@@ -102,22 +98,37 @@ void CameraController::setCompression(int value)
     }
 }
 
-void CameraController::setColorGains(double r, double b)
-{
-    sendControl("cg_rb", QString("%1,%2").arg(r).arg(b));
-    m_colorGainR = r;
-    m_colorGainB = b;
-    Q_EMIT colorGainsChanged();
-}
-
 void CameraController::onStatsUpdate(float framerate, int colorTemp,
                                       float focus, int frameCount,
-                                      int bufferSize)
+                                      int bufferSize,
+                                      float exposureTime, float analogueGain)
 {
+    Q_UNUSED(focus)
+
+    int actualIso = static_cast<int>(analogueGain * 100 + 0.5f);
+    if (actualIso != m_isoSensitivity) {
+        m_isoSensitivity = actualIso;
+        Q_EMIT isoSensitivityChanged();
+    }
+
+    if (framerate > 0 && exposureTime > 0) {
+        int actualAngle = static_cast<int>(
+            360.0f * framerate * exposureTime / 1e6f + 0.5f);
+        if (actualAngle != m_shutterAngle) {
+            m_shutterAngle = actualAngle;
+            Q_EMIT shutterAngleChanged();
+        }
+    }
+
+    if (colorTemp != m_colorTemperature) {
+        m_colorTemperature = colorTemp;
+        Q_EMIT colorTemperatureChanged();
+    }
+
     int newFps = static_cast<int>(framerate + 0.5f);
-    if (newFps != m_fps) {
-        m_fps = newFps;
-        Q_EMIT fpsChanged();
+    if (newFps != m_frameRate) {
+        m_frameRate = newFps;
+        Q_EMIT frameRateChanged();
     }
 
     if (frameCount != m_frameCount || bufferSize != m_bufferSize) {
@@ -142,33 +153,10 @@ void CameraController::onStreamInfo(int w, int h)
     }
 }
 
-void CameraController::loadInitialSettings()
-{
-    QString path = m_worker->configDir() + "/settings.json";
-    QFile file(path);
-    if (!file.open(QIODevice::ReadOnly))
-        return;
-
-    QJsonObject root = QJsonDocument::fromJson(file.readAll()).object();
-
-    int gain = root.value("iso").toInt(4);
-    m_iso = gain * 100;
-    m_shutterAngle = static_cast<int>(root.value("shutter_a").toDouble(180.0));
-    m_fps = static_cast<int>(root.value("fps").toDouble(30.0));
-    m_whiteBalance = root.value("awb").toInt(0);
-
-    logger()->info("Initial settings: ISO={} SHT={}° FPS={} WB={}",
-                 m_iso, m_shutterAngle, m_fps, m_whiteBalance);
-}
-
 void CameraController::onSettingsLoaded(int iso, int shutterAngle, int fps, int wb)
 {
-    logger()->info("Settings sync: ISO={} SHT={}° FPS={} WB={}",
-                 iso, shutterAngle, fps, wb);
-    if (iso != m_iso)           { m_iso = iso;                   Q_EMIT isoChanged(); }
-    if (shutterAngle != m_shutterAngle) { m_shutterAngle = shutterAngle; Q_EMIT shutterAngleChanged(); }
-    if (fps != m_fps)           { m_fps = fps;                   Q_EMIT fpsChanged(); }
-    if (wb != m_whiteBalance)   { m_whiteBalance = wb;           Q_EMIT whiteBalanceChanged(); }
+    logger()->info("Settings sync: ISO={} SHT={} FPS={} WB={}",
+                   iso, shutterAngle, fps, wb);
 }
 
 void CameraController::onCameraError(const QString &msg)

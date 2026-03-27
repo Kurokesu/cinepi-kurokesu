@@ -1,59 +1,30 @@
 #pragma once
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <sys/ioctl.h>
-#include <time.h>
-#include <stdint.h>
-
-#include <rpicam-apps/core/logging.hpp>
-
-#include <chrono>
-#include <iostream>
-#include <stdexcept>
-
-#include <mutex>
-#include <queue>
-#include <thread>
+#include <cstdint>
 
 class CinePIState
 {
-    public:
-        CinePIState() : is_recording_(false), clip_number_(0), still_number_(0) {};
-        ~CinePIState() {};
+public:
+    CinePIState() = default;
 
-        void setRecording(bool state){
-            is_recording_ = state;
-        }
+    void setRecording(bool state) { is_recording_ = state; }
+    bool isRecording() const { return is_recording_; }
+    unsigned int getClipNumber() const { return clip_number_; }
 
-        bool isRecording(){
-            return is_recording_;
-        }
+protected:
+    float framerate_ = 24.0f;
+    bool is_recording_ = false;
+    int iso_ = 8;               // analogue gain, or -1 = auto
+    int awb_ = 0;               // Kelvin, or 0 = auto
+    float shutter_speed_ = 0.0f;
+    float shutter_angle_ = 180.0f; // degrees, or -1 = auto
+    float cg_rb_[2] = {1.0f, 1.0f};
 
-        unsigned int getClipNumber(){
-            return clip_number_;
-        }
+    uint16_t width_ = 1920;
+    uint16_t height_ = 1080;
+    int compression_ = 0;
+    int thumbnail_ = 1;
+    int thumbnail_size_ = 3;
 
-    protected:
-        float framerate_;
-        bool is_recording_;
-        unsigned int iso_;
-        unsigned int awb_;
-        float shutter_speed_;
-        float shutter_angle_;
-        unsigned int color_temp_;
-        float cg_rb_[2];
-
-        uint16_t width_;
-        uint16_t height_;
-        int mode_;
-        int compression_;
-
-        int thumbnail_;
-        int thumbnail_size_;
-
-        unsigned int clip_number_;
-        unsigned int still_number_;
+    unsigned int clip_number_ = 0;
 };
