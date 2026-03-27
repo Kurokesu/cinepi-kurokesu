@@ -36,8 +36,8 @@ void CameraWorker::setInitialSettings(int isoGain, int shutterAngle,
 
 void CameraWorker::handleControl(const QString &key, const QString &value)
 {
-    if (controller_)
-        controller_->handleControl(key.toStdString(), value.toStdString());
+    std::lock_guard<std::mutex> lock(m_controlMutex);
+    m_pendingControls.emplace_back(key.toStdString(), value.toStdString());
 }
 
 void CameraWorker::run()
@@ -48,7 +48,6 @@ void CameraWorker::run()
         CinePIRecorder app;
         CinePISound sound(&app);
         CinePIController controller(&app);
-        controller_ = &controller;
 
         RawOptions *options = app.GetOptions();
 
@@ -160,6 +159,17 @@ void CameraWorker::run()
             if (msg.type != CinePIRecorder::MsgType::RequestComplete)
                 throw std::runtime_error("unrecognised message");
 
+            // Drain pending controls on worker thread
+            {
+                std::vector<std::pair<std::string, std::string>> controls;
+                {
+                    std::lock_guard<std::mutex> lock(m_controlMutex);
+                    controls.swap(m_pendingControls);
+                }
+                for (auto &[k, v] : controls)
+                    controller.handleControl(k, v);
+            }
+
             CompletedRequestPtr &completed_request =
                 std::get<CompletedRequestPtr>(msg.payload);
 
@@ -207,11 +217,9 @@ void CameraWorker::run()
             app.Teardown();
         }
 
-        controller_ = nullptr;
         log->info("Camera worker stopped");
     }
     catch (std::exception const &e) {
-        controller_ = nullptr;
         cinepi::getLogger("camera_worker")->error("Camera error: {}", e.what());
         Q_EMIT cameraError(QString::fromStdString(e.what()));
     }

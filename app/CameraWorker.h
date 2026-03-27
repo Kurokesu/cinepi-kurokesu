@@ -3,8 +3,10 @@
 #include <QThread>
 #include <QString>
 #include <atomic>
-
-class CinePIController;
+#include <mutex>
+#include <string>
+#include <utility>
+#include <vector>
 
 class CameraWorker : public QThread
 {
@@ -17,7 +19,6 @@ public:
     void requestStop();
     void setInitialSettings(int isoGain, int shutterAngle, int fps, int colorTemp);
 
-    CinePIController *controller() const { return controller_; }
     const QString &configDir() const { return m_configDir; }
 
 Q_SIGNALS:
@@ -39,7 +40,9 @@ protected:
 private:
     QString m_configDir;
     std::atomic<bool> m_stopRequested{false};
-    CinePIController *controller_ = nullptr;
+
+    std::mutex m_controlMutex;
+    std::vector<std::pair<std::string, std::string>> m_pendingControls;
 
     int m_isoGain = 8;
     int m_shutterAngle = 180;
