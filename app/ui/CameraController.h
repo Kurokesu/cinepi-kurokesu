@@ -25,18 +25,18 @@ class CameraController : public QObject
 public:
     explicit CameraController(CameraWorker *worker, QObject *parent = nullptr);
 
-    int isoSensitivity() const { return m_isoSensitivity; }
-    int shutterAngle() const { return m_shutterAngle; }
-    int frameRate() const { return m_frameRate; }
-    int colorTemperature() const { return m_colorTemperature; }
-    bool recording() const { return m_recording; }
-    int width() const { return m_width; }
-    int height() const { return m_height; }
-    bool connected() const { return m_connected; }
-    int compression() const { return m_compression; }
-    int frameCount() const { return m_frameCount; }
-    int bufferSize() const { return m_bufferSize; }
-    QString errorString() const { return m_errorString; }
+    int isoSensitivity() const { return isoSensitivity_; }
+    int shutterAngle() const { return shutterAngle_; }
+    int frameRate() const { return frameRate_; }
+    int colorTemperature() const { return colorTemperature_; }
+    bool recording() const { return recording_; }
+    int width() const { return width_; }
+    int height() const { return height_; }
+    bool connected() const { return connected_; }
+    int compression() const { return compression_; }
+    int frameCount() const { return frameCount_; }
+    int bufferSize() const { return bufferSize_; }
+    QString errorString() const { return errorString_; }
 
     Q_INVOKABLE void setIsoSensitivity(int value);
     Q_INVOKABLE void setShutterAngle(int value);
@@ -62,7 +62,7 @@ Q_SIGNALS:
     void controlRequested(const QString &key, const QString &value);
 
 private Q_SLOTS:
-    void onStatsUpdate(float framerate, int colorTemp, float focus,
+    void onStatsUpdated(float framerate, int colorTemp, float focus,
                        int frameCount, int bufferSize,
                        float exposureTime, float analogueGain);
     void onStreamInfo(int w, int h);
@@ -72,18 +72,18 @@ private Q_SLOTS:
 private:
     void sendControl(const QString &key, const QString &value);
 
-    CameraWorker *m_worker;
+    CameraWorker *worker_;
 
-    int m_isoSensitivity = 800;
-    int m_shutterAngle = 180;
-    int m_frameRate = 24;
-    int m_colorTemperature = 0;
-    bool m_recording = false;
-    int m_width = 0;
-    int m_height = 0;
-    bool m_connected = false;
-    int m_compression = 0;
-    int m_frameCount = 0;
-    int m_bufferSize = 0;
-    QString m_errorString;
+    int isoSensitivity_ = 800;
+    int shutterAngle_ = 180;
+    int frameRate_ = 24;
+    int colorTemperature_ = 0;
+    bool recording_ = false;
+    int width_ = 0;
+    int height_ = 0;
+    bool connected_ = false;
+    int compression_ = 0;
+    int frameCount_ = 0;
+    int bufferSize_ = 0;
+    QString errorString_;
 };

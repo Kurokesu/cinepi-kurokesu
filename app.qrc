@@ -1,6 +1,11 @@
 <RCC>
     <qresource prefix="/">
         <file alias="main.qml">app/qml/main.qml</file>
-        <file alias="ShaderOverlays.qml">qml/ShaderOverlays.qml</file>
+        <file alias="ShaderOverlays.qml">app/qml/ShaderOverlays.qml</file>
+        <file>qtquickcontrols2.conf</file>
+        <file>shaders/zebra.frag.qsb</file>
+        <file>shaders/falsecolor.frag.qsb</file>
+        <file>shaders/focuspeaking.frag.qsb</file>
+        <file>shaders/grayscale.frag.qsb</file>
     </qresource>
 </RCC>

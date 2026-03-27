@@ -240,7 +240,7 @@ DngEncoder::DngEncoder(RawOptions const *options)
       frames_(0), 
       options_(options)
 {
-    console = cinepi::getLogger("dng_encoder");
+    logger_ = cinepi::getLogger("camera.dng");
 
     for (int i = 0; i < NUM_ENC_THREADS; i++){
         encode_thread_[i] = std::thread(std::bind(&DngEncoder::encodeThread, this, i));
@@ -249,7 +249,7 @@ DngEncoder::DngEncoder(RawOptions const *options)
         disk_thread_[i] = std::thread(std::bind(&DngEncoder::diskThread, this, i));
     }
 
-    console->info("DngEncoder started!");
+    logger_->info("DngEncoder started!");
 }
 
 DngEncoder::~DngEncoder()
@@ -263,7 +263,7 @@ DngEncoder::~DngEncoder()
     }
 
     abortOutput_ = true;
-    console->info("DngEncoder stopped!");
+    logger_->info("DngEncoder stopped!");
 }
 
 void DngEncoder::EncodeBuffer(int fd, size_t size, void *mem, StreamInfo const &info, int64_t timestamp_us)
@@ -294,7 +294,7 @@ void DngEncoder::setup_encoder(libcamera::StreamConfiguration const &cfg, libcam
     if (it == bayer_formats.end())
         throw std::runtime_error("unsupported Bayer format");
     BayerFormat const &bayer_format = it->second;
-    console->debug("Bayer format is {}", bayer_format.name);
+    logger_->debug("Bayer format is {}", bayer_format.name);
 
     dng_info.bits = bayer_format.bits;
     dng_info.bits = 12;
@@ -318,7 +318,7 @@ void DngEncoder::setup_encoder(libcamera::StreamConfiguration const &cfg, libcam
         }
     }
     else
-        console->error("WARNING: no black level found, using default");
+        logger_->error("WARNING: no black level found, using default");
 
     // AnalogBalance -- Nuetral setup
     std::fill(std::begin(dng_info.NEUTRAL), std::end(dng_info.NEUTRAL), 1);
@@ -345,7 +345,7 @@ void DngEncoder::setup_encoder(libcamera::StreamConfiguration const &cfg, libcam
         CCM = Matrix((*ccm)[0], (*ccm)[1], (*ccm)[2], (*ccm)[3], (*ccm)[4], (*ccm)[5], (*ccm)[6], (*ccm)[7], (*ccm)[8]);
     }
     else
-        console->error("WARNING: no CCM metadata found");
+        logger_->error("WARNING: no CCM metadata found");
 
     // This maxtrix from http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html
     Matrix RGB2XYZ(0.4124564, 0.3575761, 0.1804375,
@@ -433,10 +433,10 @@ void DngEncoder::setup_encoder(libcamera::StreamConfiguration const &cfg, libcam
     }
     max_buffer_frames = (MAX_RAM_FRACTION * totalRam) / dng_info.buffer_size;
 
-    console->debug("Max Frames in Buffer: {}", max_buffer_frames);
+    logger_->debug("Max Frames in Buffer: {}", max_buffer_frames);
 
     encoder_initialized_ = true;
-    console->info("DngEncoder is setup!");
+    logger_->info("DngEncoder is setup!");
 }
 
 #include <sys/mman.h>
@@ -522,7 +522,7 @@ size_t DngEncoder::dng_save(int thread_num, uint8_t const *mem_tiff, uint8_t con
     if (exp)
         exp_time = *exp;
     else
-        console->error("WARNING: default to exposure time of {}us", exp_time);
+        logger_->error("WARNING: default to exposure time of {}us", exp_time);
     exp_time /= 1e6;
 
     // get iso
@@ -531,21 +531,21 @@ size_t DngEncoder::dng_save(int thread_num, uint8_t const *mem_tiff, uint8_t con
     if (ag)
         iso = *ag * 100.0;
     else
-        console->error("WARNING: default to ISO value of {}", iso);
+        logger_->error("WARNING: default to ISO value of {}", iso);
 
     // begin writing TIFF/DNG
     TIFF *tif = nullptr;
     MemoryBuffer memBuf;
     memBuf.buffer = (unsigned char*)mem_tiff;
     if (!memBuf.buffer) {
-        console->error("Failed to allocate memory\n");
+        logger_->error("Failed to allocate memory\n");
         exit(1);
     }
     memBuf.offset = 0;
     memBuf.usedSize = 0;
     memBuf.totalSize = constDngInfo.buffer_size;
 
-    console->trace("thrd: {} Writing DNG {}", thread_num, fn);
+    logger_->trace("thrd: {} Writing DNG {}", thread_num, fn);
     try
     {
         toff_t offset_subifd = 0, offset_exififd = 0;
@@ -565,7 +565,7 @@ TIFFMergeFieldInfo(
         sizeof(xtiffFieldInfo) / sizeof(xtiffFieldInfo[0]));
 /* ----- end of new block ----- */
         
-        console->trace("thrd: {} Writing DNG thumbnail {}", thread_num, fn);
+        logger_->trace("thrd: {} Writing DNG thumbnail {}", thread_num, fn);
         TIFFSetField(tif, TIFFTAG_SUBFILETYPE, 1);
         TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, constDngInfo.thumbWidth);
         TIFFSetField(tif, TIFFTAG_IMAGELENGTH, constDngInfo.thumbHeight);
@@ -623,7 +623,7 @@ TIFFMergeFieldInfo(
         TIFFCheckpointDirectory(tif);
         TIFFWriteDirectory(tif);
 
-        console->trace("thrd: {} Writing DNG thumbnail end {}", thread_num, fn);
+        logger_->trace("thrd: {} Writing DNG thumbnail end {}", thread_num, fn);
     
         // The main image (actually tends to show up as "sub-image 1").
         TIFFSetField(tif, TIFFTAG_SUBFILETYPE, 0);
@@ -702,7 +702,7 @@ TIFFSetField(tif, TIFFTAG_DEFAULTCROPSIZE,   cropSize);
         const double tstop = 2.0;
         TIFFSetField(tif, TIFFTAG_TSTOP, &tstop);
 
-        console->trace("thrd: {} Writing DNG main image {}", thread_num, fn);
+        logger_->trace("thrd: {} Writing DNG main image {}", thread_num, fn);
 
         auto main_image_start = std::chrono::high_resolution_clock::now();
 
@@ -727,18 +727,18 @@ TIFFSetField(tif, TIFFTAG_DEFAULTCROPSIZE,   cropSize);
         auto main_image_end = std::chrono::high_resolution_clock::now();
         auto main_image_duration = std::chrono::duration_cast<std::chrono::milliseconds>(main_image_end - main_image_start).count();
 
-        console->debug("main image written to dng: {}ms", main_image_duration);
+        logger_->debug("main image written to dng: {}ms", main_image_duration);
 
         TIFFCheckpointDirectory(tif);
         offset_subifd = TIFFCurrentDirOffset(tif);
-        console->trace("thrd: {} Writing DNG main dict {}", thread_num, fn);
+        logger_->trace("thrd: {} Writing DNG main dict {}", thread_num, fn);
         TIFFWriteDirectory(tif);
 
-        console->trace("thrd: {} Writing DNG EXIF {}", thread_num, fn);
+        logger_->trace("thrd: {} Writing DNG EXIF {}", thread_num, fn);
         
         TIFFCreateEXIFDirectory(tif);
 
-        console->trace("thrd: {} Writing DNG TIFFCreateEXIFDirectory {}", thread_num, fn);
+        logger_->trace("thrd: {} Writing DNG TIFFCreateEXIFDirectory {}", thread_num, fn);
         char time_str[32];
         strftime(time_str, 32, "%Y:%m:%d %H:%M:%S", time_info);
         TIFFSetField(tif, EXIFTAG_DATETIMEORIGINAL, time_str);
@@ -756,7 +756,7 @@ TIFFSetField(tif, TIFFTAG_DEFAULTCROPSIZE,   cropSize);
         TIFFUnlinkDirectory(tif, 2);
         TIFFClose(tif);
 
-        console->trace("thrd: {} Writing DNG TIFFClose {}", thread_num, fn);
+        logger_->trace("thrd: {} Writing DNG TIFFClose {}", thread_num, fn);
         return memBuf.usedSize;
     }
     catch (std::exception const &e)
@@ -796,14 +796,14 @@ void DngEncoder::encodeThread(int num)
         }
 
         frames_ = {encode_item.index};
-        console->trace("Thread[{}] encode frame: {}", num, encode_item.index);
+        logger_->trace("Thread[{}] encode frame: {}", num, encode_item.index);
 
         {   
             auto start_time = std::chrono::high_resolution_clock::now();
             
             uint8_t *mem_tiff;
             if (posix_memalign((void **)&mem_tiff, BLOCK_SIZE, dng_info.buffer_size) != 0) {
-                console->error("Failed to allocate aligned memory ({} bytes)", dng_info.buffer_size);
+                logger_->error("Failed to allocate aligned memory ({} bytes)", dng_info.buffer_size);
                 return;
             }
             size_t tiff_size = dng_save(num,(const uint8_t*) mem_tiff,(const uint8_t*)encode_item.mem, encode_item.info, (const uint8_t*)encode_item.lomem, encode_item.loinfo, encode_item.losize, encode_item.met, encode_item.index);
@@ -816,7 +816,7 @@ void DngEncoder::encodeThread(int num)
             auto end_time = std::chrono::high_resolution_clock::now();
 
             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
-            console->info("Thread[{}] {} Time taken for the encode: {} milliseconds, disk buffer count:{} Size:{}", num, encode_item.index, duration, amount, tiff_size);
+            logger_->info("Thread[{}] {} Time taken for the encode: {} milliseconds, disk buffer count:{} Size:{}", num, encode_item.index, duration, amount, tiff_size);
         }
 
         {
@@ -860,7 +860,7 @@ void DngEncoder::diskThread(int num)
 
         std::string filename = oss.str();
     
-        console->trace("Thread[{}]  Save frame to disk: {}", num,  disk_item.index);
+        logger_->trace("Thread[{}]  Save frame to disk: {}", num,  disk_item.index);
         
         auto start_time = std::chrono::high_resolution_clock::now();
         // Now save the memory buffer to disk
@@ -871,20 +871,20 @@ void DngEncoder::diskThread(int num)
             posix_fadvise(fd, 0, 0, POSIX_FADV_SEQUENTIAL);
             posix_fadvise(fd, 0, 0, POSIX_FADV_NOREUSE);
             if(write(fd, disk_item.mem_tiff, dng_info.buffer_size) != dng_info.buffer_size) {
-                console->error("Write failed for DNG frame");
+                logger_->error("Write failed for DNG frame");
             }
             ftruncate(fd, disk_item.size);
             close(fd);
 
         } else {
-            console->error("Failed to open DNG file for writing");
+            logger_->error("Failed to open DNG file for writing");
         }
         // Clean up
         free(disk_item.mem_tiff);
         auto end_time = std::chrono::high_resolution_clock::now();
 
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
-        console->info("Thread[{}] {} Time taken for the disk io: {} milliseconds", num, disk_item.index, duration);
+        logger_->info("Thread[{}] {} Time taken for the disk io: {} milliseconds", num, disk_item.index, duration);
         
     }
 }

@@ -54,7 +54,7 @@ public:
 	std::array<uint16_t, 3> originationDate;
 
 private:
-	std::shared_ptr<spdlog::logger> console;
+	std::shared_ptr<spdlog::logger> logger_;
 
 	static const int NUM_ENC_THREADS = 2;
 	static const int NUM_DISK_THREADS = 8;

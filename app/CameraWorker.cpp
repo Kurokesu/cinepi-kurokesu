@@ -10,7 +10,7 @@
 using namespace std::placeholders;
 
 CameraWorker::CameraWorker(const QString &configDir, QObject *parent)
-    : QThread(parent), m_configDir(configDir)
+    : QThread(parent), configDir_(configDir)
 {
 }
 
@@ -22,27 +22,27 @@ CameraWorker::~CameraWorker()
 
 void CameraWorker::requestStop()
 {
-    m_stopRequested = true;
+    stopRequested_ = true;
 }
 
 void CameraWorker::setInitialSettings(int isoGain, int shutterAngle,
                                        int fps, int colorTemp)
 {
-    m_isoGain = isoGain;
-    m_shutterAngle = shutterAngle;
-    m_fps = fps;
-    m_colorTemp = colorTemp;
+    isoGain_ = isoGain;
+    shutterAngle_ = shutterAngle;
+    fps_ = fps;
+    colorTemp_ = colorTemp;
 }
 
 void CameraWorker::handleControl(const QString &key, const QString &value)
 {
-    std::lock_guard<std::mutex> lock(m_controlMutex);
-    m_pendingControls.emplace_back(key.toStdString(), value.toStdString());
+    std::lock_guard<std::mutex> lock(controlMutex_);
+    pendingControls_.emplace_back(key.toStdString(), value.toStdString());
 }
 
 void CameraWorker::run()
 {
-    auto log = cinepi::getLogger("camera_worker");
+    auto log = cinepi::getLogger("camera.worker");
 
     try {
         CinePIRecorder app;
@@ -51,7 +51,7 @@ void CameraWorker::run()
 
         RawOptions *options = app.GetOptions();
 
-        std::string ppFile = (m_configDir + "/post-processing.json").toStdString();
+        std::string ppFile = (configDir_ + "/post-processing.json").toStdString();
         std::string tuningFile = "/usr/share/libcamera/ipa/rpi/pisp/imx283.json";
 
         std::vector<const char *> args = {
@@ -74,20 +74,20 @@ void CameraWorker::run()
         options->rawCrop[2] = 0;
         options->rawCrop[3] = 0;
 
-        controller.setInitialValues(m_isoGain, m_shutterAngle, m_fps, m_colorTemp);
+        controller.setInitialValues(isoGain_, shutterAngle_, fps_, colorTemp_);
 
         controller.setStatsCallback(
             [this](float framerate, int colorTemp, float focus,
                    int frameCount, int bufferSize,
                    float exposureTime, float analogueGain) {
-                Q_EMIT statsUpdate(framerate, colorTemp, focus,
+                Q_EMIT statsUpdated(framerate, colorTemp, focus,
                                    frameCount, bufferSize,
                                    exposureTime, analogueGain);
             });
 
         controller.setStreamInfoCallback(
             [this](int w, int h) {
-                Q_EMIT streamInfoUpdate(w, h);
+                Q_EMIT streamInfoUpdated(w, h);
             });
 
         controller.sync();
@@ -111,7 +111,7 @@ void CameraWorker::run()
         options->model = app.CameraModel();
 
         bool initialSync = false;
-        for (unsigned int count = 0; !m_stopRequested; count++) {
+        for (unsigned int count = 0; !stopRequested_; count++) {
             if (controller.configChanged()) {
                 log->info("Config changed, reconfiguring camera...");
                 if (controller.cameraRunning) {
@@ -143,7 +143,7 @@ void CameraWorker::run()
 
             CinePIRecorder::Msg msg = app.Wait();
 
-            if (m_stopRequested)
+            if (stopRequested_)
                 break;
 
             if (msg.type == RPiCamApp::MsgType::Quit)
@@ -159,12 +159,11 @@ void CameraWorker::run()
             if (msg.type != CinePIRecorder::MsgType::RequestComplete)
                 throw std::runtime_error("unrecognised message");
 
-            // Drain pending controls on worker thread
             {
                 std::vector<std::pair<std::string, std::string>> controls;
                 {
-                    std::lock_guard<std::mutex> lock(m_controlMutex);
-                    controls.swap(m_pendingControls);
+                    std::lock_guard<std::mutex> lock(controlMutex_);
+                    controls.swap(pendingControls_);
                 }
                 for (auto &[k, v] : controls)
                     controller.handleControl(k, v);
@@ -220,7 +219,7 @@ void CameraWorker::run()
         log->info("Camera worker stopped");
     }
     catch (std::exception const &e) {
-        cinepi::getLogger("camera_worker")->error("Camera error: {}", e.what());
+        cinepi::getLogger("camera.worker")->error("Camera error: {}", e.what());
         Q_EMIT cameraError(QString::fromStdString(e.what()));
     }
 }

@@ -19,15 +19,15 @@ public:
     void requestStop();
     void setInitialSettings(int isoGain, int shutterAngle, int fps, int colorTemp);
 
-    const QString &configDir() const { return m_configDir; }
+    const QString &configDir() const { return configDir_; }
 
 Q_SIGNALS:
     void frameReady(int fd, unsigned int width, unsigned int height,
                     unsigned int stride, quint64 frame);
-    void statsUpdate(float framerate, int colorTemp, float focus,
+    void statsUpdated(float framerate, int colorTemp, float focus,
                      int frameCount, int bufferSize,
                      float exposureTime, float analogueGain);
-    void streamInfoUpdate(int width, int height);
+    void streamInfoUpdated(int width, int height);
     void settingsLoaded(int iso, int shutterAngle, int fps, int wb);
     void cameraError(const QString &message);
 
@@ -38,14 +38,14 @@ protected:
     void run() override;
 
 private:
-    QString m_configDir;
-    std::atomic<bool> m_stopRequested{false};
+    QString configDir_;
+    std::atomic<bool> stopRequested_{false};
 
-    std::mutex m_controlMutex;
-    std::vector<std::pair<std::string, std::string>> m_pendingControls;
+    std::mutex controlMutex_;
+    std::vector<std::pair<std::string, std::string>> pendingControls_;
 
-    int m_isoGain = 8;
-    int m_shutterAngle = 180;
-    int m_fps = 24;
-    int m_colorTemp = 0;
+    int isoGain_ = 8;
+    int shutterAngle_ = 180;
+    int fps_ = 24;
+    int colorTemp_ = 0;
 };

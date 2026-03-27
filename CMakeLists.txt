@@ -70,7 +70,7 @@ set(CAMERA_SOURCES
 
 set(UI_SOURCES
     app/ui/CameraController.cpp
-    app/ui/DmaBufPreview.cpp
+    app/ui/DmaBufViewfinder.cpp
     app/ui/FrameProvider.cpp
     app/ui/ConfigManager.cpp
 )
@@ -86,12 +86,12 @@ set(HEADERS
     app/logging.h
     app/studio_app_compat.h
     app/ui/CameraController.h
-    app/ui/DmaBufPreview.h
+    app/ui/DmaBufViewfinder.h
     app/ui/FrameProvider.h
     app/ui/ConfigManager.h
 )
 
-qt_add_resources(QRC_SOURCES qml.qrc app.qrc)
+qt_add_resources(QRC_SOURCES app.qrc)
 
 # ── Executable ───────────────────────────────────────────────────────────────
 

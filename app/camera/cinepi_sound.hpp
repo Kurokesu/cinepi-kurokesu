@@ -66,7 +66,7 @@ private:
     FILE* arec_pipe;
     bool canRecordAudio;
     std::string defaultDevice;
-    std::shared_ptr<spdlog::logger> console;
+    std::shared_ptr<spdlog::logger> logger_;
     int pid;
     bool recording_;
     bool record_;

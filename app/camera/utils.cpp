@@ -3,7 +3,7 @@
 
 static auto &logger()
 {
-    static auto l = cinepi::getLogger("utils");
+    static auto l = cinepi::getLogger("camera.utils");
     return l;
 }
 

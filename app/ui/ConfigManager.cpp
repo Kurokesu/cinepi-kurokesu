@@ -10,7 +10,7 @@ static auto &logger()
 
 ConfigManager::ConfigManager(const QString &basePath, QObject *parent)
     : QQmlPropertyMap(this, parent)
-    , m_configPath(basePath + "/settings.ini")
+    , configPath_(basePath + "/settings.ini")
 {
     // Camera exposure -- -1 = auto, positive = manual
     insert("manualIsoSensitivity",      800);
@@ -33,7 +33,7 @@ ConfigManager::ConfigManager(const QString &basePath, QObject *parent)
     insert("cinematicGuide185Enabled",  false);
     insert("cinematicGuide43Enabled",   true);
 
-    logger()->info("Config file: {}", m_configPath.toStdString());
+    logger()->info("Config file: {}", configPath_.toStdString());
     reload();
 }
 
@@ -59,21 +59,21 @@ QVariant ConfigManager::updateValue(const QString &key, const QVariant &input)
 
 void ConfigManager::reload()
 {
-    QSettings settings(m_configPath, QSettings::IniFormat);
+    QSettings settings(configPath_, QSettings::IniFormat);
     const QStringList allKeys = keys();
     for (const QString &key : allKeys) {
         if (settings.contains(key))
             insert(key, coerce(key, settings.value(key)));
     }
-    logger()->debug("Loaded {} keys from {}", allKeys.size(), m_configPath.toStdString());
+    logger()->debug("Loaded {} keys from {}", allKeys.size(), configPath_.toStdString());
 }
 
 void ConfigManager::save()
 {
-    QSettings settings(m_configPath, QSettings::IniFormat);
+    QSettings settings(configPath_, QSettings::IniFormat);
     const QStringList allKeys = keys();
     for (const QString &key : allKeys)
         settings.setValue(key, value(key));
     settings.sync();
-    logger()->debug("Saved {} keys to {}", allKeys.size(), m_configPath.toStdString());
+    logger()->debug("Saved {} keys to {}", allKeys.size(), configPath_.toStdString());
 }

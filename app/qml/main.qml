@@ -23,18 +23,18 @@ ApplicationWindow {
         viewfinderArea.onClicked: mainScreen.state = ""
     }
 
-    // ── Live camera preview ─────────────────────────────────────────────────
+    // ── Live viewfinder ──────────────────────────────────────────────────────
 
-    DmaBufPreview {
-        id: cameraPreview
+    DmaBufViewfinder {
+        id: viewfinderFeed
         parent: mainScreen.viewfinder
         anchors.fill: parent
         visible: available
     }
 
     ShaderEffectSource {
-        id: previewTexture
-        sourceItem: cameraPreview
+        id: viewfinderTexture
+        sourceItem: viewfinderFeed
         live: true
         hideSource: false
     }
@@ -42,11 +42,11 @@ ApplicationWindow {
     ShaderOverlays {
         parent: mainScreen.viewfinder
         anchors.fill: parent
-        source: previewTexture
+        source: viewfinderTexture
         zebraEnabled: mainScreen.monitorControl.zebraEnabled
         zebraThreshold: config.zebraThreshold
         falseColorEnabled: mainScreen.monitorControl.falseColorEnabled
-        focusPeakingEnabled: mainScreen.monitorControl.peakingEnabled
+        focusPeakingEnabled: mainScreen.monitorControl.focusPeakingEnabled
         grayscaleEnabled: mainScreen.monitorControl.grayscaleEnabled
     }
 
@@ -161,8 +161,8 @@ ApplicationWindow {
         function onZebraEnabledChanged() {
             config.zebraEnabled = mainScreen.monitorControl.zebraEnabled
         }
-        function onPeakingEnabledChanged() {
-            config.focusPeakingEnabled = mainScreen.monitorControl.peakingEnabled
+        function onFocusPeakingEnabledChanged() {
+            config.focusPeakingEnabled = mainScreen.monitorControl.focusPeakingEnabled
         }
         function onFalseColorEnabledChanged() {
             config.falseColorEnabled = mainScreen.monitorControl.falseColorEnabled
@@ -195,7 +195,7 @@ ApplicationWindow {
     Component.onCompleted: {
         // Monitor overlays
         mainScreen.monitorControl.zebraEnabled = config.zebraEnabled
-        mainScreen.monitorControl.peakingEnabled = config.focusPeakingEnabled
+        mainScreen.monitorControl.focusPeakingEnabled = config.focusPeakingEnabled
         mainScreen.monitorControl.falseColorEnabled = config.falseColorEnabled
         mainScreen.monitorControl.grayscaleEnabled = config.grayscaleEnabled
 

@@ -1,4 +1,4 @@
-#include "DmaBufPreview.h"
+#include "DmaBufViewfinder.h"
 #include "logging.h"
 
 #include <QOpenGLFramebufferObject>
@@ -40,7 +40,7 @@ class DmaBufRenderer : public QQuickFramebufferObject::Renderer,
                        protected QOpenGLFunctions
 {
 public:
-    DmaBufRenderer(const DmaBufPreview *item);
+    DmaBufRenderer(const DmaBufViewfinder *item);
     ~DmaBufRenderer();
 
     void render() override;
@@ -53,37 +53,37 @@ private:
     void cleanup();
     GLuint compileShader(GLenum type, const char *source);
 
-    const DmaBufPreview *m_item;
+    const DmaBufViewfinder *item_;
 
-    bool m_glInitialized = false;
-    bool m_glFailed = false;
-    GLuint m_program = 0;
-    GLuint m_vbo = 0;
-    GLuint m_texY = 0, m_texU = 0, m_texV = 0;
+    bool glInitialized_ = false;
+    bool glFailed_ = false;
+    GLuint program_ = 0;
+    GLuint vbo_ = 0;
+    GLuint texY_ = 0, texU_ = 0, texV_ = 0;
 
-    DmaBufPreview::FrameInfo m_frameInfo;
-    uint64_t m_lastRenderedFrame = 0;
-    QSize m_viewportSize;
+    DmaBufViewfinder::FrameInfo frameInfo_;
+    uint64_t lastRenderedFrame_ = 0;
+    QSize viewportSize_;
 };
 
 static auto &logger()
 {
-    static auto l = cinepi::getLogger("ui.preview");
+    static auto l = cinepi::getLogger("ui.viewfinder");
     return l;
 }
 
-DmaBufRenderer::DmaBufRenderer(const DmaBufPreview *item)
-    : m_item(item) {}
+DmaBufRenderer::DmaBufRenderer(const DmaBufViewfinder *item)
+    : item_(item) {}
 
 DmaBufRenderer::~DmaBufRenderer() { cleanup(); }
 
 void DmaBufRenderer::cleanup()
 {
-    if (m_texY) { glDeleteTextures(1, &m_texY); m_texY = 0; }
-    if (m_texU) { glDeleteTextures(1, &m_texU); m_texU = 0; }
-    if (m_texV) { glDeleteTextures(1, &m_texV); m_texV = 0; }
-    if (m_vbo) { glDeleteBuffers(1, &m_vbo); m_vbo = 0; }
-    if (m_program) { glDeleteProgram(m_program); m_program = 0; }
+    if (texY_) { glDeleteTextures(1, &texY_); texY_ = 0; }
+    if (texU_) { glDeleteTextures(1, &texU_); texU_ = 0; }
+    if (texV_) { glDeleteTextures(1, &texV_); texV_ = 0; }
+    if (vbo_) { glDeleteBuffers(1, &vbo_); vbo_ = 0; }
+    if (program_) { glDeleteProgram(program_); program_ = 0; }
 }
 
 GLuint DmaBufRenderer::compileShader(GLenum type, const char *source)
@@ -96,7 +96,7 @@ GLuint DmaBufRenderer::compileShader(GLenum type, const char *source)
     if (!ok) {
         char buf[512];
         glGetShaderInfoLog(shader, sizeof(buf), nullptr, buf);
-        cinepi::getLogger("ui.preview")->error("Shader compile error: {}", buf);
+        cinepi::getLogger("ui.viewfinder")->error("Shader compile error: {}", buf);
         glDeleteShader(shader);
         return 0;
     }
@@ -105,8 +105,8 @@ GLuint DmaBufRenderer::compileShader(GLenum type, const char *source)
 
 bool DmaBufRenderer::initGL()
 {
-    if (m_glInitialized) return true;
-    if (m_glFailed) return false;
+    if (glInitialized_) return true;
+    if (glFailed_) return false;
 
     initializeOpenGLFunctions();
 
@@ -115,28 +115,28 @@ bool DmaBufRenderer::initGL()
     if (!vs || !fs) {
         if (vs) glDeleteShader(vs);
         if (fs) glDeleteShader(fs);
-        m_glFailed = true;
+        glFailed_ = true;
         return false;
     }
 
-    m_program = glCreateProgram();
-    glAttachShader(m_program, vs);
-    glAttachShader(m_program, fs);
-    glBindAttribLocation(m_program, 0, "aPos");
-    glBindAttribLocation(m_program, 1, "aTexCoord");
-    glLinkProgram(m_program);
+    program_ = glCreateProgram();
+    glAttachShader(program_, vs);
+    glAttachShader(program_, fs);
+    glBindAttribLocation(program_, 0, "aPos");
+    glBindAttribLocation(program_, 1, "aTexCoord");
+    glLinkProgram(program_);
     glDeleteShader(vs);
     glDeleteShader(fs);
 
     GLint ok;
-    glGetProgramiv(m_program, GL_LINK_STATUS, &ok);
+    glGetProgramiv(program_, GL_LINK_STATUS, &ok);
     if (!ok) {
         char buf[512];
-        glGetProgramInfoLog(m_program, sizeof(buf), nullptr, buf);
-        cinepi::getLogger("ui.preview")->error("Program link error: {}", buf);
-        glDeleteProgram(m_program);
-        m_program = 0;
-        m_glFailed = true;
+        glGetProgramInfoLog(program_, sizeof(buf), nullptr, buf);
+        cinepi::getLogger("ui.viewfinder")->error("Program link error: {}", buf);
+        glDeleteProgram(program_);
+        program_ = 0;
+        glFailed_ = true;
         return false;
     }
 
@@ -149,8 +149,8 @@ bool DmaBufRenderer::initGL()
         -1.f,  1.f,   0.f, 0.f,
     };
 
-    glGenBuffers(1, &m_vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+    glGenBuffers(1, &vbo_);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo_);
     glBufferData(GL_ARRAY_BUFFER, sizeof(quadVerts), quadVerts, GL_STATIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -165,32 +165,32 @@ bool DmaBufRenderer::initGL()
         glBindTexture(GL_TEXTURE_2D, 0);
         return tex;
     };
-    m_texY = createTex();
-    m_texU = createTex();
-    m_texV = createTex();
+    texY_ = createTex();
+    texU_ = createTex();
+    texV_ = createTex();
 
-    m_glInitialized = true;
+    glInitialized_ = true;
     logger()->debug("GL initialized");
     return true;
 }
 
 bool DmaBufRenderer::uploadFrame()
 {
-    if (m_frameInfo.fd < 0 || m_frameInfo.width == 0 || m_frameInfo.height == 0)
+    if (frameInfo_.fd < 0 || frameInfo_.width == 0 || frameInfo_.height == 0)
         return false;
 
-    int w = m_frameInfo.width;
-    int h = m_frameInfo.height;
-    int stride = m_frameInfo.stride;
+    int w = frameInfo_.width;
+    int h = frameInfo_.height;
+    int stride = frameInfo_.stride;
     size_t ySize = stride * h;
     size_t uvStride = stride / 2;
     size_t uvHeight = h / 2;
     size_t totalSize = ySize + 2 * (uvStride * uvHeight);
 
     void *data = mmap(nullptr, totalSize, PROT_READ, MAP_SHARED,
-                      m_frameInfo.fd, 0);
+                      frameInfo_.fd, 0);
     if (data == MAP_FAILED) {
-        logger()->warn("mmap failed for preview frame (fd={}, size={})", m_frameInfo.fd, totalSize);
+        logger()->warn("mmap failed for viewfinder frame (fd={}, size={})", frameInfo_.fd, totalSize);
         return false;
     }
 
@@ -198,17 +198,17 @@ bool DmaBufRenderer::uploadFrame()
     const uint8_t *uPlane = yPlane + ySize;
     const uint8_t *vPlane = uPlane + uvStride * uvHeight;
 
-    glBindTexture(GL_TEXTURE_2D, m_texY);
+    glBindTexture(GL_TEXTURE_2D, texY_);
     glPixelStorei(GL_UNPACK_ROW_LENGTH, stride);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, w, h, 0,
                  GL_LUMINANCE, GL_UNSIGNED_BYTE, yPlane);
 
-    glBindTexture(GL_TEXTURE_2D, m_texU);
+    glBindTexture(GL_TEXTURE_2D, texU_);
     glPixelStorei(GL_UNPACK_ROW_LENGTH, uvStride);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, w / 2, h / 2, 0,
                  GL_LUMINANCE, GL_UNSIGNED_BYTE, uPlane);
 
-    glBindTexture(GL_TEXTURE_2D, m_texV);
+    glBindTexture(GL_TEXTURE_2D, texV_);
     glPixelStorei(GL_UNPACK_ROW_LENGTH, uvStride);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, w / 2, h / 2, 0,
                  GL_LUMINANCE, GL_UNSIGNED_BYTE, vPlane);
@@ -222,9 +222,9 @@ bool DmaBufRenderer::uploadFrame()
 
 void DmaBufRenderer::synchronize(QQuickFramebufferObject *item)
 {
-    auto *preview = static_cast<DmaBufPreview *>(item);
-    m_frameInfo = preview->currentFrame();
-    m_viewportSize = QSize(item->width(), item->height());
+    auto *viewfinder = static_cast<DmaBufViewfinder *>(item);
+    frameInfo_ = viewfinder->currentFrame();
+    viewportSize_ = QSize(item->width(), item->height());
 }
 
 QOpenGLFramebufferObject *DmaBufRenderer::createFramebufferObject(const QSize &size)
@@ -237,17 +237,17 @@ void DmaBufRenderer::render()
     if (!initGL())
         return;
 
-    if (m_frameInfo.frame == m_lastRenderedFrame)
+    if (frameInfo_.frame == lastRenderedFrame_)
         return;
 
     if (!uploadFrame())
         return;
 
-    m_lastRenderedFrame = m_frameInfo.frame;
+    lastRenderedFrame_ = frameInfo_.frame;
 
-    int fboW = m_viewportSize.width();
-    int fboH = m_viewportSize.height();
-    float srcAspect = (float)m_frameInfo.width / m_frameInfo.height;
+    int fboW = viewportSize_.width();
+    int fboH = viewportSize_.height();
+    float srcAspect = (float)frameInfo_.width / frameInfo_.height;
     float dstAspect = (float)fboW / fboH;
 
     int vpX = 0, vpY = 0, vpW = fboW, vpH = fboH;
@@ -263,21 +263,21 @@ void DmaBufRenderer::render()
     glClear(GL_COLOR_BUFFER_BIT);
     glViewport(vpX, vpY, vpW, vpH);
 
-    glUseProgram(m_program);
+    glUseProgram(program_);
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_texY);
-    glUniform1i(glGetUniformLocation(m_program, "texY"), 0);
+    glBindTexture(GL_TEXTURE_2D, texY_);
+    glUniform1i(glGetUniformLocation(program_, "texY"), 0);
 
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, m_texU);
-    glUniform1i(glGetUniformLocation(m_program, "texU"), 1);
+    glBindTexture(GL_TEXTURE_2D, texU_);
+    glUniform1i(glGetUniformLocation(program_, "texU"), 1);
 
     glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, m_texV);
-    glUniform1i(glGetUniformLocation(m_program, "texV"), 2);
+    glBindTexture(GL_TEXTURE_2D, texV_);
+    glUniform1i(glGetUniformLocation(program_, "texV"), 2);
 
-    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo_);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(1);
@@ -296,49 +296,49 @@ void DmaBufRenderer::render()
     update();
 }
 
-// ─── DmaBufPreview (QML item) ────────────────────────────────────────────────
+// ─── DmaBufViewfinder (QML item) ─────────────────────────────────────────────
 
-DmaBufPreview::DmaBufPreview(QQuickItem *parent)
+DmaBufViewfinder::DmaBufViewfinder(QQuickItem *parent)
     : QQuickFramebufferObject(parent)
 {
     setMirrorVertically(true);
     setTextureFollowsItemSize(true);
 }
 
-DmaBufPreview::~DmaBufPreview() = default;
+DmaBufViewfinder::~DmaBufViewfinder() = default;
 
-QQuickFramebufferObject::Renderer *DmaBufPreview::createRenderer() const
+QQuickFramebufferObject::Renderer *DmaBufViewfinder::createRenderer() const
 {
     return new DmaBufRenderer(this);
 }
 
-DmaBufPreview::FrameInfo DmaBufPreview::currentFrame() const
+DmaBufViewfinder::FrameInfo DmaBufViewfinder::currentFrame() const
 {
-    QMutexLocker lock(&m_mutex);
-    return m_currentFrame;
+    QMutexLocker lock(&mutex_);
+    return currentFrame_;
 }
 
-void DmaBufPreview::onFrameReady(int fd, unsigned int width,
+void DmaBufViewfinder::onFrameReady(int fd, unsigned int width,
                                   unsigned int height, unsigned int stride,
                                   quint64 frame)
 {
     {
-        QMutexLocker lock(&m_mutex);
-        m_currentFrame.fd = fd;
-        m_currentFrame.width = width;
-        m_currentFrame.height = height;
-        m_currentFrame.stride = stride;
-        m_currentFrame.frame = frame;
+        QMutexLocker lock(&mutex_);
+        currentFrame_.fd = fd;
+        currentFrame_.width = width;
+        currentFrame_.height = height;
+        currentFrame_.stride = stride;
+        currentFrame_.frame = frame;
     }
 
-    if (!m_available) {
-        m_available = true;
+    if (!available_) {
+        available_ = true;
         Q_EMIT availableChanged();
     }
 
-    if ((int)width != m_sourceWidth || (int)height != m_sourceHeight) {
-        m_sourceWidth = width;
-        m_sourceHeight = height;
+    if ((int)width != sourceWidth_ || (int)height != sourceHeight_) {
+        sourceWidth_ = width;
+        sourceHeight_ = height;
         Q_EMIT sourceSizeChanged();
     }
 

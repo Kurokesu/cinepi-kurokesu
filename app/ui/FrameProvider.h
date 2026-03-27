@@ -5,40 +5,31 @@
 #include <QQuickImageProvider>
 #include <QMutex>
 
-/**
- * FrameProvider - Bridges MJPEG frames to QML Image elements.
- *
- * Acts as a QQuickImageProvider so QML can display frames via:
- *   Image { source: "image://frames/latest" }
- *
- * Also exposes a frameUpdated signal that QML can use to trigger repaints.
- */
 class FrameProvider : public QQuickImageProvider
 {
     Q_OBJECT
     Q_PROPERTY(int frameWidth READ frameWidth NOTIFY frameSizeChanged)
     Q_PROPERTY(int frameHeight READ frameHeight NOTIFY frameSizeChanged)
-    Q_PROPERTY(int frameNumber READ frameNumber NOTIFY frameUpdated)
+    Q_PROPERTY(int frameNumber READ frameNumber NOTIFY frameNumberChanged)
 
 public:
     explicit FrameProvider();
 
-    // QQuickImageProvider interface
     QImage requestImage(const QString &id, QSize *size, const QSize &requestedSize) override;
 
-    int frameWidth() const { return m_currentFrame.width(); }
-    int frameHeight() const { return m_currentFrame.height(); }
-    int frameNumber() const { return m_frameNumber; }
+    int frameWidth() const { return currentFrame_.width(); }
+    int frameHeight() const { return currentFrame_.height(); }
+    int frameNumber() const { return frameNumber_; }
 
 public Q_SLOTS:
     void onNewFrame(const QImage &frame);
 
 Q_SIGNALS:
-    void frameUpdated();
+    void frameNumberChanged();
     void frameSizeChanged();
 
 private:
-    QImage m_currentFrame;
-    QMutex m_mutex;
-    int m_frameNumber = 0;
+    QImage currentFrame_;
+    QMutex mutex_;
+    int frameNumber_ = 0;
 };

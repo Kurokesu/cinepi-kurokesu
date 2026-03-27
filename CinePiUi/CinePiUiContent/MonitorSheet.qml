@@ -16,7 +16,7 @@ Pane {
     }
 
     property bool zebraEnabled: false
-    property bool peakingEnabled: false
+    property bool focusPeakingEnabled: false
     property bool falseColorEnabled: false
     property bool grayscaleEnabled: false
 
@@ -41,8 +41,8 @@ Pane {
         IconToggle {
             icon.source: "images/center_focus_weak_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
             text: "Focus Peaking"
-            checked: sheet.peakingEnabled
-            onClicked: sheet.peakingEnabled = checked
+            checked: sheet.focusPeakingEnabled
+            onClicked: sheet.focusPeakingEnabled = checked
         }
 
         IconToggle {

@@ -88,7 +88,7 @@ public:
 private:
     void initHandlers();
 
-    std::shared_ptr<spdlog::logger> console;
+    std::shared_ptr<spdlog::logger> logger_;
 
     int trigger_ = 0;
     bool cameraInit_ = true;

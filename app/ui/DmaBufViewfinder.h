@@ -4,7 +4,7 @@
 #include <QMutex>
 #include <cstdint>
 
-class DmaBufPreview : public QQuickFramebufferObject
+class DmaBufViewfinder : public QQuickFramebufferObject
 {
     Q_OBJECT
     Q_PROPERTY(bool available READ available NOTIFY availableChanged)
@@ -12,14 +12,14 @@ class DmaBufPreview : public QQuickFramebufferObject
     Q_PROPERTY(int sourceHeight READ sourceHeight NOTIFY sourceSizeChanged)
 
 public:
-    explicit DmaBufPreview(QQuickItem *parent = nullptr);
-    ~DmaBufPreview() override;
+    explicit DmaBufViewfinder(QQuickItem *parent = nullptr);
+    ~DmaBufViewfinder() override;
 
     Renderer *createRenderer() const override;
 
-    bool available() const { return m_available; }
-    int sourceWidth() const { return m_sourceWidth; }
-    int sourceHeight() const { return m_sourceHeight; }
+    bool available() const { return available_; }
+    int sourceWidth() const { return sourceWidth_; }
+    int sourceHeight() const { return sourceHeight_; }
 
     struct FrameInfo {
         int fd = -1;
@@ -39,9 +39,9 @@ Q_SIGNALS:
     void sourceSizeChanged();
 
 private:
-    mutable QMutex m_mutex;
-    FrameInfo m_currentFrame;
-    bool m_available = false;
-    int m_sourceWidth = 0;
-    int m_sourceHeight = 0;
+    mutable QMutex mutex_;
+    FrameInfo currentFrame_;
+    bool available_ = false;
+    int sourceWidth_ = 0;
+    int sourceHeight_ = 0;
 };

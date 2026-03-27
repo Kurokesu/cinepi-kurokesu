@@ -140,7 +140,7 @@ CinePISound::CinePISound(CinePIRecorder *app) :
     defaultDevice(""),
     options_(app->GetOptions()) 
 {
-    console = cinepi::getLogger("cinepi_sound");
+    logger_ = cinepi::getLogger("camera.audio");
 }
 
 CinePISound::~CinePISound() {
@@ -154,7 +154,7 @@ CinePISound::~CinePISound() {
 void CinePISound::start() {
     if (std::getenv("CINEPI_SKIP_SOUND")) {
         canRecordAudio = false;
-        console->info("Sound disabled (CINEPI_SKIP_SOUND)");
+        logger_->info("Sound disabled (CINEPI_SKIP_SOUND)");
         return;
     }
     try {
@@ -164,7 +164,7 @@ void CinePISound::start() {
             sound_thread_ = std::thread(std::bind(&CinePISound::soundThread, this));
         }
     } catch (...) {
-        console->error("Sound startup failed (continuing without audio)");
+        logger_->error("Sound startup failed (continuing without audio)");
         canRecordAudio = false;
     }
 }
@@ -223,18 +223,18 @@ void CinePISound::soundThread() {
             double start_time, audio_duration, vts_delta;
             audio_duration = (((double)samples_captured/(double)audioSampleRate));
         
-            console->debug("rec start: {} samples: {} audio dur: {}", ts_first_buffer_b, samples_captured, audio_duration);
+            logger_->debug("rec start: {} samples: {} audio dur: {}", ts_first_buffer_b, samples_captured, audio_duration);
             int64_t vts_start = 0, vts_end = 0;
             size_t frames = app_->GetEncoder()->timestamps.size();
             if(frames > 0){
                 vts_start = app_->GetEncoder()->timestamps.front();
                 vts_end = app_->GetEncoder()->timestamps.back();
                 vts_delta = (vts_end-vts_start)/1000000000.0;
-                console->debug("rec start: {} rec_end: {} rec_dur: {} rec_frames: {}", vts_start, vts_end, vts_delta, frames);
+                logger_->debug("rec start: {} rec_end: {} rec_dur: {} rec_frames: {}", vts_start, vts_end, vts_delta, frames);
             }
 
             if (frames > 0 && vts_start < static_cast<int64_t>(ts_first_buffer_b)){
-                console->critical("Frame start before audio!!!!");
+                logger_->critical("Frame start before audio!!!!");
                 return;
             }
 
@@ -299,7 +299,7 @@ void CinePISound::soundThread() {
                 system(bwfedit_rm_xml.str().c_str());
                 system(bwfedit_core.str().c_str());
             } else {
-                console->critical("XML does not exist!");
+                logger_->critical("XML does not exist!");
             }
 
             vu_meter.fill(0);
@@ -324,7 +324,7 @@ void CinePISound::soundThread() {
                     std::string action = std::string(udev_device_get_action(udev_dev));
 
                     if(action == "change" && (strstr(device.c_str(), std::string("card").c_str()) != nullptr)){
-                        console->critical("Action:{} | Device:{}", action, device);
+                        logger_->critical("Action:{} | Device:{}", action, device);
                         detectRecordingDevices();
                         if (canRecordAudio) {
                             parseHardwareParams();
@@ -335,7 +335,7 @@ void CinePISound::soundThread() {
                         audioFormat = "";
                         audioSampleRate = 0;
                         audioChannels = 0;
-                        console->critical("Sound card removed!");
+                        logger_->critical("Sound card removed!");
                     }
                     udev_device_unref(udev_dev);
                 }
@@ -380,8 +380,8 @@ void CinePISound::record_start() {
         recording_ = true;
     }
         
-    console->debug("arecord started pid:{}", pid);
-    console->info("Sound recording started.");
+    logger_->debug("arecord started pid:{}", pid);
+    logger_->info("Sound recording started.");
 }
 
 void CinePISound::record_stop() {
@@ -393,7 +393,7 @@ void CinePISound::record_stop() {
         kill(pid+1, SIGTERM);
     }
 
-    console->info("Sound recording stopped.");
+    logger_->info("Sound recording stopped.");
 }
 
 bool CinePISound::recording_ended() {
@@ -413,7 +413,7 @@ bool CinePISound::isRecording() {
 void CinePISound::detectRecordingDevices() {
     FILE* pipe = popen("arecord -l", "r");
     if(!pipe) {
-        console->error("Failed to run arecord -l");
+        logger_->error("Failed to run arecord -l");
         canRecordAudio = false;
         return;
     }
@@ -425,10 +425,10 @@ void CinePISound::detectRecordingDevices() {
     }
     pclose(pipe);
 
-    console->debug("{}", result);
+    logger_->debug("{}", result);
 
     if(result.find("card ") == std::string::npos) {
-        console->error("No recording devices detected!");
+        logger_->error("No recording devices detected!");
         canRecordAudio = false;
     } else {
         // Extract the default device or set your logic
@@ -438,14 +438,14 @@ void CinePISound::detectRecordingDevices() {
         canRecordAudio = true;
     }
 
-    console->debug("{}", defaultDevice);
+    logger_->debug("{}", defaultDevice);
 }
 
 void CinePISound::init_udev(){
     /* create udev object */
 	udev = udev_new();
 	if (!udev) {
-        console->error("Can't create udev\n");
+        logger_->error("Can't create udev\n");
 	}
 
     udev_mon = udev_monitor_new_from_netlink(udev, "udev");
@@ -464,7 +464,7 @@ void CinePISound::parseHardwareParams() {
     std::string cmd = "arecord -D " + defaultDevice + " --dump-hw-params 2>&1";
     FILE* pipe = popen(cmd.c_str(), "r");
     if (!pipe) {
-        console->error("Failed to run arecord --dump-hw-params");
+        logger_->error("Failed to run arecord --dump-hw-params");
         return;
     }
 
@@ -520,7 +520,7 @@ void CinePISound::parseHardwareParams() {
 
         }
     }
-    console->critical("HW CAP: {} {} {}", audioFormat, audioChannels, audioSampleRate);
+    logger_->critical("HW CAP: {} {} {}", audioFormat, audioChannels, audioSampleRate);
 }
 
 

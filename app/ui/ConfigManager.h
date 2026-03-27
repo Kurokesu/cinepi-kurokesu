@@ -18,5 +18,5 @@ protected:
 
 private:
     QVariant coerce(const QString &key, const QVariant &input);
-    QString m_configPath;
+    QString configPath_;
 };

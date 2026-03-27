@@ -4,33 +4,33 @@
 
 static auto &logger()
 {
-    static auto l = cinepi::getLogger("ui.camera");
+    static auto l = cinepi::getLogger("ui.controller");
     return l;
 }
 
 CameraController::CameraController(CameraWorker *worker, QObject *parent)
-    : QObject(parent), m_worker(worker)
+    : QObject(parent), worker_(worker)
 {
-    connect(m_worker, &CameraWorker::statsUpdate,
-            this, &CameraController::onStatsUpdate);
-    connect(m_worker, &CameraWorker::streamInfoUpdate,
+    connect(worker_, &CameraWorker::statsUpdated,
+            this, &CameraController::onStatsUpdated);
+    connect(worker_, &CameraWorker::streamInfoUpdated,
             this, &CameraController::onStreamInfo);
-    connect(m_worker, &CameraWorker::cameraError,
+    connect(worker_, &CameraWorker::cameraError,
             this, &CameraController::onCameraError);
 
     connect(this, &CameraController::controlRequested,
-            m_worker, &CameraWorker::handleControl);
+            worker_, &CameraWorker::handleControl);
 
-    connect(m_worker, &CameraWorker::settingsLoaded,
+    connect(worker_, &CameraWorker::settingsLoaded,
             this, &CameraController::onSettingsLoaded, Qt::QueuedConnection);
 
-    connect(m_worker, &QThread::started, this, [this]() {
-        m_connected = true;
+    connect(worker_, &QThread::started, this, [this]() {
+        connected_ = true;
         logger()->info("Camera connected");
         Q_EMIT connectedChanged();
     });
-    connect(m_worker, &QThread::finished, this, [this]() {
-        m_connected = false;
+    connect(worker_, &QThread::finished, this, [this]() {
+        connected_ = false;
         logger()->info("Camera disconnected");
         Q_EMIT connectedChanged();
     });
@@ -45,10 +45,10 @@ void CameraController::sendControl(const QString &key, const QString &value)
 void CameraController::setInitialProperties(int iso, int shutterAngle,
                                               int fps, int colorTemp)
 {
-    m_isoSensitivity = iso;
-    m_shutterAngle = shutterAngle;
-    m_frameRate = fps;
-    m_colorTemperature = colorTemp;
+    isoSensitivity_ = iso;
+    shutterAngle_ = shutterAngle;
+    frameRate_ = fps;
+    colorTemperature_ = colorTemp;
 
     Q_EMIT isoSensitivityChanged();
     Q_EMIT shutterAngleChanged();
@@ -83,8 +83,8 @@ void CameraController::setRecording(bool value)
 {
     logger()->info("Recording: {}", value ? "START" : "STOP");
     sendControl("is_recording", value ? "1" : "0");
-    if (value != m_recording) {
-        m_recording = value;
+    if (value != recording_) {
+        recording_ = value;
         Q_EMIT recordingChanged();
     }
 }
@@ -92,13 +92,13 @@ void CameraController::setRecording(bool value)
 void CameraController::setCompression(int value)
 {
     sendControl("compress", QString::number(value));
-    if (value != m_compression) {
-        m_compression = value;
+    if (value != compression_) {
+        compression_ = value;
         Q_EMIT compressionChanged();
     }
 }
 
-void CameraController::onStatsUpdate(float framerate, int colorTemp,
+void CameraController::onStatsUpdated(float framerate, int colorTemp,
                                       float focus, int frameCount,
                                       int bufferSize,
                                       float exposureTime, float analogueGain)
@@ -106,49 +106,49 @@ void CameraController::onStatsUpdate(float framerate, int colorTemp,
     Q_UNUSED(focus)
 
     int actualIso = static_cast<int>(analogueGain * 100 + 0.5f);
-    if (actualIso != m_isoSensitivity) {
-        m_isoSensitivity = actualIso;
+    if (actualIso != isoSensitivity_) {
+        isoSensitivity_ = actualIso;
         Q_EMIT isoSensitivityChanged();
     }
 
     if (framerate > 0 && exposureTime > 0) {
         int actualAngle = static_cast<int>(
             360.0f * framerate * exposureTime / 1e6f + 0.5f);
-        if (actualAngle != m_shutterAngle) {
-            m_shutterAngle = actualAngle;
+        if (actualAngle != shutterAngle_) {
+            shutterAngle_ = actualAngle;
             Q_EMIT shutterAngleChanged();
         }
     }
 
-    if (colorTemp != m_colorTemperature) {
-        m_colorTemperature = colorTemp;
+    if (colorTemp != colorTemperature_) {
+        colorTemperature_ = colorTemp;
         Q_EMIT colorTemperatureChanged();
     }
 
     int newFps = static_cast<int>(framerate + 0.5f);
-    if (newFps != m_frameRate) {
-        m_frameRate = newFps;
+    if (newFps != frameRate_) {
+        frameRate_ = newFps;
         Q_EMIT frameRateChanged();
     }
 
-    if (frameCount != m_frameCount || bufferSize != m_bufferSize) {
-        m_frameCount = frameCount;
-        m_bufferSize = bufferSize;
+    if (frameCount != frameCount_ || bufferSize != bufferSize_) {
+        frameCount_ = frameCount;
+        bufferSize_ = bufferSize;
         Q_EMIT statsChanged();
     }
 
-    if (!m_connected) {
-        m_connected = true;
+    if (!connected_) {
+        connected_ = true;
         Q_EMIT connectedChanged();
     }
 }
 
 void CameraController::onStreamInfo(int w, int h)
 {
-    if (w != m_width || h != m_height) {
+    if (w != width_ || h != height_) {
         logger()->info("Stream resolution: {}x{}", w, h);
-        m_width = w;
-        m_height = h;
+        width_ = w;
+        height_ = h;
         Q_EMIT resolutionChanged();
     }
 }
@@ -162,8 +162,8 @@ void CameraController::onSettingsLoaded(int iso, int shutterAngle, int fps, int 
 void CameraController::onCameraError(const QString &msg)
 {
     logger()->error("Camera error: {}", msg.toStdString());
-    m_errorString = msg;
-    m_connected = false;
+    errorString_ = msg;
+    connected_ = false;
     Q_EMIT errorChanged();
     Q_EMIT connectedChanged();
 }

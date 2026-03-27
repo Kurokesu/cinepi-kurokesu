@@ -36,7 +36,7 @@ CinePIController::CinePIController(CinePIRecorder *app)
       app_(app),
       options_(app->GetOptions())
 {
-    console = cinepi::getLogger("cinepi_controller");
+    logger_ = cinepi::getLogger("camera.controller");
     initHandlers();
 }
 
@@ -51,7 +51,7 @@ void CinePIController::setInitialValues(int isoGain, float shutterAngle,
     if (shutter_angle_ > 0)
         shutter_speed_ = 1.0 / ((framerate_ * 360.0) / shutter_angle_);
 
-    console->info("Initial: ISO={} SHT={} FPS={} AWB={}",
+    logger_->info("Initial: ISO={} SHT={} FPS={} AWB={}",
                   gainToIso(iso_), shutter_angle_, framerate_, awb_);
 }
 
@@ -61,16 +61,16 @@ void CinePIController::initHandlers()
         { CONTROL_KEY_RECORD, [this](const std::string &v) {
             trigger_ = !is_recording_ ? 1 : -1;
             is_recording_ = (stoi(v) != 0);
-            console->info("Record trigger: {}", is_recording_ ? "START" : "STOP");
+            logger_->info("Record trigger: {}", is_recording_ ? "START" : "STOP");
         }},
         { CONTROL_KEY_ISO, [this](const std::string &v) {
             int val = stoi(v);
             if (val == 0) {
-                console->warn("ISO: invalid value 0, ignoring");
+                logger_->warn("ISO: invalid value 0, ignoring");
                 return;
             }
             iso_ = isoToGain(val);
-            console->info("ISO: {}{}", val < 0 ? "AUTO" : std::to_string(val),
+            logger_->info("ISO: {}{}", val < 0 ? "AUTO" : std::to_string(val),
                           val > 0 ? " (gain=" + std::to_string(iso_) + ")" : "");
             libcamera::ControlList cl;
             if (iso_ < 0) {
@@ -109,16 +109,16 @@ void CinePIController::initHandlers()
             if (shutter_angle_ < 0) {
                 cl.set(libcamera::controls::ExposureTimeMode,
                        libcamera::controls::ExposureTimeModeAuto);
-                console->info("Shutter: AUTO");
+                logger_->info("Shutter: AUTO");
             } else if (shutter_angle_ > 0 && framerate_ > 0) {
                 shutter_speed_ = 1.0 / ((framerate_ * 360.0) / shutter_angle_);
                 uint64_t shutterTime = shutter_speed_ * 1e+6;
                 cl.set(libcamera::controls::ExposureTimeMode,
                        libcamera::controls::ExposureTimeModeManual);
                 cl.set(libcamera::controls::ExposureTime, shutterTime);
-                console->info("Shutter: {}deg -> {}us", shutter_angle_, shutterTime);
+                logger_->info("Shutter: {}deg -> {}us", shutter_angle_, shutterTime);
             } else {
-                console->warn("Shutter: invalid angle {}, ignoring", shutter_angle_);
+                logger_->warn("Shutter: invalid angle {}, ignoring", shutter_angle_);
                 return;
             }
             app_->SetControls(cl);
@@ -138,7 +138,7 @@ void CinePIController::initHandlers()
         }},
         { CONTROL_KEY_FRAMERATE, [this](const std::string &v) {
             framerate_ = stof(v);
-            console->info("Framerate: {:.1f}", framerate_);
+            logger_->info("Framerate: {:.1f}", framerate_);
             options_->Set().framerate = framerate_;
             long int durationValues[2] = {
                 static_cast<long int>(1000000.0 / framerate_),
@@ -171,7 +171,7 @@ void CinePIController::handleControl(const std::string &key, const std::string &
     if (it != handlers_.end()) {
         it->second(value);
     } else {
-        console->warn("Unknown control key: {}", key);
+        logger_->warn("Unknown control key: {}", key);
     }
 }
 
@@ -198,25 +198,25 @@ void CinePIController::applyExposure()
     if (shutter_angle_ < 0) {
         cl.set(libcamera::controls::ExposureTimeMode,
                libcamera::controls::ExposureTimeModeAuto);
-        console->info("Shutter: AUTO");
+        logger_->info("Shutter: AUTO");
     } else if (shutter_angle_ > 0 && framerate_ > 0) {
         shutter_speed_ = 1.0 / ((framerate_ * 360.0) / shutter_angle_);
         uint64_t shutterTime = shutter_speed_ * 1e+6;
         cl.set(libcamera::controls::ExposureTimeMode,
                libcamera::controls::ExposureTimeModeManual);
         cl.set(libcamera::controls::ExposureTime, shutterTime);
-        console->info("Shutter: {}deg -> {}us", shutter_angle_, shutterTime);
+        logger_->info("Shutter: {}deg -> {}us", shutter_angle_, shutterTime);
     }
 
     if (iso_ < 0) {
         cl.set(libcamera::controls::AnalogueGainMode,
                libcamera::controls::AnalogueGainModeAuto);
-        console->info("ISO: AUTO");
+        logger_->info("ISO: AUTO");
     } else {
         cl.set(libcamera::controls::AnalogueGainMode,
                libcamera::controls::AnalogueGainModeManual);
         cl.set(libcamera::controls::AnalogueGain, iso_);
-        console->info("ISO: {} (gain={})", gainToIso(iso_), iso_);
+        logger_->info("ISO: {} (gain={})", gainToIso(iso_), iso_);
     }
 
     app_->SetControls(cl);
@@ -226,14 +226,14 @@ void CinePIController::applyAwb()
 {
     libcamera::ControlList cl;
     if (awb_ == 0) {
-        console->info("AWB: AUTO");
+        logger_->info("AWB: AUTO");
         cl.set(libcamera::controls::AwbEnable, true);
     } else {
         float r_gain, b_gain;
         kelvinToColourGains(awb_, r_gain, b_gain);
         cg_rb_[0] = r_gain;
         cg_rb_[1] = b_gain;
-        console->info("AWB: {}K -> ColourGains R={:.2f} B={:.2f}", awb_, r_gain, b_gain);
+        logger_->info("AWB: {}K -> ColourGains R={:.2f} B={:.2f}", awb_, r_gain, b_gain);
         cl.set(libcamera::controls::AwbEnable, false);
         cl.set(libcamera::controls::ColourGains,
                libcamera::Span<const float, 2>({ r_gain, b_gain }));

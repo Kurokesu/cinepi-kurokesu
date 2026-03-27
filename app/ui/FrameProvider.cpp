@@ -10,26 +10,26 @@ static auto &logger()
 FrameProvider::FrameProvider()
     : QQuickImageProvider(QQuickImageProvider::Image)
 {
-    m_currentFrame = QImage(960, 540, QImage::Format_RGB888);
-    m_currentFrame.fill(QColor(30, 30, 30));
+    currentFrame_ = QImage(960, 540, QImage::Format_RGB888);
+    currentFrame_.fill(QColor(30, 30, 30));
     logger()->debug("FrameProvider initialized (placeholder {}x{})",
-               m_currentFrame.width(), m_currentFrame.height());
+               currentFrame_.width(), currentFrame_.height());
 }
 
 QImage FrameProvider::requestImage(const QString &id, QSize *size, const QSize &requestedSize)
 {
     Q_UNUSED(id)
-    QMutexLocker lock(&m_mutex);
+    QMutexLocker lock(&mutex_);
 
     if (size) {
-        *size = m_currentFrame.size();
+        *size = currentFrame_.size();
     }
 
     if (requestedSize.isValid() && !requestedSize.isNull()) {
-        return m_currentFrame.scaled(requestedSize, Qt::KeepAspectRatio, Qt::FastTransformation);
+        return currentFrame_.scaled(requestedSize, Qt::KeepAspectRatio, Qt::FastTransformation);
     }
 
-    return m_currentFrame;
+    return currentFrame_;
 }
 
 void FrameProvider::onNewFrame(const QImage &frame)
@@ -37,10 +37,10 @@ void FrameProvider::onNewFrame(const QImage &frame)
     if (frame.isNull()) return;
 
     {
-        QMutexLocker lock(&m_mutex);
-        bool sizeChanged = (frame.size() != m_currentFrame.size());
-        m_currentFrame = frame;
-        m_frameNumber++;
+        QMutexLocker lock(&mutex_);
+        bool sizeChanged = (frame.size() != currentFrame_.size());
+        currentFrame_ = frame;
+        frameNumber_++;
 
         if (sizeChanged) {
             logger()->info("Frame size changed to {}x{}", frame.width(), frame.height());
@@ -48,5 +48,5 @@ void FrameProvider::onNewFrame(const QImage &frame)
         }
     }
 
-    Q_EMIT frameUpdated();
+    Q_EMIT frameNumberChanged();
 }
