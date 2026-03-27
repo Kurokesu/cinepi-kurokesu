@@ -155,10 +155,7 @@ void CameraBackend::sync()
     options_->thumbnailSize = thumbnail_size_;
     options_->compression  = compression_;
     options_->Set().framerate = framerate_;
-    options_->Set().gain     = (iso_ < 0) ? 0 : iso_;
-    options_->awbEn = (awb_ == 0);
     options_->Set().denoise  = "off";
-    options_->Set().mode_string = "0:0:0:0";
 }
 
 void CameraBackend::applyExposure()
