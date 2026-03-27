@@ -5,8 +5,7 @@
  * libcamera_encoder.cpp - libcamera video encoding class.
  */
 
-#ifndef CINEPI_RECORDER_HPP
-#define CINEPI_RECORDER_HPP
+#pragma once
 
 #include <rpicam-apps/core/rpicam_app.hpp>
 #include <rpicam-apps/core/stream_info.hpp>
@@ -124,4 +123,3 @@ private:
 	EncodeOutputReadyCallback encode_output_ready_callback_;
 	MetadataReadyCallback metadata_ready_callback_;
 };
-#endif // CINEPI_RECORDER_HPP

@@ -1,6 +1,4 @@
 #pragma once
-#ifndef DNG_ENCODER_H
-#define DNG_ENCODER_H
 
 #include <condition_variable>
 #include <mutex>
@@ -158,5 +156,3 @@ private:
 	std::condition_variable disk_cond_var_;
 	std::thread disk_thread_[NUM_DISK_THREADS];
 };
-
-#endif
