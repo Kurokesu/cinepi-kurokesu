@@ -1,38 +1,6 @@
 #include "camera_backend.hpp"
 #include "logging.hpp"
 
-/*
- * IMX283 sensor-calibrated colour gains derived from the ct_curve in
- * /usr/share/libcamera/ipa/rpi/pisp/imx283.json.  Values are 1/ct_ratio
- * (the reciprocal of the raw R/G and B/G ratios at each colour temperature).
- */
-static void kelvinToColourGains(int kelvin, float &r_gain, float &b_gain)
-{
-    struct { int k; float r; float b; } const table[] = {
-        { 2800, 1.17f, 2.86f },
-        { 3200, 1.31f, 2.37f },
-        { 4000, 1.55f, 1.91f },
-        { 4500, 1.70f, 1.74f },
-        { 5600, 1.90f, 1.57f },
-        { 6500, 2.02f, 1.50f },
-        { 7500, 2.14f, 1.44f },
-        { 9000, 2.35f, 1.35f },
-    };
-    const size_t n = sizeof(table) / sizeof(table[0]);
-    r_gain = 1.0f;
-    b_gain = 1.0f;
-    if (kelvin <= table[0].k)   { r_gain = table[0].r; b_gain = table[0].b; return; }
-    if (kelvin >= table[n-1].k) { r_gain = table[n-1].r; b_gain = table[n-1].b; return; }
-    for (size_t i = 0; i < n - 1; i++) {
-        if (kelvin >= table[i].k && kelvin <= table[i+1].k) {
-            float t = float(kelvin - table[i].k) / float(table[i+1].k - table[i].k);
-            r_gain = table[i].r + t * (table[i+1].r - table[i].r);
-            b_gain = table[i].b + t * (table[i+1].b - table[i].b);
-            return;
-        }
-    }
-}
-
 CameraBackend::CameraBackend(CinePIRecorder *app)
     : CinePIState(),
       app_(app),
@@ -231,14 +199,9 @@ void CameraBackend::applyAwb()
         logger_->info("AWB: AUTO");
         cl.set(libcamera::controls::AwbEnable, true);
     } else {
-        float r_gain, b_gain;
-        kelvinToColourGains(awb_, r_gain, b_gain);
-        cg_rb_[0] = r_gain;
-        cg_rb_[1] = b_gain;
-        logger_->info("AWB: {}K -> ColourGains R={:.2f} B={:.2f}", awb_, r_gain, b_gain);
+        logger_->info("AWB: {}K", awb_);
         cl.set(libcamera::controls::AwbEnable, false);
-        cl.set(libcamera::controls::ColourGains,
-               libcamera::Span<const float, 2>({ r_gain, b_gain }));
+        cl.set(libcamera::controls::ColourTemperature, awb_);
     }
     app_->SetControls(cl);
 }
