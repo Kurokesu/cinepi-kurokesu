@@ -46,7 +46,7 @@ void CameraSession::run()
 
     try {
         CinePIRecorder app;
-        CinePIAudio sound(&app);
+        CinePIAudio audio(&app);
         CameraBackend controller(&app);
 
         RawOptions *options = app.GetOptions();
@@ -91,7 +91,7 @@ void CameraSession::run()
             });
 
         controller.sync();
-        sound.start();
+        audio.start();
 
         std::unique_ptr<Output> output =
             std::unique_ptr<Output>(Output::Create(options));
@@ -180,14 +180,14 @@ void CameraSession::run()
                 controller.folderOpen =
                     create_clip_folder(options, controller.getClipNumber());
                 app.GetEncoder()->resetFrameCount();
-                sound.record_start();
+                audio.record_start();
             } else if (trigger < 0) {
                 log->info("Recording stopped");
                 controller.folderOpen = false;
-                sound.record_stop();
+                audio.record_stop();
             }
 
-            if (controller.isRecording() && sound.isRecording() &&
+            if (controller.isRecording() && audio.isRecording() &&
                 controller.folderOpen) {
                 if (app.GetEncoder()->buffer_full()) {
                     log->warn("Disk buffer full, stopping recording");
