@@ -134,10 +134,10 @@ void CameraWorker::run()
                 if (!initialSync) {
                     initialSync = true;
                     Q_EMIT settingsLoaded(
-                        controller.getISO(),
+                        gainToIso(controller.getGain()),
                         static_cast<int>(controller.getShutterAngle()),
                         static_cast<int>(controller.getFramerate()),
-                        controller.getAWB());
+                        controller.getColorTemperature());
                 }
             }
 

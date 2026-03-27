@@ -76,21 +76,81 @@ ApplicationWindow {
 
     // ── Camera control wiring ───────────────────────────────────────────────
 
+    property bool _initDone: false
+
+    function findClosestIndex(control, target) {
+        var vals = control.effectiveValues
+        var bestIdx = 0
+        var bestDiff = Math.abs(vals[0] - target)
+        for (var i = 1; i < vals.length; i++) {
+            var diff = Math.abs(vals[i] - target)
+            if (diff < bestDiff) {
+                bestDiff = diff
+                bestIdx = i
+            }
+        }
+        return bestIdx
+    }
+
+    function onManualValue(control, cameraMethod, configKey) {
+        if (!_initDone || control.autoMode) return
+        var val = Math.round(parseFloat(control.currentValue))
+        if (val > 0) {
+            camera[cameraMethod](val)
+            config[configKey] = val
+        }
+    }
+
+    function onAutoToggle(control, sentinel, cameraMethod, cameraProp, configKey) {
+        if (!_initDone) return
+        if (control.autoMode) {
+            camera[cameraMethod](sentinel)
+            config[configKey] = sentinel
+        } else {
+            var actual = camera[cameraProp]
+            if (actual > 0) {
+                config[configKey] = actual
+                camera[cameraMethod](actual)
+            }
+        }
+    }
+
     Connections {
-        target: mainScreen
-        function onIsoValueChanged() {
-            camera.setIsoSensitivity(mainScreen.isoValue)
-            config.manualIsoSensitivity = mainScreen.isoValue
+        target: mainScreen.isoControl
+        function onCurrentIndexChanged() {
+            onManualValue(mainScreen.isoControl,
+                          "setIsoSensitivity", "manualIsoSensitivity")
+        }
+        function onAutoModeChanged() {
+            onAutoToggle(mainScreen.isoControl, -1,
+                         "setIsoSensitivity", "isoSensitivity",
+                         "manualIsoSensitivity")
         }
     }
 
     Connections {
         target: mainScreen.shutterControl
         function onCurrentIndexChanged() {
-            var angle = Math.round(
-                parseFloat(mainScreen.shutterControl.currentValue))
-            camera.setShutterAngle(angle)
-            config.manualShutterAngle = angle
+            onManualValue(mainScreen.shutterControl,
+                          "setShutterAngle", "manualShutterAngle")
+        }
+        function onAutoModeChanged() {
+            onAutoToggle(mainScreen.shutterControl, -1,
+                         "setShutterAngle", "shutterAngle",
+                         "manualShutterAngle")
+        }
+    }
+
+    Connections {
+        target: mainScreen.wbControl
+        function onCurrentIndexChanged() {
+            onManualValue(mainScreen.wbControl,
+                          "setColorTemperature", "colorTemperature")
+        }
+        function onAutoModeChanged() {
+            onAutoToggle(mainScreen.wbControl, 0,
+                         "setColorTemperature", "colorTemperature",
+                         "colorTemperature")
         }
     }
 
@@ -145,12 +205,24 @@ ApplicationWindow {
         mainScreen.guideControl.crosshairEnabled = config.crosshairEnabled
         mainScreen.guideControl.centerDotEnabled = config.centerDotEnabled
 
-        // Camera ISO auto/manual
-        if (config.manualIsoSensitivity >= 0)
-            mainScreen.isoValue = config.manualIsoSensitivity
+        // Camera ISO
+        mainScreen.isoControl.autoMode = (config.manualIsoSensitivity < 0)
+        if (config.manualIsoSensitivity > 0)
+            mainScreen.isoControl.currentIndex =
+                findClosestIndex(mainScreen.isoControl, config.manualIsoSensitivity)
 
-        // Camera shutter auto/manual
-        if (config.manualShutterAngle >= 0)
-            mainScreen.shutterControl.currentValue = config.manualShutterAngle
+        // Camera shutter
+        mainScreen.shutterControl.autoMode = (config.manualShutterAngle < 0)
+        if (config.manualShutterAngle > 0)
+            mainScreen.shutterControl.currentIndex =
+                findClosestIndex(mainScreen.shutterControl, config.manualShutterAngle)
+
+        // Camera white balance
+        mainScreen.wbControl.autoMode = (config.colorTemperature === 0)
+        if (config.colorTemperature > 0)
+            mainScreen.wbControl.currentIndex =
+                findClosestIndex(mainScreen.wbControl, config.colorTemperature)
+
+        _initDone = true
     }
 }

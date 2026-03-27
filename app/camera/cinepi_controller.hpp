@@ -75,8 +75,8 @@ public:
         return state;
     }
 
-    int getISO() const { return iso_; }
-    int getAWB() const { return awb_; }
+    int getGain() const { return iso_; }
+    int getColorTemperature() const { return awb_; }
     float getFramerate() const { return framerate_; }
     float getShutterAngle() const { return shutter_angle_; }
     float getColorGainR() const { return cg_rb_[0]; }
