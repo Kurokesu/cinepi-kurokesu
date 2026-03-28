@@ -30,11 +30,11 @@ void CameraBackend::initHandlers()
     handlers_ = {
         { CONTROL_KEY_RECORD, [this](const std::string &v) {
             trigger_ = !is_recording_ ? 1 : -1;
-            is_recording_ = (stoi(v) != 0);
+            is_recording_ = (std::stoi(v) != 0);
             logger_->info("Record trigger: {}", is_recording_ ? "START" : "STOP");
         }},
         { CONTROL_KEY_ISO, [this](const std::string &v) {
-            int val = stoi(v);
+            int val = std::stoi(v);
             if (val == 0) {
                 logger_->warn("ISO: invalid value 0, ignoring");
                 return;
@@ -54,7 +54,7 @@ void CameraBackend::initHandlers()
             app_->SetControls(cl);
         }},
         { CONTROL_KEY_WB, [this](const std::string &v) {
-            awb_ = stoi(v);
+            awb_ = std::stoi(v);
             applyAwb();
         }},
         { CONTROL_KEY_COLORGAINS, [this](const std::string &v) {
@@ -64,7 +64,7 @@ void CameraBackend::initHandlers()
             char *ptr = strtok(&cg[0], ",");
             uint8_t i = 0;
             while (ptr != NULL && i < 2) {
-                cg_rb_[i] = static_cast<float>(stof(ptr));
+                cg_rb_[i] = static_cast<float>(std::stof(ptr));
                 i++;
                 ptr = strtok(NULL, ",");
             }
@@ -73,7 +73,7 @@ void CameraBackend::initHandlers()
             app_->SetControls(cl);
         }},
         { CONTROL_KEY_SHUTTER_ANGLE, [this](const std::string &v) {
-            float val = stof(v);
+            float val = std::stof(v);
             shutter_angle_ = val;
             libcamera::ControlList cl;
             if (shutter_angle_ < 0) {
@@ -94,20 +94,20 @@ void CameraBackend::initHandlers()
             app_->SetControls(cl);
         }},
         { CONTROL_KEY_WIDTH, [this](const std::string &v) {
-            width_ = static_cast<uint16_t>(stoi(v));
+            width_ = static_cast<uint16_t>(std::stoi(v));
             options_->Set().width = width_;
         }},
         { CONTROL_KEY_HEIGHT, [this](const std::string &v) {
-            height_ = static_cast<uint16_t>(stoi(v));
+            height_ = static_cast<uint16_t>(std::stoi(v));
             options_->Set().height = height_;
         }},
         { CONTROL_KEY_COMPRESSION, [this](const std::string &v) {
-            compression_ = stoi(v);
+            compression_ = std::stoi(v);
             options_->compression = compression_;
             cameraInit_ = true;
         }},
         { CONTROL_KEY_FRAMERATE, [this](const std::string &v) {
-            framerate_ = stof(v);
+            framerate_ = std::stof(v);
             logger_->info("Framerate: {:.1f}", framerate_);
             options_->Set().framerate = framerate_;
             long int durationValues[2] = {
@@ -123,10 +123,10 @@ void CameraBackend::initHandlers()
             cameraInit_ = true;
         }},
         { CONTROL_KEY_THUMBNAIL, [this](const std::string &v) {
-            options_->thumbnail = stoi(v);
+            options_->thumbnail = std::stoi(v);
         }},
         { CONTROL_KEY_THUMBNAIL_SIZE, [this](const std::string &v) {
-            options_->thumbnailSize = stoi(v);
+            options_->thumbnailSize = std::stoi(v);
             cameraInit_ = true;
         }},
         { "log_level", [this](const std::string &v) {
