@@ -29,9 +29,6 @@ ConfigManager::ConfigManager(const QString &basePath, QObject *parent)
     insert("thirdsGridEnabled",         false);
     insert("goldenEnabled",             false);
     insert("centerDotEnabled",          false);
-    insert("cinematicGuideEnabled",     false);
-    insert("cinematicGuide185Enabled",  false);
-    insert("cinematicGuide43Enabled",   true);
 
     logger()->info("Config file: {}", configPath_.toStdString());
     reload();
