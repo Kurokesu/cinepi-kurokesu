@@ -51,7 +51,7 @@ Pane {
             checkable: true
             checked: sheet.autoMode
             background: Rectangle {
-                color: "#66545454"
+                color: "#2b000000"
                 radius: height / 5
             }
             contentItem: Label {
