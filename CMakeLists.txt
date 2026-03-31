@@ -12,7 +12,7 @@ endif()
 
 set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL TRUE)
 set(XKB_FIND_QUIETLY TRUE)
-find_package(Qt6 REQUIRED COMPONENTS Core Qml Quick QuickControls2 Network Gui)
+find_package(Qt6 REQUIRED COMPONENTS Core Qml Quick QuickControls2 Network Gui ShaderTools)
 
 # CinePiUi (Constants singleton) and CinePiUiContent (all UI components).
 # These create static QML module targets that we link into the executable.
@@ -93,6 +93,17 @@ add_executable(${PROJECT_NAME}
     ${MAIN_SOURCES}
     ${HEADERS}
     ${QRC_SOURCES}
+)
+
+qt6_add_shaders(${PROJECT_NAME} "app_shaders"
+    BATCHABLE
+    PRECOMPILE
+    PREFIX ""
+    FILES
+        shaders/zebra.frag
+        shaders/falsecolor.frag
+        shaders/focuspeaking.frag
+        shaders/grayscale.frag
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE

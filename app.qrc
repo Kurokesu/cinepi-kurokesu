@@ -4,9 +4,5 @@
         <file alias="ShaderOverlays.qml">app/qml/ShaderOverlays.qml</file>
         <file alias="ViewfinderGuides.qml">app/qml/ViewfinderGuides.qml</file>
         <file>qtquickcontrols2.conf</file>
-        <file>shaders/zebra.frag.qsb</file>
-        <file>shaders/falsecolor.frag.qsb</file>
-        <file>shaders/focuspeaking.frag.qsb</file>
-        <file>shaders/grayscale.frag.qsb</file>
     </qresource>
 </RCC>

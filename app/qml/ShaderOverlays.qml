@@ -10,10 +10,9 @@ Item {
     property bool focusPeakingEnabled: false
     property bool grayscaleEnabled: false
 
-    // Animated time for zebra stripe movement (NumberAnimation offloads to animation thread)
     property real elapsedTime: 0.0
     NumberAnimation on elapsedTime {
-        running: root.zebraEnabled && !root.falseColorEnabled
+        running: root.zebraEnabled
         from: 0; to: 3600
         duration: 3600000
         loops: Animation.Infinite
@@ -22,7 +21,7 @@ Item {
     ShaderEffect {
         id: zebraEffect
         anchors.fill: parent
-        visible: root.zebraEnabled && !root.falseColorEnabled
+        visible: root.zebraEnabled
         property var source: root.source
         property real zebraThreshold: root.zebraThreshold
         property real time: root.elapsedTime
@@ -40,7 +39,7 @@ Item {
     ShaderEffect {
         id: focusPeakingEffect
         anchors.fill: parent
-        visible: root.focusPeakingEnabled && !root.falseColorEnabled
+        visible: root.focusPeakingEnabled
         property var source: root.source
         property real texWidth: root.width > 0 ? root.width : 960.0
         property real texHeight: root.height > 0 ? root.height : 540.0
@@ -51,7 +50,7 @@ Item {
     ShaderEffect {
         id: grayscaleEffect
         anchors.fill: parent
-        visible: root.grayscaleEnabled && !root.falseColorEnabled
+        visible: root.grayscaleEnabled
         property var source: root.source
         fragmentShader: "qrc:/shaders/grayscale.frag.qsb"
     }

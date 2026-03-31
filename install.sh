@@ -65,7 +65,7 @@ install_dependencies() {
         qt6-base-dev qt6-declarative-dev \
         qml6-module-qtquick qml6-module-qtquick-controls \
         qml6-module-qtquick-layouts qml6-module-qtquick-window \
-        qt6-wayland qt6-shader-baker
+        qt6-wayland qt6-shader-baker qt6-shadertools-dev
 
     log "Installing rpicam-apps library..."
     sudo apt-get install -y librpicam-app-dev

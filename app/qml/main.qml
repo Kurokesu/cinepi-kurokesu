@@ -40,6 +40,7 @@ ApplicationWindow {
     ShaderOverlays {
         parent: mainScreen.viewfinder
         anchors.fill: parent
+        z: 10
         source: viewfinderTexture
         zebraEnabled: mainScreen.monitorControl.zebraEnabled
         zebraThreshold: config.zebraThreshold
