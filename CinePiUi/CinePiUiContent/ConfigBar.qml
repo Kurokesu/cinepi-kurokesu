@@ -21,11 +21,16 @@ Pane {
     property alias aspectButton: aspectButton
     property alias guideButton: guideButton
     property alias monitorButton: monitorButton
+    property alias menuButton: menuButton
 
     RowLayout {
         id: configBarRow
-        anchors.fill: parent
-        spacing: 34
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: menuButton.left
+
+        Item { Layout.fillWidth: true }
 
         Button {
             id: formatButton
@@ -58,6 +63,8 @@ Pane {
                 }
             }
         }
+
+        Item { Layout.fillWidth: true }
 
         Button {
             id: aspectButton
@@ -97,6 +104,8 @@ Pane {
             }
         }
 
+        Item { Layout.fillWidth: true }
+
         Button {
             id: guideButton
             objectName: "guideOpen"
@@ -107,6 +116,8 @@ Pane {
             icon.height: 59
             background: Item {}
         }
+
+        Item { Layout.fillWidth: true }
 
         Button {
             id: monitorButton
@@ -119,39 +130,49 @@ Pane {
             background: Item {}
         }
 
-        Item {
-            id: configBarSpacer
-            Layout.fillWidth: true
-        }
+        Item { Layout.fillWidth: true }
+    }
 
-        Label {
-            id: recordingTimer
-            visible: false
-            text: "00:00:00:00"
-            font.pixelSize: 21
-            font.weight: Font.Bold
-            leftPadding: 16
-            rightPadding: 16
-            topPadding: 6
-            bottomPadding: 6
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-            background: Rectangle {
-                id: recordingBadge
-                color: Material.accent
-                radius: height / 2
-                opacity: 0
-            }
+    Label {
+        id: recordingTimer
+        visible: false
+        text: "00:00:00:00"
+        font.pixelSize: 21
+        font.weight: Font.Bold
+        leftPadding: 16
+        rightPadding: 16
+        topPadding: 6
+        bottomPadding: 6
+        anchors.centerIn: parent
+        background: Rectangle {
+            id: recordingBadge
+            color: Material.accent
+            radius: height / 2
+            opacity: 0
         }
+    }
 
-        Button {
-            id: menuButton
-            text: "\u22ee"
-            flat: true
-            font.pixelSize: 34
-            rightPadding: 0
-            font.weight: Font.Bold
-            background: Item {}
+    Button {
+        id: menuButton
+        text: "\u22ee"
+        flat: true
+        font.pixelSize: 34
+        font.weight: Font.Bold
+        width: 72
+        anchors.right: parent.right
+        anchors.rightMargin: -root.padding
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        horizontalPadding: 0
+        contentItem: Label {
+            text: menuButton.text
+            font: menuButton.font
+            color: "white"
+            horizontalAlignment: Text.AlignRight
+            rightPadding: 4
+            verticalAlignment: Text.AlignVCenter
         }
+        background: Item {}
     }
 
     states: [
@@ -160,23 +181,7 @@ Pane {
             when: root.recording
 
             PropertyChanges {
-                target: formatButton
-                visible: false
-            }
-            PropertyChanges {
-                target: aspectButton
-                visible: false
-            }
-            PropertyChanges {
-                target: guideButton
-                visible: false
-            }
-            PropertyChanges {
-                target: monitorButton
-                visible: false
-            }
-            PropertyChanges {
-                target: configBarSpacer
+                target: configBarRow
                 visible: false
             }
             PropertyChanges {

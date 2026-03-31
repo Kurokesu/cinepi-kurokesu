@@ -32,6 +32,7 @@ Rectangle {
     property alias guideControl: guideControl
     property alias monitorControl: monitorControl
     property alias viewfinder: viewfinder
+    property alias menuButton: configBar.menuButton
 
     property int isoValue: isoControl.currentIndex
                            >= 0 ? isoControl.values[isoControl.currentIndex] : 0
@@ -148,6 +149,7 @@ Rectangle {
     Pane {
         id: controlBar
         padding: 8
+        height: 105
         background: Rectangle {
             color: "#40000000"
         }
@@ -157,8 +159,12 @@ Rectangle {
 
         RowLayout {
             id: controlsRow
-            anchors.fill: parent
-            spacing: 34
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.left: parent.left
+            anchors.right: recordButton.left
+
+            Item { Layout.fillWidth: true }
 
             ControlButton {
                 id: isoButton
@@ -169,6 +175,8 @@ Rectangle {
                 highlighted: !isoControl.autoMode
             }
 
+            Item { Layout.fillWidth: true }
+
             ControlButton {
                 id: shutterButton
                 objectName: "shutterOpen"
@@ -177,6 +185,8 @@ Rectangle {
                 value: shutterControl.displayText
                 highlighted: !shutterControl.autoMode
             }
+
+            Item { Layout.fillWidth: true }
 
             ControlButton {
                 id: wbButton
@@ -187,16 +197,16 @@ Rectangle {
                 highlighted: !wbControl.autoMode
             }
 
-            Item {
-                Layout.fillWidth: true
-            }
+            Item { Layout.fillWidth: true }
+        }
 
-            RecordButton {
-                id: recordButton
-                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                Layout.preferredHeight: 89
-                Layout.preferredWidth: 89
-            }
+        RecordButton {
+            id: recordButton
+            width: 89
+            anchors.right: parent.right
+            anchors.rightMargin: -controlBar.padding
+            anchors.verticalCenter: parent.verticalCenter
+            height: 89
         }
     }
 
