@@ -24,6 +24,11 @@ CameraAdapter::CameraAdapter(CameraSession *session, QObject *parent)
     connect(session_, &CameraSession::settingsLoaded,
             this, &CameraAdapter::onSettingsLoaded, Qt::QueuedConnection);
 
+    displayTimer_.setSingleShot(true);
+    displayTimer_.setInterval(143);
+    connect(&displayTimer_, &QTimer::timeout,
+            this, &CameraAdapter::flushDisplayUpdates);
+
     connect(session_, &QThread::started, this, [this]() {
         connected_ = true;
         logger()->info("Camera connected");
@@ -108,7 +113,7 @@ void CameraAdapter::onStatsUpdated(float framerate, int colorTemp,
     int actualIso = static_cast<int>(analogueGain * 100 + 0.5f);
     if (actualIso != isoSensitivity_) {
         isoSensitivity_ = actualIso;
-        Q_EMIT isoSensitivityChanged();
+        isoDirty_ = true;
     }
 
     if (framerate > 0 && exposureTime > 0) {
@@ -116,14 +121,17 @@ void CameraAdapter::onStatsUpdated(float framerate, int colorTemp,
             360.0f * framerate * exposureTime / 1e6f + 0.5f);
         if (actualAngle != shutterAngle_) {
             shutterAngle_ = actualAngle;
-            Q_EMIT shutterAngleChanged();
+            shutterDirty_ = true;
         }
     }
 
     if (colorTemp != colorTemperature_) {
         colorTemperature_ = colorTemp;
-        Q_EMIT colorTemperatureChanged();
+        wbDirty_ = true;
     }
+
+    if ((isoDirty_ || shutterDirty_ || wbDirty_) && !displayTimer_.isActive())
+        displayTimer_.start();
 
     int newFps = static_cast<int>(framerate + 0.5f);
     if (newFps != frameRate_) {
@@ -176,6 +184,22 @@ void CameraAdapter::onSettingsLoaded(int iso, int shutterAngle, int fps, int wb)
                    iso, shutterAngle, fps, wb);
 
     Q_EMIT initialized(iso, shutterAngle, fps, wb);
+}
+
+void CameraAdapter::flushDisplayUpdates()
+{
+    if (isoDirty_) {
+        isoDirty_ = false;
+        Q_EMIT isoSensitivityChanged();
+    }
+    if (shutterDirty_) {
+        shutterDirty_ = false;
+        Q_EMIT shutterAngleChanged();
+    }
+    if (wbDirty_) {
+        wbDirty_ = false;
+        Q_EMIT colorTemperatureChanged();
+    }
 }
 
 void CameraAdapter::onCameraError(const QString &msg)

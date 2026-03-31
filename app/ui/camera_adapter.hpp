@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QTimer>
 
 class CameraSession;
 
@@ -72,8 +73,13 @@ private Q_SLOTS:
 
 private:
     void sendControl(const QString &key, const QString &value);
+    void flushDisplayUpdates();
 
     CameraSession *session_;
+    QTimer displayTimer_;
+    bool isoDirty_ = false;
+    bool shutterDirty_ = false;
+    bool wbDirty_ = false;
 
     int isoSensitivity_ = 800;
     int shutterAngle_ = 180;
