@@ -34,6 +34,10 @@ Pane {
     readonly property var _filteredFps: fpsOptions.filter(
                                             fps => fps <= formats[selectedResolutionIndex].maxFps)
     readonly property var currentFpsOptions: _filteredFps || fpsOptions
+    onCurrentFpsOptionsChanged: {
+        if (currentFpsOptions.indexOf(selectedFps) < 0)
+            selectedFps = currentFpsOptions[0]
+    }
     readonly property string selectedResolution: formats[selectedResolutionIndex].res
     readonly property int selectedFpsIndex: Math.max(0,
                                                      currentFpsOptions.indexOf(
