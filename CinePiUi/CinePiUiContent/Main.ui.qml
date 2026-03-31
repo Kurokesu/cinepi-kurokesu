@@ -49,7 +49,7 @@ Rectangle {
 
     Rectangle {
         id: viewfinder
-        color: Material.background
+        color: "black"
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: configBar.bottom
@@ -58,19 +58,6 @@ Rectangle {
         MouseArea {
             id: viewfinderArea
             anchors.fill: parent
-        }
-
-        Rectangle {
-            anchors.fill: parent
-            color: "#1A1A1A"
-
-            Label {
-                anchors.centerIn: parent
-                text: "NO SIGNAL"
-                color: "#444444"
-                font.pixelSize: 24
-                font.weight: Font.Medium
-            }
         }
     }
 
