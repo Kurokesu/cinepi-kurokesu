@@ -155,8 +155,27 @@ void CameraAdapter::onStreamInfo(int w, int h)
 
 void CameraAdapter::onSettingsLoaded(int iso, int shutterAngle, int fps, int wb)
 {
+    if (iso != isoSensitivity_) {
+        isoSensitivity_ = iso;
+        Q_EMIT isoSensitivityChanged();
+    }
+    if (shutterAngle != shutterAngle_) {
+        shutterAngle_ = shutterAngle;
+        Q_EMIT shutterAngleChanged();
+    }
+    if (fps != frameRate_) {
+        frameRate_ = fps;
+        Q_EMIT frameRateChanged();
+    }
+    if (wb != colorTemperature_) {
+        colorTemperature_ = wb;
+        Q_EMIT colorTemperatureChanged();
+    }
+
     logger()->info("Settings sync: ISO={} SHT={} FPS={} WB={}",
                    iso, shutterAngle, fps, wb);
+
+    Q_EMIT initialized(iso, shutterAngle, fps, wb);
 }
 
 void CameraAdapter::onCameraError(const QString &msg)

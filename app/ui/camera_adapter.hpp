@@ -60,6 +60,7 @@ Q_SIGNALS:
     void errorChanged();
 
     void controlRequested(const QString &key, const QString &value);
+    void initialized(int iso, int shutterAngle, int fps, int colorTemp);
 
 private Q_SLOTS:
     void onStatsUpdated(float framerate, int colorTemp, float focus,

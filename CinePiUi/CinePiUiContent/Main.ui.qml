@@ -126,6 +126,7 @@ Rectangle {
 
         ControlSheet {
             id: isoControl
+            objectName: "iso"
             anchors.fill: parent
             visible: false
             values: [50, 64, 80, 100, 125, 160, 200, 250, 320, 400, 500, 640, 800, 1600, 3200]
@@ -134,6 +135,7 @@ Rectangle {
 
         ControlSheet {
             id: shutterControl
+            objectName: "shutter"
             anchors.fill: parent
             visible: false
             values: [11.25, 15, 22.5, 30, 37.5, 45, 60, 72, 75, 90, 108, 120, 144, 150, 172.8, 180, 216, 270, 324, 360]
@@ -144,6 +146,7 @@ Rectangle {
 
         ControlSheet {
             id: wbControl
+            objectName: "wb"
             anchors.fill: parent
             visible: false
             minValue: 2300

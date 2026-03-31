@@ -73,6 +73,7 @@ ApplicationWindow {
     }
 
     property bool _initDone: false
+    property bool _autoTransitioning: false
 
     function findClosestIndex(control, target) {
         var vals = control.effectiveValues
@@ -88,9 +89,9 @@ ApplicationWindow {
         return bestIdx
     }
 
-    function onManualValue(control, cameraMethod, configKey) {
-        if (!_initDone || control.autoMode) return
-        var val = Math.round(parseFloat(control.currentValue))
+    function onManualValue(control, value, cameraMethod, configKey) {
+        if (!_initDone || _autoTransitioning) return
+        var val = Math.round(value)
         if (val > 0) {
             camera[cameraMethod](val)
             config[configKey] = val
@@ -103,18 +104,20 @@ ApplicationWindow {
             camera[cameraMethod](sentinel)
             config[configKey] = sentinel
         } else {
+            _autoTransitioning = true
             var actual = camera[cameraProp]
-            if (actual > 0) {
-                config[configKey] = actual
-                camera[cameraMethod](actual)
-            }
+            var idx = findClosestIndex(control, actual > 0 ? actual : 0)
+            Qt.callLater(function() {
+                _autoTransitioning = false
+                control.currentIndex = idx
+            })
         }
     }
 
     Connections {
         target: mainScreen.isoControl
-        function onCurrentIndexChanged() {
-            onManualValue(mainScreen.isoControl,
+        function onManualValueChanged(value) {
+            onManualValue(mainScreen.isoControl, value,
                           "setIsoSensitivity", "manualIsoSensitivity")
         }
         function onAutoModeChanged() {
@@ -126,8 +129,8 @@ ApplicationWindow {
 
     Connections {
         target: mainScreen.shutterControl
-        function onCurrentIndexChanged() {
-            onManualValue(mainScreen.shutterControl,
+        function onManualValueChanged(value) {
+            onManualValue(mainScreen.shutterControl, value,
                           "setShutterAngle", "manualShutterAngle")
         }
         function onAutoModeChanged() {
@@ -139,8 +142,8 @@ ApplicationWindow {
 
     Connections {
         target: mainScreen.wbControl
-        function onCurrentIndexChanged() {
-            onManualValue(mainScreen.wbControl,
+        function onManualValueChanged(value) {
+            onManualValue(mainScreen.wbControl, value,
                           "setColorTemperature", "colorTemperature")
         }
         function onAutoModeChanged() {
@@ -182,37 +185,62 @@ ApplicationWindow {
         }
     }
 
+    Connections {
+        target: camera
+        function onInitialized(iso, shutterAngle, fps, colorTemp) {
+            mainScreen.isoControl.autoMode = (iso < 0)
+            if (iso > 0) {
+                var isoIdx = findClosestIndex(mainScreen.isoControl, iso)
+                mainScreen.isoControl.currentIndex = isoIdx
+            }
+
+            mainScreen.shutterControl.autoMode = (shutterAngle < 0)
+            if (shutterAngle > 0) {
+                var saIdx = findClosestIndex(mainScreen.shutterControl, shutterAngle)
+                mainScreen.shutterControl.currentIndex = saIdx
+            }
+
+            mainScreen.wbControl.autoMode = (colorTemp === 0)
+            if (colorTemp > 0) {
+                var wbIdx = findClosestIndex(mainScreen.wbControl, colorTemp)
+                mainScreen.wbControl.currentIndex = wbIdx
+            }
+
+            _initDone = true
+        }
+        function onErrorChanged() {
+            if (!_initDone)
+                _initDone = true
+        }
+    }
+
+    Binding {
+        target: mainScreen.isoControl
+        property: "autoDisplayValue"
+        value: camera.isoSensitivity
+    }
+
+    Binding {
+        target: mainScreen.shutterControl
+        property: "autoDisplayValue"
+        value: camera.shutterAngle
+    }
+
+    Binding {
+        target: mainScreen.wbControl
+        property: "autoDisplayValue"
+        value: camera.colorTemperature
+    }
+
     Component.onCompleted: {
-        // Monitor overlays
         mainScreen.monitorControl.zebraEnabled = config.zebraEnabled
         mainScreen.monitorControl.focusPeakingEnabled = config.focusPeakingEnabled
         mainScreen.monitorControl.falseColorEnabled = config.falseColorEnabled
         mainScreen.monitorControl.grayscaleEnabled = config.grayscaleEnabled
 
-        // Guide overlays
         mainScreen.guideControl.thirdsEnabled = config.thirdsGridEnabled
         mainScreen.guideControl.goldenEnabled = config.goldenEnabled
         mainScreen.guideControl.crosshairEnabled = config.crosshairEnabled
         mainScreen.guideControl.centerDotEnabled = config.centerDotEnabled
-
-        // Camera ISO
-        mainScreen.isoControl.autoMode = (config.manualIsoSensitivity < 0)
-        if (config.manualIsoSensitivity > 0)
-            mainScreen.isoControl.currentIndex =
-                findClosestIndex(mainScreen.isoControl, config.manualIsoSensitivity)
-
-        // Camera shutter
-        mainScreen.shutterControl.autoMode = (config.manualShutterAngle < 0)
-        if (config.manualShutterAngle > 0)
-            mainScreen.shutterControl.currentIndex =
-                findClosestIndex(mainScreen.shutterControl, config.manualShutterAngle)
-
-        // Camera white balance
-        mainScreen.wbControl.autoMode = (config.colorTemperature === 0)
-        if (config.colorTemperature > 0)
-            mainScreen.wbControl.currentIndex =
-                findClosestIndex(mainScreen.wbControl, config.colorTemperature)
-
-        _initDone = true
     }
 }

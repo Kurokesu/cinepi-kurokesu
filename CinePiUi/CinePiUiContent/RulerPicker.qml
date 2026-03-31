@@ -39,6 +39,12 @@ Item {
         highlightMoveDuration: 0
 
         onCurrentIndexChanged: root.currentIndex = currentIndex
+        onModelChanged: {
+            if (root.centered)
+                Qt.callLater(function() {
+                    root.currentIndex = Math.floor(root.values.length / 2)
+                })
+        }
 
         delegate: Item {
             id: tickItem

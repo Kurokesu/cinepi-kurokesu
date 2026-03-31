@@ -14,6 +14,8 @@ Pane {
         color: "#40000000"
     }
 
+    signal manualValueChanged(real value)
+
     property var values: []
     property var labeledValues: []
     property int currentIndex: 5
@@ -21,6 +23,29 @@ Pane {
     property bool showAutoButton: true
     property bool autoMode: true
     property string suffix: ""
+
+    property bool settling: false
+    onVisibleChanged: {
+        if (visible) {
+            settling = true
+            Qt.callLater(function() { settling = false })
+        }
+    }
+    onAutoModeChanged: {
+        if (!autoMode) {
+            settling = true
+            Qt.callLater(function() { settling = false })
+        }
+    }
+
+    onCurrentIndexChanged: {
+        picker.currentIndex = currentIndex
+        if (!autoMode && !settling) {
+            var v = effectiveValues[currentIndex]
+            if (v !== undefined)
+                manualValueChanged(v)
+        }
+    }
 
     property int minValue: 0
     property int maxValue: 0
@@ -36,8 +61,12 @@ Pane {
         return values
     }
 
+    property string autoDisplayValue: ""
+
     readonly property string currentValue: picker.currentValue
-    readonly property string displayText: (autoMode ? "A " : "") + currentValue + suffix
+    readonly property string displayText: autoMode
+        ? ("A " + autoDisplayValue + suffix)
+        : (currentValue + suffix)
 
     RowLayout {
         id: sheetRow
@@ -75,7 +104,9 @@ Pane {
             labeledValues: sheet.labeledValues
             currentIndex: sheet.currentIndex
             visibleTickCount: sheet.visibleTickCount
-            displayText: (sheet.autoMode ? "A " : "") + sheet.currentValue
+            displayText: sheet.autoMode
+                         ? ("A " + sheet.autoDisplayValue)
+                         : sheet.currentValue
             displaySuffix: sheet.suffix
             showLabels: !sheet.autoMode
             showIndicator: !sheet.autoMode
