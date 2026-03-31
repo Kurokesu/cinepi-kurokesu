@@ -2,6 +2,8 @@
 #include "camera_session.hpp"
 #include "logging.hpp"
 
+#include <QCoreApplication>
+
 static auto &logger()
 {
     static auto l = cinepi::getLogger("ui.adapter");
@@ -29,12 +31,12 @@ CameraAdapter::CameraAdapter(CameraSession *session, QObject *parent)
     connect(&displayTimer_, &QTimer::timeout,
             this, &CameraAdapter::flushDisplayUpdates);
 
-    connect(session_, &QThread::started, this, [this]() {
+    connect(session_, &CameraSession::sessionResumed, this, [this]() {
         connected_ = true;
         logger()->info("Camera connected");
         Q_EMIT connectedChanged();
     });
-    connect(session_, &QThread::finished, this, [this]() {
+    connect(session_, &CameraSession::sessionPaused, this, [this]() {
         connected_ = false;
         logger()->info("Camera disconnected");
         Q_EMIT connectedChanged();
@@ -103,6 +105,25 @@ void CameraAdapter::setCompression(int value)
     }
 }
 
+void CameraAdapter::stopCamera()
+{
+    logger()->info("Pausing camera session");
+    session_->pause();
+}
+
+void CameraAdapter::startCamera()
+{
+    logger()->info("Resuming camera session");
+    session_->resume();
+}
+
+void CameraAdapter::powerOff()
+{
+    logger()->info("Power off requested");
+    powerOffRequested_ = true;
+    QCoreApplication::quit();
+}
+
 void CameraAdapter::onStatsUpdated(float framerate, int colorTemp,
                                       float focus, int frameCount,
                                       int bufferSize,
@@ -143,11 +164,6 @@ void CameraAdapter::onStatsUpdated(float framerate, int colorTemp,
         frameCount_ = frameCount;
         bufferSize_ = bufferSize;
         Q_EMIT statsChanged();
-    }
-
-    if (!connected_) {
-        connected_ = true;
-        Q_EMIT connectedChanged();
     }
 }
 

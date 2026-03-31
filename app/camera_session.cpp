@@ -20,14 +20,36 @@ CameraSession::~CameraSession()
     wait();
 }
 
+void CameraSession::pause()
+{
+    std::lock_guard<std::mutex> lock(stateMutex_);
+    if (state_ == State::Running)
+        state_ = State::Paused;
+}
+
+void CameraSession::resume()
+{
+    {
+        std::lock_guard<std::mutex> lock(stateMutex_);
+        if (state_ == State::Paused)
+            state_ = State::Running;
+    }
+    stateCV_.notify_one();
+}
+
 void CameraSession::requestStop()
 {
-    stopRequested_ = true;
+    {
+        std::lock_guard<std::mutex> lock(stateMutex_);
+        state_ = State::Stopped;
+    }
+    stateCV_.notify_one();
 }
 
 void CameraSession::setInitialSettings(int isoGain, int shutterAngle,
                                        int fps, int colorTemp)
 {
+    Q_ASSERT(!isRunning());
     isoGain_ = isoGain;
     shutterAngle_ = shutterAngle;
     fps_ = fps;
@@ -110,116 +132,143 @@ void CameraSession::run()
             throw std::runtime_error("no cameras available");
         options->model = app.CameraModel();
 
-        bool initialSync = false;
-        for (unsigned int count = 0; !stopRequested_; count++) {
-            if (controller.configChanged()) {
-                log->info("Config changed, reconfiguring camera...");
-                if (controller.cameraRunning) {
+        while (true) {
+            if (state_.load() == State::Paused) {
+                log->info("Camera session idle, waiting for resume");
+                Q_EMIT sessionPaused();
+
+                std::unique_lock<std::mutex> lock(stateMutex_);
+                stateCV_.wait(lock, [this] {
+                    return state_.load() != State::Paused;
+                });
+            }
+            if (state_.load() == State::Stopped)
+                break;
+
+            Q_EMIT sessionResumed();
+
+            bool initialSync = false;
+            for (quint64 count = 0; state_.load() == State::Running; count++) {
+                if (controller.configChanged()) {
+                    log->info("Config changed, reconfiguring camera...");
+                    if (controller.cameraRunning) {
+                        app.StopCamera();
+                        app.Teardown();
+                    }
+                    app.ConfigureVideo(CinePIRecorder::FLAG_VIDEO_RAW);
+                    app.StartCamera();
+                    controller.cameraRunning = true;
+                    controller.applyAwb();
+                    controller.applyExposure();
+
+                    auto const &cfg = app.RawStream()->configuration();
+                    log->info("Raw stream: {}x{} stride:{} fmt:{}",
+                                  cfg.size.width, cfg.size.height,
+                                  cfg.stride, cfg.pixelFormat.toString());
+                    app.GetEncoder()->reset_encoder();
+                    controller.process_stream_info(cfg);
+
+                    if (!initialSync) {
+                        initialSync = true;
+                        Q_EMIT settingsLoaded(
+                            gainToIso(controller.getGain()),
+                            static_cast<int>(controller.getShutterAngle()),
+                            static_cast<int>(controller.getFramerate()),
+                            controller.getColorTemperature());
+                    }
+                }
+
+                CinePIRecorder::Msg msg = app.Wait();
+
+                if (state_.load() != State::Running)
+                    break;
+
+                if (msg.type == RPiCamApp::MsgType::Quit)
+                    break;
+
+                if (msg.type == RPiCamApp::MsgType::Timeout) {
+                    log->error("Device timeout, restarting camera");
                     app.StopCamera();
-                    app.Teardown();
+                    app.StartCamera();
+                    continue;
                 }
-                app.ConfigureVideo(CinePIRecorder::FLAG_VIDEO_RAW);
-                app.StartCamera();
-                controller.cameraRunning = true;
-                controller.applyAwb();
-                controller.applyExposure();
 
-                auto const &cfg = app.RawStream()->configuration();
-                log->info("Raw stream: {}x{} stride:{} fmt:{}",
-                              cfg.size.width, cfg.size.height,
-                              cfg.stride, cfg.pixelFormat.toString());
-                app.GetEncoder()->reset_encoder();
-                controller.process_stream_info(cfg);
+                if (msg.type != CinePIRecorder::MsgType::RequestComplete)
+                    throw std::runtime_error("unrecognised message");
 
-                if (!initialSync) {
-                    initialSync = true;
-                    Q_EMIT settingsLoaded(
-                        gainToIso(controller.getGain()),
-                        static_cast<int>(controller.getShutterAngle()),
-                        static_cast<int>(controller.getFramerate()),
-                        controller.getColorTemperature());
+                {
+                    std::vector<std::pair<std::string, std::string>> controls;
+                    {
+                        std::lock_guard<std::mutex> lock(controlMutex_);
+                        controls.swap(pendingControls_);
+                    }
+                    for (auto &[k, v] : controls)
+                        controller.handleControl(k, v);
+                }
+
+                CompletedRequestPtr &completed_request =
+                    std::get<CompletedRequestPtr>(msg.payload);
+
+                controller.process(completed_request);
+
+                int trigger = controller.triggerRec();
+                if (trigger > 0) {
+                    log->info("Recording started (clip #{})", controller.getClipNumber());
+                    controller.folderOpen =
+                        create_clip_folder(options, controller.getClipNumber());
+                    app.GetEncoder()->resetFrameCount();
+                    audio.record_start();
+                } else if (trigger < 0) {
+                    log->info("Recording stopped");
+                    controller.folderOpen = false;
+                    audio.record_stop();
+                }
+
+                if (controller.isRecording() && audio.isRecording() &&
+                    controller.folderOpen) {
+                    if (app.GetEncoder()->buffer_full()) {
+                        log->warn("Disk buffer full, stopping recording");
+                        controller.setRecording(false);
+                    }
+                    app.EncodeBuffer(completed_request, app.RawStream(),
+                                     app.LoresStream());
+                }
+
+                if (state_.load() == State::Running) {
+                    auto *stream = app.LoresStream();
+                    if (!stream)
+                        stream = app.GetMainStream();
+                    if (stream) {
+                        auto *buffer = completed_request->buffers[stream];
+                        if (buffer) {
+                            int fd = buffer->planes()[0].fd.get();
+                            auto info = app.GetStreamInfo(stream);
+                            Q_EMIT frameReady(fd, info.width, info.height,
+                                            info.stride, count);
+                        }
+                    }
                 }
             }
 
-            CinePIRecorder::Msg msg = app.Wait();
-
-            if (stopRequested_)
-                break;
-
-            if (msg.type == RPiCamApp::MsgType::Quit)
-                break;
-
-            if (msg.type == RPiCamApp::MsgType::Timeout) {
-                log->error("Device timeout, restarting camera");
+            if (controller.cameraRunning) {
                 app.StopCamera();
-                app.StartCamera();
-                continue;
+                app.Teardown();
+                controller.cameraRunning = false;
             }
-
-            if (msg.type != CinePIRecorder::MsgType::RequestComplete)
-                throw std::runtime_error("unrecognised message");
+            controller.requestReconfigure();
+            log->info("Camera session paused");
 
             {
-                std::vector<std::pair<std::string, std::string>> controls;
-                {
-                    std::lock_guard<std::mutex> lock(controlMutex_);
-                    controls.swap(pendingControls_);
-                }
-                for (auto &[k, v] : controls)
-                    controller.handleControl(k, v);
-            }
-
-            CompletedRequestPtr &completed_request =
-                std::get<CompletedRequestPtr>(msg.payload);
-
-            controller.process(completed_request);
-
-            int trigger = controller.triggerRec();
-            if (trigger > 0) {
-                log->info("Recording started (clip #{})", controller.getClipNumber());
-                controller.folderOpen =
-                    create_clip_folder(options, controller.getClipNumber());
-                app.GetEncoder()->resetFrameCount();
-                audio.record_start();
-            } else if (trigger < 0) {
-                log->info("Recording stopped");
-                controller.folderOpen = false;
-                audio.record_stop();
-            }
-
-            if (controller.isRecording() && audio.isRecording() &&
-                controller.folderOpen) {
-                if (app.GetEncoder()->buffer_full()) {
-                    log->warn("Disk buffer full, stopping recording");
-                    controller.setRecording(false);
-                }
-                app.EncodeBuffer(completed_request, app.RawStream(),
-                                 app.LoresStream());
-            }
-
-            auto *stream = app.LoresStream();
-            if (!stream)
-                stream = app.GetMainStream();
-            if (stream) {
-                auto *buffer = completed_request->buffers[stream];
-                if (buffer) {
-                    int fd = buffer->planes()[0].fd.get();
-                    auto info = app.GetStreamInfo(stream);
-                    Q_EMIT frameReady(fd, info.width, info.height,
-                                    info.stride, count);
-                }
+                std::lock_guard<std::mutex> lock(stateMutex_);
+                if (state_ == State::Stopped)
+                    break;
             }
         }
-
-        if (controller.cameraRunning) {
-            app.StopCamera();
-            app.Teardown();
-        }
-
-        log->info("Camera worker stopped");
     }
     catch (std::exception const &e) {
         cinepi::getLogger("camera.session")->error("Camera error: {}", e.what());
         Q_EMIT cameraError(QString::fromStdString(e.what()));
     }
+
+    log->info("Camera session thread exiting");
 }

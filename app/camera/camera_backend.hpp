@@ -65,6 +65,8 @@ public:
         return c;
     }
 
+    void requestReconfigure() { cameraInit_ = true; }
+
     int triggerRec() {
         if (!disk_mounted(const_cast<RawOptions *>(options_)))
             return 0;

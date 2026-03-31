@@ -3,6 +3,7 @@
 #include <QThread>
 #include <QString>
 #include <atomic>
+#include <condition_variable>
 #include <mutex>
 #include <string>
 #include <utility>
@@ -13,10 +14,15 @@ class CameraSession : public QThread
     Q_OBJECT
 
 public:
+    enum class State { Paused, Running, Stopped };
+
     explicit CameraSession(const QString &configDir, QObject *parent = nullptr);
     ~CameraSession() override;
 
+    void pause();
+    void resume();
     void requestStop();
+
     void setInitialSettings(int isoGain, int shutterAngle, int fps, int colorTemp);
 
     const QString &configDir() const { return configDir_; }
@@ -30,6 +36,8 @@ Q_SIGNALS:
     void streamInfoUpdated(int width, int height);
     void settingsLoaded(int iso, int shutterAngle, int fps, int wb);
     void cameraError(const QString &message);
+    void sessionPaused();
+    void sessionResumed();
 
 public Q_SLOTS:
     void handleControl(const QString &key, const QString &value);
@@ -39,7 +47,10 @@ protected:
 
 private:
     QString configDir_;
-    std::atomic<bool> stopRequested_{false};
+
+    std::mutex stateMutex_;
+    std::condition_variable stateCV_;
+    std::atomic<State> state_{State::Paused};
 
     std::mutex controlMutex_;
     std::vector<std::pair<std::string, std::string>> pendingControls_;

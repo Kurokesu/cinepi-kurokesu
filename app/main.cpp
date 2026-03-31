@@ -1,4 +1,5 @@
 #include <QGuiApplication>
+#include <QProcess>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQuickStyle>
@@ -100,6 +101,7 @@ int main(int argc, char *argv[])
     }
 
     cameraSession.start();
+    cameraSession.resume();
     log->info("Camera session started");
 
     int ret = app.exec();
@@ -107,8 +109,16 @@ int main(int argc, char *argv[])
     log->info("Shutting down...");
     configManager.save();
     cameraSession.requestStop();
+
+    if (cameraAdapter.powerOffRequested()) {
+        log->info("System power off requested");
+        if (!QProcess::startDetached("sudo", {"poweroff"}))
+            log->error("Failed to execute 'sudo poweroff'");
+        log->info("CinePI stopped, powering off");
+        return 0;
+    }
+
     cameraSession.wait();
     log->info("CinePI stopped (exit code {})", ret);
-
     return ret;
 }

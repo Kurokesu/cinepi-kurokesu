@@ -48,6 +48,12 @@ ApplicationWindow {
         grayscaleEnabled: mainScreen.monitorControl.grayscaleEnabled
     }
 
+    SettingsView {
+        id: settingsView
+        anchors.fill: parent
+        visible: false
+    }
+
     Connections {
         target: mainScreen.recordButton
         function onCheckedChanged() {
@@ -230,6 +236,28 @@ ApplicationWindow {
         target: mainScreen.wbControl
         property: "autoDisplayValue"
         value: camera.colorTemperature
+    }
+
+    Connections {
+        target: mainScreen.menuButton
+        function onClicked() {
+            mainScreen.state = ""
+            mainScreen.visible = false
+            settingsView.visible = true
+            camera.stopCamera()
+        }
+    }
+
+    Connections {
+        target: settingsView
+        function onClosed() {
+            settingsView.visible = false
+            mainScreen.visible = true
+            camera.startCamera()
+        }
+        function onPowerOffRequested() {
+            camera.powerOff()
+        }
     }
 
     Component.onCompleted: {
