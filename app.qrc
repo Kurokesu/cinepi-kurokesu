@@ -2,6 +2,7 @@
     <qresource prefix="/">
         <file alias="main.qml">app/qml/main.qml</file>
         <file alias="ShaderOverlays.qml">app/qml/ShaderOverlays.qml</file>
+        <file alias="ViewfinderGuides.qml">app/qml/ViewfinderGuides.qml</file>
         <file>qtquickcontrols2.conf</file>
         <file>shaders/zebra.frag.qsb</file>
         <file>shaders/falsecolor.frag.qsb</file>

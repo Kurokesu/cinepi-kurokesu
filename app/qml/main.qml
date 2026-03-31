@@ -48,6 +48,15 @@ ApplicationWindow {
         grayscaleEnabled: mainScreen.monitorControl.grayscaleEnabled
     }
 
+    ViewfinderGuides {
+        parent: mainScreen.viewfinder
+        anchors.fill: parent
+        thirdsEnabled: mainScreen.guideControl.thirdsEnabled
+        goldenEnabled: mainScreen.guideControl.goldenEnabled
+        crosshairEnabled: mainScreen.guideControl.crosshairEnabled
+        centerDotEnabled: mainScreen.guideControl.centerDotEnabled
+    }
+
     SettingsView {
         id: settingsView
         anchors.fill: parent
