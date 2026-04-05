@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 #
 # kurokesu-cinepi installer
-# Installs CinePI camera platform on a fresh Raspberry Pi OS (Trixie, 64-bit)
+# Installs CinePI camera platform on a fresh Raspberry Pi OS Lite (Trixie, 64-bit)
 #
 # Usage:
 #   git clone https://github.com/Kurokesu/kurokesu-cinepi.git
@@ -10,7 +10,7 @@
 #
 # Requirements:
 #   - Raspberry Pi 5
-#   - Raspberry Pi OS Trixie (64-bit, Debian 13)
+#   - Raspberry Pi OS Lite Trixie (64-bit, Debian 13)
 #   - CSI-2 camera module connected
 #   - Internet connection
 
@@ -18,6 +18,10 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOG_FILE="$SCRIPT_DIR/install.log"
+
+INSTALL_USER="$(whoami)"
+INSTALL_UID="$(id -u)"
+INSTALL_HOME="$HOME"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -48,6 +52,8 @@ check_platform() {
         . /etc/os-release
         log "OS: $PRETTY_NAME"
     fi
+
+    log "Install user: $INSTALL_USER (uid=$INSTALL_UID)"
 }
 
 install_dependencies() {
@@ -60,22 +66,33 @@ install_dependencies() {
     sudo apt-get install -y \
         build-essential cmake pkg-config git
 
+    log "Installing Cage kiosk compositor..."
+    sudo apt-get install -y cage
+
     log "Installing Qt6..."
     sudo apt-get install -y \
         qt6-base-dev qt6-declarative-dev \
         qml6-module-qtquick qml6-module-qtquick-controls \
         qml6-module-qtquick-layouts qml6-module-qtquick-window \
-        qt6-wayland qt6-shader-baker qt6-shadertools-dev
+        qt6-shader-baker qt6-shadertools-dev
 
-    log "Installing rpicam-apps library..."
-    sudo apt-get install -y librpicam-app-dev
+    log "Installing libcamera and rpicam-apps..."
+    sudo apt-get install -y libcamera-dev librpicam-app-dev
+
+    log "Installing graphics libraries..."
+    sudo apt-get install -y \
+        libegl-dev libgles-dev libdrm-dev
 
     log "Installing camera backend dependencies..."
     sudo apt-get install -y \
         libboost-dev libboost-program-options-dev \
         libjpeg-dev libtiff-dev \
+        libexif-dev libpng-dev \
         libspdlog-dev libjsoncpp-dev \
         libasound2-dev libudev-dev
+
+    log "Installing framebuffer tools..."
+    sudo apt-get install -y fbi
 
     log "All dependencies installed."
 }
@@ -89,20 +106,45 @@ build_cinepi() {
 install_service() {
     header "Installing systemd service"
 
-    # Remove legacy services
+    # Stop and remove any previous versions
+    sudo systemctl stop cinepi.service 2>/dev/null || true
+    sudo systemctl disable cinepi.service 2>/dev/null || true
     sudo systemctl stop cinepi-raw.service 2>/dev/null || true
     sudo systemctl stop cinepi-qt.service 2>/dev/null || true
-    sudo systemctl stop cinepi.service 2>/dev/null || true
     sudo systemctl disable cinepi-raw.service 2>/dev/null || true
     sudo systemctl disable cinepi-qt.service 2>/dev/null || true
     sudo rm -f /etc/systemd/system/cinepi-raw.service
     sudo rm -f /etc/systemd/system/cinepi-qt.service
 
-    sudo cp "$SCRIPT_DIR/config/cinepi.service" /etc/systemd/system/
+    # Generate service file from template with actual paths
+    sed \
+        -e "s|CINEPI_USER|$INSTALL_USER|g" \
+        -e "s|CINEPI_UID|$INSTALL_UID|g" \
+        -e "s|CINEPI_REPO_DIR|$SCRIPT_DIR|g" \
+        "$SCRIPT_DIR/scripts/cinepi.service" \
+        | sudo tee /etc/systemd/system/cinepi.service > /dev/null
+
+    # Create PAM config for logind session activation (required by Cage)
+    sudo tee /etc/pam.d/cinepi > /dev/null <<'PAMEOF'
+auth       required pam_unix.so
+auth       required pam_env.so
+account    required pam_unix.so
+session    required pam_unix.so
+session    required pam_loginuid.so
+session    optional pam_systemd.so
+PAMEOF
+    log "Created /etc/pam.d/cinepi"
+
+    # Deploy service helper scripts
+    sudo cp "$SCRIPT_DIR/scripts/cinepi-chvt.sh" /usr/local/bin/cinepi-chvt.sh
+    sudo cp "$SCRIPT_DIR/scripts/cinepi-stop.sh" /usr/local/bin/cinepi-stop.sh
+    sudo chmod +x /usr/local/bin/cinepi-chvt.sh /usr/local/bin/cinepi-stop.sh
+    log "Installed service helper scripts to /usr/local/bin/"
+
     sudo systemctl daemon-reload
     sudo systemctl enable cinepi.service
 
-    log "cinepi.service installed and enabled."
+    log "cinepi.service installed and enabled (user=$INSTALL_USER, repo=$SCRIPT_DIR)"
 }
 
 setup_storage() {
@@ -116,7 +158,7 @@ setup_storage() {
         if [ -n "$NVME_PART" ] && ! grep -q "/media/RAW" /etc/fstab; then
             UUID=$(sudo blkid -s UUID -o value "$NVME_PART" 2>/dev/null || echo "")
             if [ -n "$UUID" ]; then
-                echo "UUID=$UUID /media/RAW exfat defaults,nofail,uid=$(id -u),gid=$(id -g) 0 0" | sudo tee -a /etc/fstab > /dev/null
+                echo "UUID=$UUID /media/RAW exfat defaults,nofail,uid=$INSTALL_UID,gid=$(id -g) 0 0" | sudo tee -a /etc/fstab > /dev/null
                 log "Added fstab entry for NVMe ($UUID)"
                 sudo mount /media/RAW || warn "Could not mount NVMe. Format it first if needed."
             fi
@@ -129,44 +171,86 @@ setup_storage() {
 optimize_boot() {
     header "Optimizing boot"
 
-    sudo systemctl disable NetworkManager-wait-online.service 2>/dev/null || true
-    sudo systemctl disable ModemManager.service 2>/dev/null || true
-    sudo systemctl disable bluetooth.service 2>/dev/null || true
-    sudo systemctl disable cups.service 2>/dev/null || true
+    # ── Disable unnecessary services ──
+    local DISABLE_SERVICES=(
+        NetworkManager-wait-online.service
+        ModemManager.service
+        bluetooth.service
+        cups.service
+        triggerhappy.service
+        apt-daily.service
+        apt-daily-upgrade.service
+    )
+    for svc in "${DISABLE_SERVICES[@]}"; do
+        sudo systemctl disable "$svc" 2>/dev/null || true
+    done
+    log "Disabled ${#DISABLE_SERVICES[@]} unnecessary services"
 
+    # ── Disable unnecessary timers ──
+    local DISABLE_TIMERS=(
+        man-db.timer
+        apt-daily.timer
+        apt-daily-upgrade.timer
+        e2scrub_all.timer
+    )
+    for tmr in "${DISABLE_TIMERS[@]}"; do
+        sudo systemctl disable "$tmr" 2>/dev/null || true
+    done
+    log "Disabled ${#DISABLE_TIMERS[@]} unnecessary timers"
+
+    # ── Firmware config ──
+    CONFIG_TXT="/boot/firmware/config.txt"
+    if [ -f "$CONFIG_TXT" ]; then
+        add_config_line() {
+            if ! grep -q "^$1" "$CONFIG_TXT"; then
+                echo "$1" | sudo tee -a "$CONFIG_TXT" > /dev/null
+                log "Added $1 to config.txt"
+            fi
+        }
+        add_config_line "disable_splash=1"
+        add_config_line "boot_delay=0"
+        add_config_line "dtparam=audio=off"
+        add_config_line "dtoverlay=disable-bt"
+        add_config_line "dtoverlay=disable-wifi"
+    fi
+
+    # ── Kernel command line ──
     CMDLINE="/boot/firmware/cmdline.txt"
     if [ -f "$CMDLINE" ]; then
-        if ! grep -q "loglevel=0" "$CMDLINE"; then
-            sudo sed -i 's/\bquiet\b/quiet loglevel=0 systemd.show_status=false/' "$CMDLINE"
-            log "Suppressed boot messages"
+        CMDLINE_CONTENT=$(cat "$CMDLINE")
+        CMDLINE_ADDITIONS=""
+
+        # Redirect console to unused tty (tty12 is never displayed)
+        if grep -q "console=tty1" "$CMDLINE"; then
+            sudo sed -i 's|console=tty1|console=tty12|' "$CMDLINE"
+            log "Redirected console from tty1 to tty12"
         fi
-        if ! grep -q "logo.nologo" "$CMDLINE"; then
-            sudo sed -i 's/$/ logo.nologo vt.global_cursor_default=0/' "$CMDLINE"
-            log "Disabled boot logo and cursor"
+
+        for param in "loglevel=0" "systemd.show_status=false" "systemd.log_level=3" "logo.nologo" "vt.global_cursor_default=0" "consoleblank=1"; do
+            if ! echo "$CMDLINE_CONTENT" | grep -q "$param"; then
+                CMDLINE_ADDITIONS="$CMDLINE_ADDITIONS $param"
+            fi
+        done
+
+        if [ -n "$CMDLINE_ADDITIONS" ]; then
+            sudo sed -i "s|$|$CMDLINE_ADDITIONS|" "$CMDLINE"
+            log "Added kernel params:$CMDLINE_ADDITIONS"
+        fi
+
+        # Ensure 'quiet' is present
+        if ! echo "$CMDLINE_CONTENT" | grep -q "quiet"; then
+            sudo sed -i 's|$| quiet|' "$CMDLINE"
+            log "Added 'quiet' to cmdline"
         fi
     fi
 
-    touch "$HOME/.hushlogin"
+    # ── Silent console ──
+    touch "$INSTALL_HOME/.hushlogin"
 
-    GETTY_DIR="/etc/systemd/system/getty@tty1.service.d"
-    if [ -d "$GETTY_DIR" ]; then
-        sudo bash -c "cat > $GETTY_DIR/autologin.conf << 'GETTYEOF'
-[Service]
-ExecStart=
-ExecStart=-/sbin/agetty --autologin pi --noissue --skip-login --noclear %I \$TERM
-GETTYEOF"
-        log "Configured silent autologin"
-    fi
-
-    if ! grep -q "tty1.*clear" "$HOME/.profile" 2>/dev/null; then
-        cat >> "$HOME/.profile" << 'PROFILE_EOF'
-
-if [ "$(tty)" = "/dev/tty1" ]; then
-    clear
-fi
-PROFILE_EOF
-        log "Added tty1 clear to .profile"
-    fi
+    # ── Disable login prompt on display TTY ──
+    sudo systemctl disable getty@tty1.service 2>/dev/null || true
+    sudo systemctl mask getty@tty1.service 2>/dev/null || true
+    log "Masked getty@tty1 (no login prompt on display)"
 
     sudo systemctl daemon-reload
     log "Boot optimizations applied."
@@ -176,43 +260,29 @@ install_splash() {
     header "Installing splash screen"
 
     SPLASH_SRC="$SCRIPT_DIR/splash.png"
-    SPLASH_DST="/usr/share/plymouth/themes/pix/splash.png"
 
     if [ ! -f "$SPLASH_SRC" ]; then
-        warn "splash.png not found, skipping"
-        return
-    fi
-    if [ ! -d "/usr/share/plymouth/themes/pix" ]; then
-        warn "Plymouth pix theme not found, skipping"
+        warn "splash.png not found in repo, skipping splash install"
         return
     fi
 
-    if [ -f "$SPLASH_DST" ] && [ ! -f "${SPLASH_DST}.bak" ]; then
-        sudo cp "$SPLASH_DST" "${SPLASH_DST}.bak"
-    fi
+    # Install splash service (fbi-based framebuffer splash)
+    sed \
+        -e "s|CINEPI_REPO_DIR|$SCRIPT_DIR|g" \
+        "$SCRIPT_DIR/scripts/cinepi-splash.service" \
+        | sudo tee /etc/systemd/system/cinepi-splash.service > /dev/null
 
-    sudo cp "$SPLASH_SRC" "$SPLASH_DST"
-    log "Installed splash image"
+    sudo systemctl daemon-reload
+    sudo systemctl enable cinepi-splash.service
 
-    sudo plymouth-set-default-theme --rebuild-initrd pix
-    log "Plymouth splash updated."
-}
+    # Suppress systemd status messages on console
+    sudo mkdir -p /etc/systemd/system.conf.d
+    sudo tee /etc/systemd/system.conf.d/quiet.conf > /dev/null <<'QUIETEOF'
+[Manager]
+ShowStatus=no
+QUIETEOF
 
-hide_cursor() {
-    header "Hiding mouse cursor"
-
-    # Disable hardware cursor at the compositor level
-    LABWC_ENV="$HOME/.config/labwc/environment"
-    mkdir -p "$(dirname "$LABWC_ENV")"
-    for VAR in "WLR_NO_HARDWARE_CURSORS=1"; do
-        KEY="${VAR%%=*}"
-        if ! grep -q "$KEY" "$LABWC_ENV" 2>/dev/null; then
-            echo "$VAR" >> "$LABWC_ENV"
-        fi
-    done
-    log "Disabled hardware cursor in labwc environment"
-
-    log "Mouse cursor hidden."
+    log "Splash screen configured (fbi on framebuffer)."
 }
 
 print_summary() {
@@ -220,13 +290,14 @@ print_summary() {
 
     echo -e "${GREEN}kurokesu-cinepi installed successfully!${NC}"
     echo ""
+    echo "User:    $INSTALL_USER"
     echo "Binary:  $SCRIPT_DIR/build/release/cinepi"
-    echo "Service: cinepi.service (starts on boot)"
+    echo "Service: cinepi.service (Cage kiosk → auto-starts on boot)"
     echo ""
     echo "Quick start:"
     echo "  sudo reboot                           # auto-starts on boot"
-    echo "  ./scripts/run-cinepi.sh               # manual start"
-    echo "  ./scripts/stop-cinepi.sh              # stop"
+    echo "  ./scripts/run.sh                      # manual start (dev)"
+    echo "  ./scripts/stop.sh                     # stop"
     echo "  ./scripts/build.sh debug              # rebuild (debug)"
     echo "  ./scripts/build.sh release            # rebuild (release)"
     echo ""
@@ -234,7 +305,8 @@ print_summary() {
     echo "  camera_auto_detect=0"
     echo "  dtoverlay=imx283"
     echo ""
-    echo -e "Install log: ${CYAN}$LOG_FILE${NC}"
+    echo -e "Boot analysis:  ${CYAN}systemd-analyze blame${NC}"
+    echo -e "Install log:    ${CYAN}$LOG_FILE${NC}"
 }
 
 # ── Main ──────────────────────────────────────────────────────
@@ -253,5 +325,4 @@ install_service
 setup_storage
 optimize_boot
 install_splash
-hide_cursor
 print_summary

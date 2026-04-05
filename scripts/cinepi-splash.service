@@ -1,0 +1,14 @@
+[Unit]
+Description=CinePI Splash Screen
+DefaultDependencies=no
+After=local-fs.target
+Before=cinepi.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStartPre=-/bin/sh -c 'setterm --cursor off > /dev/tty1 2>/dev/null'
+ExecStart=/usr/bin/fbi --noverbose --autozoom --fitwidth --device /dev/fb0 -T 1 CINEPI_REPO_DIR/splash.png
+
+[Install]
+WantedBy=sysinit.target

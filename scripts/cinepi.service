@@ -1,22 +1,39 @@
 [Unit]
 Description=CinePI Camera
-After=graphical.target
+After=systemd-user-sessions.service cinepi-splash.service
+Conflicts=getty@tty7.service
+After=getty@tty7.service
 
 [Service]
 Type=simple
-User=pi
-Environment=XDG_RUNTIME_DIR=/run/user/1000
-Environment=QT_QPA_PLATFORM=wayland
-Environment=WAYLAND_DISPLAY=wayland-0
-Environment=QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+User=CINEPI_USER
+
+TTYPath=/dev/tty7
+StandardInput=tty-fail
+PAMName=cinepi
+StandardOutput=null
+StandardError=null
+
+Environment=XDG_RUNTIME_DIR=/run/user/CINEPI_UID
 Environment=WLR_NO_HARDWARE_CURSORS=1
+Environment=XCURSOR_SIZE=1
+Environment=XCURSOR_THEME=transparent
+Environment=WLR_LIBINPUT_NO_DEVICES=1
+Environment=WLR_DRM_DEVICES=/dev/dri/card1:/dev/dri/card2
+Environment=CINEPI_CONFIG_DIR=CINEPI_REPO_DIR/config
 Environment=CINEPI_SKIP_SOUND=1
-Environment=CINEPI_CONFIG_DIR=/home/pi/kurokesu-cinepi/config
 Environment=LIBCAMERA_LOG_LEVELS=RPiAgc:ERROR,RPiCcm:ERROR
-ExecStartPre=/bin/bash -c 'until [ -S /run/user/1000/wayland-0 ]; do sleep 1; done'
-ExecStart=/home/pi/kurokesu-cinepi/build/release/cinepi
+
+ExecStartPre=-/usr/bin/pkill -x rpicam-still
+ExecStartPre=-/usr/bin/pkill -x rpicam-vid
+ExecStart=/usr/bin/cage -- CINEPI_REPO_DIR/build/release/cinepi
+ExecStartPost=+/usr/local/bin/cinepi-chvt.sh
+
+ExecStop=+/usr/local/bin/cinepi-stop.sh
+TimeoutStopSec=5
+KillMode=mixed
 Restart=on-failure
-RestartSec=3
+RestartSec=2
 
 [Install]
-WantedBy=graphical.target
+WantedBy=multi-user.target
