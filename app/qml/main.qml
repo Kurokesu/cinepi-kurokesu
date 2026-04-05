@@ -27,6 +27,7 @@ ApplicationWindow {
         id: viewfinderFeed
         parent: mainScreen.viewfinder
         anchors.fill: parent
+        z: 0
         visible: available
     }
 
@@ -52,6 +53,7 @@ ApplicationWindow {
     ViewfinderGuides {
         parent: mainScreen.viewfinder
         anchors.fill: parent
+        z: 20
         thirdsEnabled: mainScreen.guideControl.thirdsEnabled
         goldenEnabled: mainScreen.guideControl.goldenEnabled
         crosshairEnabled: mainScreen.guideControl.crosshairEnabled
