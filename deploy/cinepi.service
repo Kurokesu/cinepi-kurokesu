@@ -1,6 +1,6 @@
 [Unit]
 Description=CinePI Camera
-After=systemd-user-sessions.service cinepi-splash.service
+After=systemd-user-sessions.service
 Conflicts=getty@tty7.service
 After=getty@tty7.service
 

@@ -91,8 +91,8 @@ install_dependencies() {
         libspdlog-dev libjsoncpp-dev \
         libasound2-dev libudev-dev
 
-    log "Installing framebuffer tools..."
-    sudo apt-get install -y fbi
+    log "Installing splash screen tools..."
+    sudo apt-get install -y plymouth plymouth-themes
 
     log "All dependencies installed."
 }
@@ -121,7 +121,7 @@ install_service() {
         -e "s|CINEPI_USER|$INSTALL_USER|g" \
         -e "s|CINEPI_UID|$INSTALL_UID|g" \
         -e "s|CINEPI_REPO_DIR|$SCRIPT_DIR|g" \
-        "$SCRIPT_DIR/scripts/cinepi.service" \
+        "$SCRIPT_DIR/deploy/cinepi.service" \
         | sudo tee /etc/systemd/system/cinepi.service > /dev/null
 
     # Create PAM config for logind session activation (required by Cage)
@@ -136,8 +136,8 @@ PAMEOF
     log "Created /etc/pam.d/cinepi"
 
     # Deploy service helper scripts
-    sudo cp "$SCRIPT_DIR/scripts/cinepi-chvt.sh" /usr/local/bin/cinepi-chvt.sh
-    sudo cp "$SCRIPT_DIR/scripts/cinepi-stop.sh" /usr/local/bin/cinepi-stop.sh
+    sudo cp "$SCRIPT_DIR/deploy/cinepi-chvt.sh" /usr/local/bin/cinepi-chvt.sh
+    sudo cp "$SCRIPT_DIR/deploy/cinepi-stop.sh" /usr/local/bin/cinepi-stop.sh
     sudo chmod +x /usr/local/bin/cinepi-chvt.sh /usr/local/bin/cinepi-stop.sh
     log "Installed service helper scripts to /usr/local/bin/"
 
@@ -226,7 +226,7 @@ optimize_boot() {
             log "Redirected console from tty1 to tty12"
         fi
 
-        for param in "loglevel=0" "systemd.show_status=false" "systemd.log_level=3" "logo.nologo" "vt.global_cursor_default=0" "consoleblank=1"; do
+        for param in "loglevel=0" "systemd.show_status=false" "systemd.log_level=3" "logo.nologo" "vt.global_cursor_default=0" "consoleblank=1" "splash" "plymouth.ignore-serial-consoles" "fullscreen_logo=1" "fullscreen_logo_name=logo.tga"; do
             if ! echo "$CMDLINE_CONTENT" | grep -q "$param"; then
                 CMDLINE_ADDITIONS="$CMDLINE_ADDITIONS $param"
             fi
@@ -259,30 +259,59 @@ optimize_boot() {
 install_splash() {
     header "Installing splash screen"
 
-    SPLASH_SRC="$SCRIPT_DIR/splash.png"
+    BOOT_LOGO="$SCRIPT_DIR/deploy/boot-logo.png"
 
-    if [ ! -f "$SPLASH_SRC" ]; then
-        warn "splash.png not found in repo, skipping splash install"
+    if [ ! -f "$BOOT_LOGO" ]; then
+        warn "deploy/boot-logo.png not found in repo, skipping splash install"
         return
     fi
 
-    # Install splash service (fbi-based framebuffer splash)
-    sed \
-        -e "s|CINEPI_REPO_DIR|$SCRIPT_DIR|g" \
-        "$SCRIPT_DIR/scripts/cinepi-splash.service" \
-        | sudo tee /etc/systemd/system/cinepi-splash.service > /dev/null
+    # ── Phase 1: Kernel TGA splash (earliest boot, on simplefb) ──
+    BOOT_LOGO_TGA="$SCRIPT_DIR/deploy/boot-logo.tga"
+    if [ ! -f "$BOOT_LOGO_TGA" ]; then
+        warn "deploy/boot-logo.tga not found in repo, skipping kernel splash"
+    else
+        sudo cp "$BOOT_LOGO_TGA" /lib/firmware/logo.tga
 
-    sudo systemctl daemon-reload
-    sudo systemctl enable cinepi-splash.service
+        # Initramfs hook to embed the TGA so the kernel can read it at boot
+        sudo tee /etc/initramfs-tools/hooks/cinepi-splash > /dev/null <<'HOOKEOF'
+#!/bin/sh
+PREREQ=""
+prereqs() { echo "$PREREQ"; }
+case "$1" in prereqs) prereqs; exit 0;; esac
+. /usr/share/initramfs-tools/hook-functions
+mkdir -p "${DESTDIR}/lib/firmware"
+cp /lib/firmware/logo.tga "${DESTDIR}/lib/firmware/logo.tga"
+HOOKEOF
+        sudo chmod +x /etc/initramfs-tools/hooks/cinepi-splash
+        log "Kernel TGA splash installed with initramfs hook"
+    fi
 
-    # Suppress systemd status messages on console
+    # ── Phase 2: Plymouth theme (bridges simplefb→vc4 transition) ──
+    THEME_DIR="/usr/share/plymouth/themes/cinepi"
+    sudo mkdir -p "$THEME_DIR"
+    sudo cp "$SCRIPT_DIR/deploy/plymouth/cinepi.plymouth" "$THEME_DIR/"
+    sudo cp "$SCRIPT_DIR/deploy/plymouth/cinepi.script" "$THEME_DIR/"
+    sudo cp "$BOOT_LOGO" "$THEME_DIR/logo.png"
+    sudo cp "$SCRIPT_DIR/deploy/plymouth/progress_bg.png" "$THEME_DIR/"
+    sudo cp "$SCRIPT_DIR/deploy/plymouth/progress_fill.png" "$THEME_DIR/"
+
+    sudo /usr/sbin/plymouth-set-default-theme -R cinepi
+    log "Plymouth cinepi theme installed and activated"
+
+    # ── Suppress systemd status messages on console ──
     sudo mkdir -p /etc/systemd/system.conf.d
     sudo tee /etc/systemd/system.conf.d/quiet.conf > /dev/null <<'QUIETEOF'
 [Manager]
 ShowStatus=no
 QUIETEOF
 
-    log "Splash screen configured (fbi on framebuffer)."
+    # ── Remove legacy fbi-based splash if present ──
+    sudo systemctl stop cinepi-splash.service 2>/dev/null || true
+    sudo systemctl disable cinepi-splash.service 2>/dev/null || true
+    sudo rm -f /etc/systemd/system/cinepi-splash.service
+
+    log "Splash screen configured (kernel TGA + Plymouth)."
 }
 
 print_summary() {
