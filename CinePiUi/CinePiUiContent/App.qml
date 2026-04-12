@@ -32,9 +32,16 @@ ApplicationWindow {
         }
     }
 
+    Connections {
+        target: mainScreen.settingsView.item
+        function onClosed() {
+            mainScreen.state = ""
+        }
+    }
+
     ButtonGroup {
         exclusive: false
-        buttons: [mainScreen.formatButton, mainScreen.aspectButton, mainScreen.guideButton, mainScreen.monitorButton, mainScreen.isoButton, mainScreen.shutterButton, mainScreen.wbButton]
+        buttons: [mainScreen.formatButton, mainScreen.aspectButton, mainScreen.guideButton, mainScreen.monitorButton, mainScreen.isoButton, mainScreen.shutterButton, mainScreen.wbButton, mainScreen.menuButton]
         onClicked: button => mainScreen.state = mainScreen.state
                    === button.objectName ? "" : button.objectName
     }

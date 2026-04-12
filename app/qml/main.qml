@@ -60,12 +60,6 @@ ApplicationWindow {
         centerDotEnabled: mainScreen.guideControl.centerDotEnabled
     }
 
-    SettingsView {
-        id: settingsView
-        anchors.fill: parent
-        visible: false
-    }
-
     Connections {
         target: mainScreen.recordButton
         function onCheckedChanged() {
@@ -85,7 +79,7 @@ ApplicationWindow {
         buttons: [mainScreen.formatButton, mainScreen.aspectButton,
                   mainScreen.guideButton, mainScreen.monitorButton,
                   mainScreen.isoButton, mainScreen.shutterButton,
-                  mainScreen.wbButton]
+                  mainScreen.wbButton, mainScreen.menuButton]
         onClicked: button => mainScreen.state = mainScreen.state
                    === button.objectName ? "" : button.objectName
     }
@@ -251,21 +245,19 @@ ApplicationWindow {
     }
 
     Connections {
-        target: mainScreen.menuButton
-        function onClicked() {
-            mainScreen.state = ""
-            mainScreen.visible = false
-            settingsView.visible = true
-            camera.stopCamera()
+        target: mainScreen.settingsView
+        function onActiveChanged() {
+            if (mainScreen.settingsView.active)
+                camera.stop()
+            else
+                camera.start()
         }
     }
 
     Connections {
-        target: settingsView
+        target: mainScreen.settingsView.item
         function onClosed() {
-            settingsView.visible = false
-            mainScreen.visible = true
-            camera.startCamera()
+            mainScreen.state = ""
         }
         function onPowerOffRequested() {
             camera.powerOff()

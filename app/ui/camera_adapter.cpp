@@ -105,13 +105,13 @@ void CameraAdapter::setCompression(int value)
     }
 }
 
-void CameraAdapter::stopCamera()
+void CameraAdapter::stop()
 {
     logger()->info("Pausing camera session");
     session_->pause();
 }
 
-void CameraAdapter::startCamera()
+void CameraAdapter::start()
 {
     logger()->info("Resuming camera session");
     session_->resume();

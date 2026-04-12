@@ -33,9 +33,15 @@ Rectangle {
     property alias monitorControl: monitorControl
     property alias viewfinder: viewfinder
     property alias menuButton: configBar.menuButton
+    property alias settingsView: settingsView
+    property alias cameraView: cameraView
 
     property int isoValue: isoControl.currentIndex
                            >= 0 ? isoControl.values[isoControl.currentIndex] : 0
+
+    Item {
+        id: cameraView
+        anchors.fill: parent
 
     ConfigBar {
         id: configBar
@@ -210,6 +216,15 @@ Rectangle {
         }
     }
 
+    }
+
+    Loader {
+        id: settingsView
+        anchors.fill: parent
+        active: false
+        source: "SettingsView.qml"
+    }
+
     states: [
         State {
             name: "isoOpen"
@@ -363,6 +378,22 @@ Rectangle {
             PropertyChanges {
                 target: configBar
                 recording: true
+            }
+        },
+        State {
+            name: "settingsOpen"
+
+            PropertyChanges {
+                target: menuButton
+                checked: true
+            }
+            PropertyChanges {
+                target: settingsView
+                active: true
+            }
+            PropertyChanges {
+                target: cameraView
+                visible: false
             }
         }
     ]

@@ -45,8 +45,8 @@ public:
     Q_INVOKABLE void setColorTemperature(int value);
     Q_INVOKABLE void setRecording(bool value);
     Q_INVOKABLE void setCompression(int value);
-    Q_INVOKABLE void stopCamera();
-    Q_INVOKABLE void startCamera();
+    Q_INVOKABLE void stop();
+    Q_INVOKABLE void start();
     Q_INVOKABLE void powerOff();
 
     void setInitialProperties(int iso, int shutterAngle, int fps, int colorTemp);

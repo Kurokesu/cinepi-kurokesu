@@ -154,6 +154,7 @@ Pane {
 
     Button {
         id: menuButton
+        objectName: "settingsOpen"
         text: "\u22ee"
         flat: true
         font.pixelSize: 34
