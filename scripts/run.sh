@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-# CinePI unified launcher (works on desktop Trixie and Lite + Cage)
+# CinePI unified launcher
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

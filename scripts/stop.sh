@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-# Stop all running CinePI instances (app + Cage compositor)
+# Stop all running CinePI instances
 set -euo pipefail
 
 if sudo systemctl is-active --quiet cinepi.service 2>/dev/null; then
