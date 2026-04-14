@@ -1,34 +1,27 @@
-# kurokesu-cinepi
+![CinePI Kurokesu Edition](docs/banner.png)
 
-Open-source cinema camera platform for Raspberry Pi 5 with Qt Quick GUI, CinemaDNG RAW recording.
+![Version](https://img.shields.io/badge/Version-0.2.0-green?style=flat-square)
 
-This project is a fork and evolution of the [CinePI](https://github.com/cinepi/cinepi-sdk) platform, replacing the original ImGui-based GUI with a modern Qt Quick (QML) interface while preserving the powerful cinepi-raw recording backend.
+***Open-source cinema camera platform for Raspberry Pi - Kurokesu edition of [CinePI](https://github.com/cinepi/cinepi-sdk).***
 
-## Features
+![Raspberry Pi](https://img.shields.io/badge/-RaspberryPi-C51A4A?style=for-the-badge&logo=Raspberry-Pi)
+![Debian](https://img.shields.io/badge/Debian-D70A53?style=for-the-badge&logo=debian&logoColor=white)
+![Qt](https://img.shields.io/badge/Qt-%2341CD52.svg?style=for-the-badge&logo=qt&logoColor=white)
+![C++](https://img.shields.io/badge/c++-%2300599C.svg?style=for-the-badge&logo=c%2B%2B&logoColor=white)
+![Shell Script](https://img.shields.io/badge/shell_script-%23121011.svg?style=for-the-badge&logo=gnu-bash&logoColor=white)
 
-- **12-bit CinemaDNG RAW recording** to NVMe SSD via PCIe
-- **Qt Quick GUI** with touch-friendly controls optimized for HyperPixel 4 Square display
-- **Live camera preview** via shared memory (zero-copy) with MJPEG fallback
-- **GPU-accelerated overlays**: zebra (overexposure), false color, focus peaking, grayscale
-- **Composition guides**: rule of thirds, center crosshair, cinematic aspect ratios (16:9, 1.85:1, 4:3)
-- **Camera controls**: ISO, shutter angle, FPS, white balance, compression, color gains
-- **Redis-based IPC** between backend and GUI
-<!-- TODO: - **Kurokesu sensor support**: IMX283, IMX585, IMX477, IMX462 with DKMS drivers -->
-- **Systemd services** for automatic startup
+# Overview
 
-## Hardware Requirements
+A fork and evolution of CinePI. Built on the libcamera API directly. Camera capture, DNG encoding, and Qt Quick UI all run in a single process with DMA-BUF zero-copy preview.
 
-| Component | Requirement |
-|-----------|-------------|
-| Board | Raspberry Pi 5 (4GB+ RAM recommended) |
-| OS | Raspberry Pi OS Trixie (64-bit, Debian 13) |
-| Camera | MIPI CSI-2 module (Kurokesu IMX283/IMX585/IMX477 or compatible) |
-| Storage | NVMe SSD via PCIe HAT (for RAW recording) |
-| Display | HyperPixel 4 Square (720x720) or any HDMI/DSI display |
+- **Qt Quick UI** running in Cage Wayland kiosk
+- **DMA-BUF viewfinder** - zero-copy camera preview via EGL/GLES
+- **12-bit CinemaDNG RAW** recording to NVMe SSD
+- **GPU shader overlays** - zebra, false color, focus peaking, grayscale
+- **Composition guides** - rule of thirds, crosshair, cinematic aspect ratios
+- **MJPEG streaming** for remote monitoring
 
-## Quick Start
-
-### 1. Clone the repository
+# Supported hardware
 
 ```bash
 git clone --recurse-submodules https://github.com/kurokesu/kurokesu-cinepi.git
