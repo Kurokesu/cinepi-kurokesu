@@ -7,7 +7,8 @@ Pane {
     id: root
     implicitWidth: 720
     height: 91
-    padding: 8
+    verticalPadding: 0
+    horizontalPadding: 8
     background: Rectangle {
         color: "#40000000"
     }
@@ -30,61 +31,72 @@ Pane {
         anchors.left: parent.left
         anchors.right: menuButton.left
 
-        Item { Layout.fillWidth: true }
+        Item {
+            Layout.fillWidth: true
+        }
 
         Button {
             id: formatButton
             objectName: "formatOpen"
             flat: true
+            Layout.preferredWidth: 89
+            Layout.fillHeight: true
             background: Item {}
 
-            contentItem: Column {
-                anchors.centerIn: parent
-                Label {
-                    text: root.resolution
-                    font.pixelSize: 21
-                    font.weight: Font.Medium
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    color: formatButton.checked ? Material.accent : "white"
-                }
-
-                Label {
-                    width: 44
-                    text: root.fps.toString()
-                    font.pixelSize: 18
-                    horizontalAlignment: Text.AlignHCenter
-                    font.weight: Font.Bold
-                    color: "black"
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    background: Rectangle {
+            contentItem: Item {
+                Column {
+                    anchors.centerIn: parent
+                    Label {
+                        text: root.resolution
+                        font.pixelSize: 21
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        font.weight: Font.Medium
                         color: formatButton.checked ? Material.accent : "white"
-                        radius: height / 4
+                    }
+
+                    Label {
+                        width: 44
+                        text: root.fps.toString()
+                        font.pixelSize: 18
+                        horizontalAlignment: Text.AlignHCenter
+                        font.weight: Font.Bold
+                        color: "black"
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        background: Rectangle {
+                            color: formatButton.checked ? Material.accent : "white"
+                            radius: height / 4
+                        }
                     }
                 }
             }
         }
 
-        Item { Layout.fillWidth: true }
+        Item {
+            Layout.fillWidth: true
+        }
 
         Button {
             id: aspectButton
             objectName: "aspectOpen"
             flat: true
-
-            background: Rectangle {
-                color: "transparent"
-                radius: height / 4
-                border.color: parent.checked ? Material.accent : "white"
-                border.width: 2
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.leftMargin: 12
-                anchors.rightMargin: 12
-            }
+            Layout.preferredWidth: 89
+            Layout.fillHeight: true
+            background: Item {}
 
             contentItem: Item {
+                id: item1
                 implicitWidth: 49
                 implicitHeight: aspectLabel.implicitHeight
+
+                Rectangle {
+                    width: aspectButton.width - 34
+                    height: aspectLabel.height + 13
+                    color: "transparent"
+                    radius: height / 4
+                    border.color: aspectButton.checked ? Material.accent : "white"
+                    border.width: 2
+                    anchors.centerIn: parent
+                }
 
                 Rectangle {
                     anchors.centerIn: parent
@@ -104,12 +116,16 @@ Pane {
             }
         }
 
-        Item { Layout.fillWidth: true }
+        Item {
+            Layout.fillWidth: true
+        }
 
         Button {
             id: guideButton
             objectName: "guideOpen"
             flat: true
+            Layout.preferredWidth: 89
+            Layout.fillHeight: true
             display: AbstractButton.IconOnly
             icon.source: "images/grid_guides_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
             icon.width: 59
@@ -117,12 +133,16 @@ Pane {
             background: Item {}
         }
 
-        Item { Layout.fillWidth: true }
+        Item {
+            Layout.fillWidth: true
+        }
 
         Button {
             id: monitorButton
             objectName: "monitorOpen"
             flat: true
+            Layout.preferredWidth: 89
+            Layout.fillHeight: true
             display: AbstractButton.IconOnly
             icon.source: "images/visibility_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
             icon.width: 59
@@ -130,7 +150,9 @@ Pane {
             background: Item {}
         }
 
-        Item { Layout.fillWidth: true }
+        Item {
+            Layout.fillWidth: true
+        }
     }
 
     Label {
@@ -161,7 +183,7 @@ Pane {
         font.weight: Font.Bold
         width: 72
         anchors.right: parent.right
-        anchors.rightMargin: -root.padding
+        anchors.rightMargin: -root.rightPadding
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         horizontalPadding: 0
