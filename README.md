@@ -2,7 +2,7 @@
 
 ![Version](https://img.shields.io/badge/Version-0.2.0-green?style=flat-square)
 
-***Open-source cinema camera platform for Raspberry Pi - Kurokesu edition of [CinePI](https://github.com/cinepi/cinepi-sdk).***
+***Open-source cinema camera platform for Raspberry Pi - Kurokesu edition of [CinePI](https://github.com/cinepi/cinepi-sdk)***
 
 ![Raspberry Pi](https://img.shields.io/badge/-RaspberryPi-C51A4A?style=for-the-badge&logo=Raspberry-Pi)
 ![Debian](https://img.shields.io/badge/Debian-D70A53?style=for-the-badge&logo=debian&logoColor=white)
@@ -23,175 +23,157 @@ A fork and evolution of CinePI. Built on the libcamera API directly. Camera capt
 
 # Supported hardware
 
+CinePI cameras are based around Raspberry Pi hardware / software.
+
+1st party camera modules from Raspberry Pi are supported out of the box. 3rd party sensor modules from [Will Whang](https://github.com/will127534) and [Soho Enterprise](https://soho-enterprise.com/) are also supported.
+
+## Mainboards
+
+- Raspberry Pi 5 (4 GB / 8 GB)
+
+## Image sensor modules
+
+![Image Sensor Modules](docs/image_sensor_modules.jpg)
+*HQ Camera Module, StarlightEye, OneInchEye, SE-SB8M-IMX585*
+- [Raspberry Pi HQ Camera ( IMX477 )](https://www.raspberrypi.com/products/raspberry-pi-high-quality-camera/)
+- [Raspberry Pi Camera Module 3 ( IMX708 )](https://www.raspberrypi.com/products/camera-module-3/)
+- [OneInchEye ( IMX283 )](https://github.com/will127534/OneInchEye)
+- [StarlightEye ( IMX585 )](https://github.com/will127534/StarlightEye)
+
+# Getting started
+
+## Setup
+
+1. Flash [Raspberry Pi OS Lite Trixie](https://www.raspberrypi.com/software/) (64-bit, Debian 13) to a microSD card.
+
+2. Clone and install:
+
 ```bash
-git clone --recurse-submodules https://github.com/kurokesu/kurokesu-cinepi.git
+git clone https://github.com/Kurokesu/kurokesu-cinepi.git
 cd kurokesu-cinepi
-```
-
-### 2. Run the installer
-
-```bash
 ./install.sh
 ```
 
-The installer will:
-- Install all system dependencies (Qt6, Redis, librpicam-app-dev, build tools)
-- Build cinepi-raw (camera backend)
-- Build cinepi-qt (Qt Quick GUI)
-- Install default configuration files
-- Set up systemd services for automatic startup
+Installer will:
+
+- Install system dependencies (Qt6, Cage, libcamera, rpicam-apps, EGL/GLES)
+- Build the `cinepi` binary
+- Set up `cinepi.service` (Cage kiosk, auto-starts on boot)
 - Configure NVMe storage mount
-- Optionally install sensor-specific kernel drivers
+- Install Plymouth splash screen
 
-### 3. Configure your sensor
-
-Edit `/boot/firmware/config.txt`:
+3. Configure sensor — edit `/boot/firmware/config.txt`:
 
 ```ini
-# Disable automatic camera detection
 camera_auto_detect=0
-```
 
-Add the overlay for your camera under the `[all]` section:
-
-```ini
 [all]
-# Enable your sensor (uncomment one):
 dtoverlay=imx283
 #dtoverlay=imx477
 #dtoverlay=imx585
-#dtoverlay=imx462,clock-frequency=37125000
-
-# If using HyperPixel 4 Square display:
-#dtoverlay=vc4-kms-dpi-hyperpixel4sq
 ```
 
-> **Note:** Sensors default to the **cam1** port. To use cam0 instead, append `,cam0`:
+> [!NOTE]
+> Sensors default to **cam1** port. To use cam0, append `,cam0`:
 > ```ini
 > dtoverlay=imx283,cam0
 > ```
 
-> **Note:** The IMX283 driver is included in the mainline RPi kernel (6.12+).
-> Older kernels may require the DKMS driver from `drivers/imx283-v4l2-driver/`.
-
-Reboot after making changes.
-
-### 4. Start the camera
+4. Reboot:
 
 ```bash
-# Services start automatically on boot, or start manually:
-sudo systemctl start cinepi-raw
-sudo systemctl start cinepi-qt
+sudo reboot
 ```
 
-## Architecture
+`cinepi.service` starts automatically on boot.
 
-```
-┌────────────────────────────────────────────────────────────┐
-│                      cinepi-qt (GUI)                       │
-│  ┌──────────┐  ┌────────────┐   ┌────────────────────────┐ │
-│  │ Camera   │  │ Shader     │   │ Camera Controls        │ │
-│  │ Preview  │  │ Overlays   │   │ (ISO/Shutter/FPS/WB)   │ │
-│  │          │  │ (zebra,    │   │                        │ │
-│  │ SharedMem│  │  false clr,│   │ Settings Panel         │ │
-│  │ + MJPEG  │  │  focus pk) │   │ (overlays, compression)│ │
-│  └────┬─────┘  └────────────┘   └──────────┬─────────────┘ │
-│       │                                    │               │
-│       │  Shared Memory (zero-copy)   Redis │               │
-└───────┼────────────────────────────────────┼───────────────┘
-        │                                    │
-┌───────┴────────────────────────────────────┴───────────────┐
-│                    cinepi-raw (Backend)                    │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌───────────┐   │
-│  │libcamera │→ │DNG       │  │MJPEG     │  │Redis      │   │
-│  │capture   │  │encoder   │  │streamer  │  │pub/sub    │   │
-│  └──────────┘  └──────────┘  └──────────┘  └───────────┘   │
-│                                                            │
-│  Links against system librpicam-app-dev (rpicam-apps)      │
-└────────────────────────────────────────────────────────────┘
-```
+## Testing
 
-## Configuration
-
-### Sensor Tuning
-
-The `run-raw.sh` script accepts environment variables to customize the sensor:
+Start manually if needed:
 
 ```bash
-# Use a different tuning file
-TUNING_FILE=~/kurokesu-cinepi/tuning/imx477.json ./scripts/run-raw.sh
-
-# Change sensor mode
-SENSOR_MODE=1920:1080:10:U ./scripts/run-raw.sh
-
-# Change preview resolution
-LORES_WIDTH=1280 LORES_HEIGHT=720 ./scripts/run-raw.sh
+sudo systemctl start cinepi.service
+sudo systemctl status cinepi.service
 ```
 
-### Redis Keys
+MJPEG stream is available at `http://cinepi.local:8000/stream` from any browser on the same network.
 
-The backend and GUI communicate via Redis. Key parameters:
+# Development
 
-| Key | Description | Example |
-|-----|-------------|---------|
-| `iso` | Sensor ISO | `800` |
-| `shutter_a` | Shutter angle (degrees) | `180` |
-| `fps` | Frame rate | `24` |
-| `awb` | White balance (Kelvin, 0=auto) | `5600` |
-| `is_recording` | Recording state | `0` or `1` |
-| `compress` | Compression (0=none, 1=lossy, 2=lossless) | `0` |
-| `cg_rb` | Color gains (red,blue) | `1.5,1.2` |
-| `width`, `height` | Capture resolution | `2784`, `1828` |
-
-## Manual Build
-
-If you prefer to build components individually:
-
-### cinepi-raw
+Build and run locally:
 
 ```bash
-cd cinepi-raw
-meson setup build --buildtype=release
-ninja -C build
+./scripts/build.sh release
+./scripts/run.sh
 ```
 
-Requires `librpicam-app-dev` and dependencies (see `install.sh`).
+`run.sh` detects the environment automatically - if a Wayland compositor is already running (desktop), it connects directly. Otherwise it launches via Cage.
 
-### cinepi-qt
+Stop:
 
 ```bash
-cd cinepi-qt
-mkdir -p build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
-make -j$(nproc)
+./scripts/stop.sh
 ```
 
-## Troubleshooting
+Debug build:
 
-### No camera preview
+```bash
+./scripts/build.sh debug
+./scripts/run.sh debug
+```
 
-1. Check that cinepi-raw is running: `systemctl status cinepi-raw`
-2. Verify camera detection: `rpicam-hello --list-cameras`
-3. Check Redis is running: `redis-cli ping` (should return `PONG`)
-4. Check logs: `journalctl -u cinepi-raw -n 50`
+# Architecture
 
-### GUI doesn't start
 
-1. Check Wayland is running: `echo $WAYLAND_DISPLAY`
-2. Try running manually: `./scripts/run-qt-gui.sh`
-3. Check logs: `journalctl -u cinepi-qt -n 50`
+# Sensor compatibility
 
-### NVMe not detected
+## Cropped resolution and utilization per aspect ratio
 
-1. Verify PCIe is enabled in `/boot/firmware/config.txt`:
-   ```ini
-   dtparam=pciex1
-   dtparam=pciex1_gen=3
-   ```
-2. Check NVMe is visible: `lsblk`
-3. Format if needed: `sudo mkfs.exfat /dev/nvme0n1p1`
+| Ratio | IMX283 (3:2) | IMX585 (16:9) | IMX477 (4:3) |
+|-------|-------------|--------------|-------------|
+| 2.39:1 (Scope) | 5496 × 2300 (63%) | 3840 × 1607 (74%) | 4056 × 1697 (56%) |
+| 2.2:1 (70 mm) | 5496 × 2498 (68%) | 3840 × 1745 (81%) | 4056 × 1844 (61%) |
+| 1.85:1 (Theatrical) | 5496 × 2971 (81%) | 3840 × 2076 (96%) | 4056 × 2192 (72%) |
+| 16:9 | 5496 × 3091 (84%) | **3840 × 2160 (100%)** | 4056 × 2282 (75%) |
+| 3:2 | **5496 × 3672 (100%)** | 3240 × 2160 (84%) | 4056 × 2704 (88%) |
+| 1.37:1 (Academy) | 5030 × 3672 (92%) | 2959 × 2160 (77%) | 4056 × 2960 (97%) |
+| 4:3 | 4896 × 3672 (89%) | 2880 × 2160 (75%) | **4056 × 3040 (100%)** |
 
-## Credits
+**Bold** = native ratio, no crop needed.
 
-- [CinePI](https://github.com/cinepi/cinepi-sdk) - Original cinema camera platform
-- [ALTCINECAM](https://github.com/ALTCINECAM) - Alternative CinePI distribution
+## Preview display (720 × 720 HyperPixel, 520 px preview height)
+
+| Ratio | Frame size | Fits 520 px? | Display method |
+|-------|-----------|-------------|----------------|
+| 2.39:1 | 720 × 301 | Yes | Letterboxed |
+| 2.2:1 | 720 × 327 | Yes | Letterboxed |
+| 1.85:1 | 720 × 389 | Yes | Letterboxed |
+| 16:9 | 720 × 405 | Yes | Letterboxed |
+| 3:2 | 720 × 480 | Yes | Letterboxed |
+| 1.37:1 | 713 × 520 | Pillarboxed | -7 px width |
+| 4:3 | 693 × 520 | Pillarboxed | -27 px width |
+
+# Configuration
+
+## Sensor tuning
+
+`scripts/run.sh` passes environment variables to the `cinepi` binary:
+
+```bash
+TUNING_FILE=~/kurokesu-cinepi/tuning/imx477.json ./scripts/run.sh
+SENSOR_MODE=1920:1080:10:U ./scripts/run.sh
+LORES_WIDTH=1280 LORES_HEIGHT=720 ./scripts/run.sh
+```
+
+Custom tuning files are in the `tuning/` directory.
+
+# Discussion
+
+[![discord](https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/zGMuSUF5er)
+[![github](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/cinepi/cinepi-sdk/discussions)
+
+# Credits
+
+- [CinePI](https://github.com/cinepi/cinepi-sdk) - original Pi cinema camera platform
+- [ALTCINECAM](https://github.com/ALTCINECAM) - alternative CinePI distribution
+- [Will Whang](https://github.com/will127534) - OneInchEye (IMX283) and StarlightEye (IMX585) sensor modules
