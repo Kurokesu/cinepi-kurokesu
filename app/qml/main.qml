@@ -27,7 +27,6 @@ ApplicationWindow {
         id: viewfinderFeed
         parent: mainScreen.viewfinder
         anchors.fill: parent
-        z: 0
         visible: available
     }
 
@@ -41,7 +40,7 @@ ApplicationWindow {
     ShaderOverlays {
         parent: mainScreen.viewfinder
         anchors.fill: parent
-        z: 10
+        z: 1
         source: viewfinderTexture
         zebraEnabled: mainScreen.monitorControl.zebraEnabled
         zebraThreshold: config.zebraThreshold
@@ -53,7 +52,7 @@ ApplicationWindow {
     ViewfinderGuides {
         parent: mainScreen.viewfinder
         anchors.fill: parent
-        z: 20
+        z: 2
         thirdsEnabled: mainScreen.guideControl.thirdsEnabled
         goldenEnabled: mainScreen.guideControl.goldenEnabled
         crosshairEnabled: mainScreen.guideControl.crosshairEnabled
