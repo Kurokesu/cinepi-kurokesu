@@ -144,7 +144,7 @@ Pane {
             Layout.preferredWidth: 89
             Layout.fillHeight: true
             display: AbstractButton.IconOnly
-            icon.source: "images/visibility_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
+            icon.source: "images/stroke_partial_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
             icon.width: 59
             icon.height: 59
             background: Item {}

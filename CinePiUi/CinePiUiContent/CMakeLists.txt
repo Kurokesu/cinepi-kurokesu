@@ -36,7 +36,7 @@ qt6_add_qml_module(CinePiUiContent
         "images/point_scan_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
         "images/power_settings_new_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
         "images/texture_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
-        "images/visibility_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
+        "images/stroke_partial_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
 )
 
 

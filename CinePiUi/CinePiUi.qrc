@@ -16,6 +16,7 @@
         <file>CinePiUiContent/GuideSheet.qml</file>
         <file>CinePiUiContent/IconToggle.qml</file>
         <file>CinePiUiContent/images/adjust_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg</file>
+        <file>CinePiUiContent/images/arrow_back_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg</file>
         <file>CinePiUiContent/images/center_focus_weak_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg</file>
         <file>CinePiUiContent/images/filter_b_and_w_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg</file>
         <file>CinePiUiContent/images/grid_3x3_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg</file>
@@ -23,12 +24,14 @@
         <file>CinePiUiContent/images/grid_guides_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg</file>
         <file>CinePiUiContent/images/palette_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg</file>
         <file>CinePiUiContent/images/point_scan_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg</file>
+        <file>CinePiUiContent/images/power_settings_new_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg</file>
+        <file>CinePiUiContent/images/stroke_partial_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg</file>
         <file>CinePiUiContent/images/texture_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg</file>
-        <file>CinePiUiContent/images/visibility_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg</file>
         <file>CinePiUiContent/Main.ui.qml</file>
         <file>CinePiUiContent/MonitorSheet.qml</file>
         <file>CinePiUiContent/RecordButton.qml</file>
         <file>CinePiUiContent/RulerPicker.qml</file>
+        <file>CinePiUiContent/SettingsView.qml</file>
         <file>qtquickcontrols2.conf</file>
     </qresource>
 </RCC>
