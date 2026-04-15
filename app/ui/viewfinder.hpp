@@ -4,7 +4,7 @@
 #include <QMutex>
 #include <cstdint>
 
-class DmaBufViewfinder : public QQuickFramebufferObject
+class Viewfinder : public QQuickFramebufferObject
 {
     Q_OBJECT
     Q_PROPERTY(bool available READ available NOTIFY availableChanged)
@@ -12,8 +12,8 @@ class DmaBufViewfinder : public QQuickFramebufferObject
     Q_PROPERTY(int sourceHeight READ sourceHeight NOTIFY sourceSizeChanged)
 
 public:
-    explicit DmaBufViewfinder(QQuickItem *parent = nullptr);
-    ~DmaBufViewfinder() override;
+    explicit Viewfinder(QQuickItem *parent = nullptr);
+    ~Viewfinder() override;
 
     Renderer *createRenderer() const override;
 

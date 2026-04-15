@@ -23,7 +23,7 @@ ApplicationWindow {
         viewfinderArea.onClicked: mainScreen.state = ""
     }
 
-    DmaBufViewfinder {
+    Viewfinder {
         id: viewfinderFeed
         parent: mainScreen.viewfinder
         anchors.fill: parent

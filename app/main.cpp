@@ -9,7 +9,7 @@
 #include "logging.hpp"
 #include "camera_session.hpp"
 #include "ui/camera_adapter.hpp"
-#include "ui/dmabuf_viewfinder.hpp"
+#include "ui/viewfinder.hpp"
 #include "ui/frame_provider.hpp"
 #include "ui/config_manager.hpp"
 #include "studio_app_compat.hpp"
@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     QQuickStyle::setStyle("Material");
 
     registerStudioApplication();
-    qmlRegisterType<DmaBufViewfinder>("CinePI", 1, 0, "DmaBufViewfinder");
+    qmlRegisterType<Viewfinder>("CinePI", 1, 0, "Viewfinder");
 
     QString configDir = qEnvironmentVariable("CINEPI_CONFIG_DIR",
         QCoreApplication::applicationDirPath() + "/../../config");
@@ -93,10 +93,10 @@ int main(int argc, char *argv[])
 
     auto rootObjects = engine.rootObjects();
     for (auto *obj : rootObjects) {
-        auto viewfinders = obj->findChildren<DmaBufViewfinder *>();
+        auto viewfinders = obj->findChildren<Viewfinder *>();
         for (auto *viewfinder : viewfinders) {
             QObject::connect(&cameraSession, &CameraSession::frameReady,
-                             viewfinder, &DmaBufViewfinder::onFrameReady);
+                             viewfinder, &Viewfinder::onFrameReady);
         }
     }
 

@@ -1,4 +1,4 @@
-#include "dmabuf_viewfinder.hpp"
+#include "viewfinder.hpp"
 #include "logging.hpp"
 
 #include <QOpenGLFramebufferObject>
@@ -36,12 +36,12 @@ static const char *fragmentShaderSrc =
     "    gl_FragColor = vec4(r, g, b, 1.0);\n"
     "}\n";
 
-class DmaBufRenderer : public QQuickFramebufferObject::Renderer,
+class Renderer : public QQuickFramebufferObject::Renderer,
                        protected QOpenGLFunctions
 {
 public:
-    DmaBufRenderer(const DmaBufViewfinder *item);
-    ~DmaBufRenderer();
+    Renderer(const Viewfinder *item);
+    ~Renderer();
 
     void render() override;
     QOpenGLFramebufferObject *createFramebufferObject(const QSize &size) override;
@@ -53,7 +53,7 @@ private:
     void cleanup();
     GLuint compileShader(GLenum type, const char *source);
 
-    const DmaBufViewfinder *item_;
+    const Viewfinder *item_;
 
     bool glInitialized_ = false;
     bool glFailed_ = false;
@@ -61,7 +61,7 @@ private:
     GLuint vbo_ = 0;
     GLuint texY_ = 0, texU_ = 0, texV_ = 0;
 
-    DmaBufViewfinder::FrameInfo frameInfo_;
+    Viewfinder::FrameInfo frameInfo_;
     uint64_t lastRenderedFrame_ = 0;
     QSize viewportSize_;
 };
@@ -72,12 +72,12 @@ static auto &logger()
     return l;
 }
 
-DmaBufRenderer::DmaBufRenderer(const DmaBufViewfinder *item)
+Renderer::Renderer(const Viewfinder *item)
     : item_(item) {}
 
-DmaBufRenderer::~DmaBufRenderer() { cleanup(); }
+Renderer::~Renderer() { cleanup(); }
 
-void DmaBufRenderer::cleanup()
+void Renderer::cleanup()
 {
     if (texY_) { glDeleteTextures(1, &texY_); texY_ = 0; }
     if (texU_) { glDeleteTextures(1, &texU_); texU_ = 0; }
@@ -86,7 +86,7 @@ void DmaBufRenderer::cleanup()
     if (program_) { glDeleteProgram(program_); program_ = 0; }
 }
 
-GLuint DmaBufRenderer::compileShader(GLenum type, const char *source)
+GLuint Renderer::compileShader(GLenum type, const char *source)
 {
     GLuint shader = glCreateShader(type);
     glShaderSource(shader, 1, &source, nullptr);
@@ -103,7 +103,7 @@ GLuint DmaBufRenderer::compileShader(GLenum type, const char *source)
     return shader;
 }
 
-bool DmaBufRenderer::initGL()
+bool Renderer::initGL()
 {
     if (glInitialized_) return true;
     if (glFailed_) return false;
@@ -174,7 +174,7 @@ bool DmaBufRenderer::initGL()
     return true;
 }
 
-bool DmaBufRenderer::uploadFrame()
+bool Renderer::uploadFrame()
 {
     if (frameInfo_.fd < 0 || frameInfo_.width == 0 || frameInfo_.height == 0)
         return false;
@@ -220,19 +220,19 @@ bool DmaBufRenderer::uploadFrame()
     return true;
 }
 
-void DmaBufRenderer::synchronize(QQuickFramebufferObject *item)
+void Renderer::synchronize(QQuickFramebufferObject *item)
 {
-    auto *viewfinder = static_cast<DmaBufViewfinder *>(item);
+    auto *viewfinder = static_cast<Viewfinder *>(item);
     frameInfo_ = viewfinder->currentFrame();
     viewportSize_ = QSize(item->width(), item->height());
 }
 
-QOpenGLFramebufferObject *DmaBufRenderer::createFramebufferObject(const QSize &size)
+QOpenGLFramebufferObject *Renderer::createFramebufferObject(const QSize &size)
 {
     return new QOpenGLFramebufferObject(size);
 }
 
-void DmaBufRenderer::render()
+void Renderer::render()
 {
     if (!initGL())
         return;
@@ -296,27 +296,27 @@ void DmaBufRenderer::render()
     update();
 }
 
-DmaBufViewfinder::DmaBufViewfinder(QQuickItem *parent)
+Viewfinder::Viewfinder(QQuickItem *parent)
     : QQuickFramebufferObject(parent)
 {
     setMirrorVertically(true);
     setTextureFollowsItemSize(true);
 }
 
-DmaBufViewfinder::~DmaBufViewfinder() = default;
+Viewfinder::~Viewfinder() = default;
 
-QQuickFramebufferObject::Renderer *DmaBufViewfinder::createRenderer() const
+QQuickFramebufferObject::Renderer *Viewfinder::createRenderer() const
 {
-    return new DmaBufRenderer(this);
+    return new Renderer(this);
 }
 
-DmaBufViewfinder::FrameInfo DmaBufViewfinder::currentFrame() const
+Viewfinder::FrameInfo Viewfinder::currentFrame() const
 {
     QMutexLocker lock(&mutex_);
     return currentFrame_;
 }
 
-void DmaBufViewfinder::onFrameReady(int fd, unsigned int width,
+void Viewfinder::onFrameReady(int fd, unsigned int width,
                                   unsigned int height, unsigned int stride,
                                   quint64 frame)
 {

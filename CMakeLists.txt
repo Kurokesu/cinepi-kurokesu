@@ -64,7 +64,7 @@ set(CAMERA_SOURCES
 
 set(UI_SOURCES
     app/ui/camera_adapter.cpp
-    app/ui/dmabuf_viewfinder.cpp
+    app/ui/viewfinder.cpp
     app/ui/frame_provider.cpp
     app/ui/config_manager.cpp
 )
@@ -80,7 +80,7 @@ set(HEADERS
     app/logging.hpp
     app/studio_app_compat.hpp
     app/ui/camera_adapter.hpp
-    app/ui/dmabuf_viewfinder.hpp
+    app/ui/viewfinder.hpp
     app/ui/frame_provider.hpp
     app/ui/config_manager.hpp
 )

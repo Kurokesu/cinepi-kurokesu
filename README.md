@@ -128,7 +128,7 @@ Debug build:
 flowchart TB
     subgraph CinePi["CinePi (Qt application)"]
         subgraph UI["Qt Quick UI"]
-            Controls["Camera controls"] ~~~ Viewfinder["DmaBufViewfinder"] ~~~ Overlays["Shader overlays"]
+            Controls["Camera controls"] ~~~ Viewfinder["Viewfinder"] ~~~ Overlays["Shader overlays"]
         end
         CameraAdapter["CameraAdapter"]
         subgraph CameraStack["Camera stack"]
