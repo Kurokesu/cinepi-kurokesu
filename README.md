@@ -62,7 +62,7 @@ Installer will:
 - Configure NVMe storage mount
 - Install Plymouth splash screen
 
-3. Configure sensor — edit `/boot/firmware/config.txt`:
+3. Configure sensor - edit `/boot/firmware/config.txt`:
 
 ```ini
 camera_auto_detect=0
@@ -124,6 +124,37 @@ Debug build:
 
 # Architecture
 
+```mermaid
+flowchart TB
+    subgraph CinePi["CinePi (Qt application)"]
+        subgraph UI["Qt Quick UI"]
+            Controls["Camera controls"] ~~~ Viewfinder["DmaBufViewfinder"] ~~~ Overlays["Shader overlays"]
+        end
+        CameraAdapter["CameraAdapter"]
+        subgraph CameraStack["Camera stack"]
+            Session["CameraSession (QThread)"]
+            Backend["CameraBackend"]
+            DngEnc["DngEncoder"]
+            MjpegEnc["MjpegEncoder"]
+        end
+    end
+
+    subgraph System["System"]
+        subgraph RPiCamApps["rpicam-apps"]
+            Libcamera["libcamera"]
+        end
+        V4L2["V4L2 / kernel drivers"]
+        Libcamera <--> V4L2
+    end
+
+    UI <--> CameraAdapter
+    CameraAdapter <--> Session
+    Session <--> Backend
+    Backend -. "raw DMA-BUF fd" .-> DngEnc & MjpegEnc
+    Backend <-- "rpicam-apps API" --> RPiCamApps
+    DngEnc ~~~ RPiCamApps
+    Session -. "lores DMA-BUF fd" .-> UI
+```
 
 # Sensor compatibility
 
