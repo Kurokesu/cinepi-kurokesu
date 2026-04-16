@@ -43,179 +43,186 @@ Rectangle {
         id: cameraView
         anchors.fill: parent
 
-    ConfigBar {
-        id: configBar
-        recording: recordButton.checked
-        resolution: formatControl.selectedResolution
-        fps: formatControl.selectedFps
-        aspectRatio: aspectControl.selectedRatio
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: parent.top
-    }
-
-    Rectangle {
-        id: viewfinder
-        color: "black"
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: configBar.bottom
-        anchors.bottom: controlBar.top
-
-        MouseArea {
-            id: viewfinderArea
-            anchors.fill: parent
-        }
-    }
-
-    Item {
-        id: configSheet
-        opacity: 0
-        visible: opacity > 0
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: configBar.bottom
-        anchors.topMargin: -20
-        z: 1
-
-        FormatSheet {
-            id: formatControl
+        ConfigBar {
+            id: configBar
+            recording: recordButton.checked
+            resolution: formatControl.selectedResolution
+            fps: formatControl.selectedFps
+            aspectRatio: aspectControl.selectedRatio
             anchors.left: parent.left
             anchors.right: parent.right
-            visible: false
-        }
-
-        AspectSheet {
-            id: aspectControl
-            anchors.left: parent.left
-            anchors.right: parent.right
-            visible: false
-        }
-
-        GuideSheet {
-            id: guideControl
-            anchors.left: parent.left
-            anchors.right: parent.right
-            visible: false
-        }
-
-        MonitorSheet {
-            id: monitorControl
-            anchors.left: parent.left
-            anchors.right: parent.right
-            visible: false
-        }
-    }
-
-    Item {
-        id: controlSheet
-        z: 1
-        height: 98
-        opacity: 0
-        visible: opacity > 0
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: controlBar.top
-        anchors.bottomMargin: -20
-
-        ControlSheet {
-            id: isoControl
-            objectName: "iso"
-            anchors.fill: parent
-            visible: false
-            values: [50, 64, 80, 100, 125, 160, 200, 250, 320, 400, 500, 640, 800, 1600, 3200]
-            labeledValues: [50, 100, 200, 400, 800, 3200]
-        }
-
-        ControlSheet {
-            id: shutterControl
-            objectName: "shutter"
-            anchors.fill: parent
-            visible: false
-            values: [11.25, 15, 22.5, 30, 37.5, 45, 60, 72, 75, 90, 108, 120, 144, 150, 172.8, 180, 216, 270, 324, 360]
-            labeledValues: [45, 90, 180, 360]
-            visibleTickCount: 16
-            suffix: "°"
-        }
-
-        ControlSheet {
-            id: wbControl
-            objectName: "wb"
-            anchors.fill: parent
-            visible: false
-            minValue: 2300
-            maxValue: 10000
-            step: 100
-            visibleTickCount: 34
-            labeledValues: [2300, 3600, 4900, 6200, 7500, 8800, 10000]
-            suffix: "K"
-        }
-    }
-
-    Pane {
-        id: controlBar
-        padding: 8
-        height: 105
-        background: Rectangle {
-            color: "#40000000"
-        }
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-
-        RowLayout {
-            id: controlsRow
             anchors.top: parent.top
-            anchors.bottom: parent.bottom
+        }
+
+        Rectangle {
+            id: viewfinder
+            color: "black"
             anchors.left: parent.left
-            anchors.right: recordButton.left
-
-            Item { Layout.fillWidth: true }
-
-            ControlButton {
-                id: isoButton
-                objectName: "isoOpen"
-                Layout.minimumWidth: 89
-                label: "ISO"
-                value: isoControl.displayText
-                highlighted: !isoControl.autoMode
-            }
-
-            Item { Layout.fillWidth: true }
-
-            ControlButton {
-                id: shutterButton
-                objectName: "shutterOpen"
-                Layout.minimumWidth: 89
-                label: "SA"
-                value: shutterControl.displayText
-                highlighted: !shutterControl.autoMode
-            }
-
-            Item { Layout.fillWidth: true }
-
-            ControlButton {
-                id: wbButton
-                objectName: "wbOpen"
-                Layout.minimumWidth: 89
-                label: "WB"
-                value: wbControl.displayText
-                highlighted: !wbControl.autoMode
-            }
-
-            Item { Layout.fillWidth: true }
-        }
-
-        RecordButton {
-            id: recordButton
-            width: 89
             anchors.right: parent.right
-            anchors.rightMargin: -controlBar.padding
-            anchors.verticalCenter: parent.verticalCenter
-            height: 89
-        }
-    }
+            anchors.top: configBar.bottom
+            anchors.bottom: controlBar.top
 
+            MouseArea {
+                id: viewfinderArea
+                anchors.fill: parent
+            }
+        }
+
+        Item {
+            id: configSheet
+            opacity: 0
+            visible: opacity > 0
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: configBar.bottom
+            anchors.topMargin: -20
+            z: 1
+
+            FormatSheet {
+                id: formatControl
+                anchors.left: parent.left
+                anchors.right: parent.right
+                visible: false
+            }
+
+            AspectSheet {
+                id: aspectControl
+                anchors.left: parent.left
+                anchors.right: parent.right
+                visible: false
+            }
+
+            GuideSheet {
+                id: guideControl
+                anchors.left: parent.left
+                anchors.right: parent.right
+                visible: false
+            }
+
+            MonitorSheet {
+                id: monitorControl
+                anchors.left: parent.left
+                anchors.right: parent.right
+                visible: false
+            }
+        }
+
+        Item {
+            id: controlSheet
+            z: 1
+            height: 98
+            opacity: 0
+            visible: opacity > 0
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: controlBar.top
+            anchors.bottomMargin: -20
+
+            ControlSheet {
+                id: isoControl
+                objectName: "iso"
+                anchors.fill: parent
+                visible: false
+                values: [50, 64, 80, 100, 125, 160, 200, 250, 320, 400, 500, 640, 800, 1600, 3200]
+                labeledValues: [50, 100, 200, 400, 800, 3200]
+            }
+
+            ControlSheet {
+                id: shutterControl
+                objectName: "shutter"
+                anchors.fill: parent
+                visible: false
+                values: [11.25, 15, 22.5, 30, 37.5, 45, 60, 72, 75, 90, 108, 120, 144, 150, 172.8, 180, 216, 270, 324, 360]
+                labeledValues: [45, 90, 180, 360]
+                visibleTickCount: 16
+                suffix: "°"
+            }
+
+            ControlSheet {
+                id: wbControl
+                objectName: "wb"
+                anchors.fill: parent
+                visible: false
+                minValue: 2300
+                maxValue: 10000
+                step: 100
+                visibleTickCount: 34
+                labeledValues: [2300, 3600, 4900, 6200, 7500, 8800, 10000]
+                suffix: "K"
+            }
+        }
+
+        Pane {
+            id: controlBar
+            padding: 8
+            height: 105
+            background: Rectangle {
+                color: "#40000000"
+            }
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+
+            RowLayout {
+                id: controlsRow
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                anchors.left: parent.left
+                anchors.right: recordButton.left
+
+                Item {
+                    Layout.fillWidth: true
+                }
+
+                ControlButton {
+                    id: isoButton
+                    objectName: "isoOpen"
+                    Layout.minimumWidth: 89
+                    label: "ISO"
+                    value: isoControl.displayText
+                    highlighted: !isoControl.autoMode
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                }
+
+                ControlButton {
+                    id: shutterButton
+                    objectName: "shutterOpen"
+                    Layout.minimumWidth: 89
+                    label: "SA"
+                    value: shutterControl.displayText
+                    highlighted: !shutterControl.autoMode
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                }
+
+                ControlButton {
+                    id: wbButton
+                    objectName: "wbOpen"
+                    Layout.minimumWidth: 89
+                    label: "WB"
+                    value: wbControl.displayText
+                    highlighted: !wbControl.autoMode
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                }
+            }
+
+            RecordButton {
+                id: recordButton
+                width: 89
+                anchors.right: parent.right
+                anchors.rightMargin: -controlBar.padding
+                anchors.verticalCenter: parent.verticalCenter
+                height: 89
+            }
+        }
     }
 
     Loader {
