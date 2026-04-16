@@ -15,8 +15,10 @@ Page {
     Material.background: "#121212"
 
     header: ToolBar {
+        id: settingsToolBar
         Material.background: "#40000000"
-        padding: 8
+        horizontalPadding: 8
+        verticalPadding: 0
         implicitHeight: 64
 
         RowLayout {
@@ -24,6 +26,12 @@ Page {
             spacing: Constants.spacingMedium
 
             ToolButton {
+                id: backButton
+                width: 72
+                Layout.fillHeight: true
+                Layout.leftMargin: -settingsToolBar.leftPadding
+                leftPadding: 0
+                rightPadding: 20
                 icon.source: "images/chevron_backward_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
                 icon.width: 48
                 icon.height: 48
