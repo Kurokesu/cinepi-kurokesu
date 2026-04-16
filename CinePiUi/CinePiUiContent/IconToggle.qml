@@ -12,7 +12,7 @@ Button {
     checkable: true
     display: AbstractButton.IconOnly
     icon.source: "images/grid_3x3_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
-    icon.color: checked ? Material.accent : "#E3E3E3"
+    icon.color: checked ? Material.accent : Material.foreground
     icon.width: 62
     icon.height: 62
     background: Label {

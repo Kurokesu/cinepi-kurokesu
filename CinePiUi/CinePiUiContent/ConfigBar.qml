@@ -51,7 +51,7 @@ Pane {
                         font.pixelSize: 21
                         anchors.horizontalCenter: parent.horizontalCenter
                         font.weight: Font.Medium
-                        color: formatButton.checked ? Material.accent : "white"
+                        color: formatButton.checked ? Material.accent : Material.foreground
                     }
 
                     Label {
@@ -63,7 +63,7 @@ Pane {
                         color: "black"
                         anchors.horizontalCenter: parent.horizontalCenter
                         background: Rectangle {
-                            color: formatButton.checked ? Material.accent : "white"
+                            color: formatButton.checked ? Material.accent : Material.foreground
                             radius: height / 4
                         }
                     }
@@ -93,7 +93,7 @@ Pane {
                     height: aspectLabel.height + 13
                     color: "transparent"
                     radius: height / 4
-                    border.color: aspectButton.checked ? Material.accent : "white"
+                    border.color: aspectButton.checked ? Material.accent : Material.foreground
                     border.width: 2
                     anchors.centerIn: parent
                 }
@@ -111,7 +111,7 @@ Pane {
                     text: root.aspectRatio
                     font.pixelSize: 21
                     font.weight: Font.Bold
-                    color: aspectButton.checked ? Material.accent : "white"
+                    color: aspectButton.checked ? Material.accent : Material.foreground
                 }
             }
         }
@@ -190,7 +190,6 @@ Pane {
         contentItem: Label {
             text: menuButton.text
             font: menuButton.font
-            color: "white"
             horizontalAlignment: Text.AlignRight
             rightPadding: 4
             verticalAlignment: Text.AlignVCenter

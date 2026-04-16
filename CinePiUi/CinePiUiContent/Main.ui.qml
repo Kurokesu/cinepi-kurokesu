@@ -16,7 +16,6 @@ Rectangle {
     width: Constants.width
     height: Constants.height
     color: Material.background
-    // color: "white"
     property alias viewfinderArea: viewfinderArea
     property alias formatButton: configBar.formatButton
     property alias aspectButton: configBar.aspectButton

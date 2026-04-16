@@ -9,8 +9,8 @@ Page {
     width: Constants.width
     height: Constants.height
 
-    signal closed()
-    signal powerOffRequested()
+    signal closed
+    signal powerOffRequested
 
     Material.background: "#121212"
 
@@ -27,7 +27,6 @@ Page {
                 icon.source: "images/arrow_back_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
                 icon.width: 48
                 icon.height: 48
-                icon.color: "#E3E3E3"
                 onClicked: root.closed()
             }
 
@@ -35,7 +34,7 @@ Page {
                 text: "SETTINGS"
                 font.pixelSize: 21
                 font.weight: Font.Medium
-                color: "#E3E3E3"
+                color: Material.foreground
                 Layout.fillWidth: true
             }
         }
@@ -49,16 +48,24 @@ Page {
             width: parent.width
             spacing: 0
 
-            SectionHeader { title: "Camera" }
+            SectionHeader {
+                title: "Camera"
+            }
             SectionPlaceholder {}
 
-            SectionHeader { title: "Storage" }
+            SectionHeader {
+                title: "Storage"
+            }
             SectionPlaceholder {}
 
-            SectionHeader { title: "Network" }
+            SectionHeader {
+                title: "Network"
+            }
             SectionPlaceholder {}
 
-            SectionHeader { title: "System" }
+            SectionHeader {
+                title: "System"
+            }
 
             ItemDelegate {
                 Layout.fillWidth: true
@@ -69,7 +76,6 @@ Page {
                 icon.color: "#FF5252"
                 text: "Power Off"
                 font.pixelSize: 21
-                Material.foreground: "#E3E3E3"
                 onClicked: powerOffDialog.open()
             }
         }
@@ -86,7 +92,7 @@ Page {
         Label {
             text: "Are you sure you want to power off?"
             font.pixelSize: 21
-            color: "#E3E3E3"
+            color: Material.foreground
             wrapMode: Text.WordWrap
             width: parent.width
         }
