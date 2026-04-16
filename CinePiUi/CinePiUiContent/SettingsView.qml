@@ -24,10 +24,11 @@ Page {
             spacing: Constants.spacingMedium
 
             ToolButton {
-                icon.source: "images/arrow_back_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
+                icon.source: "images/chevron_backward_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
                 icon.width: 48
                 icon.height: 48
                 onClicked: root.closed()
+                background: Item {}
             }
 
             Label {

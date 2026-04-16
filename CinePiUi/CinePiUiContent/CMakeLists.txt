@@ -26,8 +26,8 @@ qt6_add_qml_module(CinePiUiContent
     RESOURCES
         "fonts/Roboto-Variable.ttf"
         "images/adjust_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
-        "images/arrow_back_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
         "images/center_focus_weak_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
+        "images/chevron_backward_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
         "images/filter_b_and_w_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
         "images/grid_3x3_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
         "images/grid_goldenratio_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
@@ -35,8 +35,8 @@ qt6_add_qml_module(CinePiUiContent
         "images/palette_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
         "images/point_scan_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
         "images/power_settings_new_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
-        "images/texture_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
         "images/stroke_partial_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
+        "images/texture_48dp_E3E3E3_FILL0_wght300_GRAD0_opsz48.svg"
 )
 
 
