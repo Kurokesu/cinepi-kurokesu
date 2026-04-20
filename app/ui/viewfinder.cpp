@@ -307,7 +307,7 @@ Viewfinder::~Viewfinder() = default;
 
 QQuickFramebufferObject::Renderer *Viewfinder::createRenderer() const
 {
-    return new Renderer(this);
+    return new ::Renderer(this);
 }
 
 Viewfinder::FrameInfo Viewfinder::currentFrame() const
