@@ -28,9 +28,6 @@ qrc_*.cpp
 # Qt Design Studio user settings (machine-specific)
 *.qtds
 
-# Install log
-install.log
-
 # OS
 .DS_Store
 Thumbs.db

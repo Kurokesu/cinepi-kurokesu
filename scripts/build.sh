@@ -1,6 +1,10 @@
 #!/usr/bin/bash
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (c) 2026, UAB Kurokesu. All rights reserved.
+#
 # CinePI build script
 # Usage: ./scripts/build.sh [debug|release]  (default: debug)
+
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
