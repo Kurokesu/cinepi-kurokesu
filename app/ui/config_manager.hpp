@@ -8,7 +8,7 @@ class ConfigManager : public QQmlPropertyMap
     Q_OBJECT
 
 public:
-    explicit ConfigManager(const QString &basePath, QObject *parent = nullptr);
+    explicit ConfigManager(QObject *parent = nullptr);
 
     Q_INVOKABLE void reload();
     Q_INVOKABLE void save();

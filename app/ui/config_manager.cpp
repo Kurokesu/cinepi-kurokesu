@@ -1,6 +1,7 @@
 #include "config_manager.hpp"
 #include "logging.hpp"
 #include <QSettings>
+#include <QStandardPaths>
 
 static auto &logger()
 {
@@ -8,9 +9,10 @@ static auto &logger()
     return l;
 }
 
-ConfigManager::ConfigManager(const QString &basePath, QObject *parent)
+ConfigManager::ConfigManager(QObject *parent)
     : QQmlPropertyMap(this, parent)
-    , configPath_(basePath + "/settings.ini")
+    , configPath_(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation)
+                  + "/settings.ini")
 {
     // Camera exposure -- -1 = auto, positive = manual
     insert("manualIsoSensitivity",      800);

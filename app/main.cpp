@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
         QCoreApplication::applicationDirPath() + "/../../config");
     log->info("Config dir: {}", configDir.toStdString());
 
-    ConfigManager configManager(configDir);
+    ConfigManager configManager;
 
     int iso = configManager.value("manualIsoSensitivity").toInt();
     int sht = configManager.value("manualShutterAngle").toInt();
