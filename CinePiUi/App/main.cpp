@@ -12,7 +12,15 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     QQmlApplicationEngine engine;
-    const QUrl url(mainQmlFile);
+
+    // Load QML from disk when CINEPI_UI_QML_ROOT is set (live iteration).
+    QUrl url(mainQmlFile);
+    if (qEnvironmentVariableIsSet("CINEPI_UI_QML_ROOT")) {
+        const QString root = qEnvironmentVariable("CINEPI_UI_QML_ROOT");
+        engine.addImportPath(root);
+        url = QUrl::fromLocalFile(root + "/CinePiUiContent/App.qml");
+    }
+
     QObject::connect(
                 &engine, &QQmlApplicationEngine::objectCreated, &app,
                 [url](QObject *obj, const QUrl &objUrl) {
