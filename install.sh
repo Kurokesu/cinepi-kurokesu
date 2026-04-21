@@ -83,15 +83,11 @@ log "Binary: $REPO_DIR/build/release/cinepi"
 "$REPO_DIR/scripts/setup/service.sh" --enable
 
 # PATH-install cinepictl.
-# Symlink (not copy) so edits to scripts/cinepictl.sh are live immediately.
+# Symlink, so edits to scripts/cinepictl.sh are live immediately.
 header "Installing cinepictl command"
 
-if [ ! -f "$REPO_DIR/scripts/cinepictl.sh" ]; then
-    warn "scripts/cinepictl.sh does not exist yet (comes in Phase B). Skipping symlink."
-else
-    ln -sf "$REPO_DIR/scripts/cinepictl.sh" /usr/local/bin/cinepictl
-    log "Symlinked /usr/local/bin/cinepictl -> $REPO_DIR/scripts/cinepictl.sh"
-fi
+ln -sf "$REPO_DIR/scripts/cinepictl.sh" /usr/local/bin/cinepictl
+log "Symlinked /usr/local/bin/cinepictl -> $REPO_DIR/scripts/cinepictl.sh"
 
 header "Installation complete"
 
