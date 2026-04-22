@@ -14,16 +14,26 @@ set -euo pipefail
 SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(dirname "$SRC_DIR")"
 BUILD_DIR="$REPO_DIR/build/ui"
+CINEPI_TAG="ui-sandbox"
+
+# shellcheck source=../scripts/common.sh
+source "$REPO_DIR/scripts/common.sh"
+
+for arg in "$@"; do
+    case "$arg" in
+        -h|--help) help_text; exit 0 ;;
+        *) die "unknown argument: $arg" ;;
+    esac
+done
+
+header "ui-sandbox build"
+log "Source: $SRC_DIR"
+log "Build:  $BUILD_DIR"
 
 mkdir -p "$BUILD_DIR"
 cd "$BUILD_DIR"
 
-echo "=== ui-sandbox build ==="
-echo "Source: $SRC_DIR"
-echo "Build:  $BUILD_DIR"
-
 cmake "$SRC_DIR" -Wno-dev
 make -j"$(nproc)"
 
-echo
-echo "Binary: $BUILD_DIR/ui-sandbox"
+log "Binary: $BUILD_DIR/ui-sandbox"

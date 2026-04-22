@@ -17,25 +17,25 @@
 
 set -euo pipefail
 
-SANDBOX_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_DIR="$(dirname "$SANDBOX_DIR")"
+UI_SANDBOX_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$(dirname "$UI_SANDBOX_DIR")"
+CINEPI_TAG="ui-sandbox"
+
+# shellcheck source=../scripts/common.sh
+source "$REPO_DIR/scripts/common.sh"
 
 for arg in "$@"; do
     case "$arg" in
-        -h|--help) sed -n '5,17p' "$0" | sed 's/^# \?//'; exit 0 ;;
-        *) echo "unknown argument: $arg" >&2; exit 1 ;;
+        -h|--help) help_text; exit 0 ;;
+        *) die "unknown argument: $arg" ;;
     esac
 done
 
 BINARY="$REPO_DIR/build/ui/ui-sandbox"
-if [ ! -x "$BINARY" ]; then
-    echo "ui-sandbox binary not found: $BINARY" >&2
-    echo "Build first: $SANDBOX_DIR/build.sh" >&2
-    exit 1
-fi
+[ -x "$BINARY" ] || die "ui-sandbox binary not found: $BINARY (build first: $UI_SANDBOX_DIR/build.sh)"
 
 QML_ROOT="$REPO_DIR/CinePiUi"
-[ -d "$QML_ROOT" ] || { echo "QML root missing: $QML_ROOT" >&2; exit 1; }
+[ -d "$QML_ROOT" ] || die "QML root missing: $QML_ROOT"
 
 UNIT=ui-sandbox
 sudo systemctl stop "${UNIT}.service" 2>/dev/null || true
