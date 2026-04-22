@@ -36,4 +36,4 @@ make -j"$(nproc)"
 
 echo ""
 echo "Binary: $BUILD_DIR/cinepi"
-echo "Run with: $REPO_DIR/scripts/run-cinepi.sh"
+echo "Run as a service: cinepictl restart"
