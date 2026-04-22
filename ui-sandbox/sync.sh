@@ -89,11 +89,11 @@ if [ "$WATCH" -eq 1 ]; then
     command -v inotifywait >/dev/null \
         || die "inotifywait not found (sudo apt install inotify-tools)"
     log "watching $SRC_DIR for changes (Ctrl+C to stop)"
-    while inotifywait -qre modify,create,delete,move \
+    while path=$(inotifywait -qre modify,create,delete,move \
             --exclude '(\.git/|build/|\.user$)' \
-            "$SRC_DIR" >/dev/null; do
+            --format '%w%f' "$SRC_DIR"); do
         sleep 0.3
         sync_once
-        log "synced"
+        log "synced (${path#"$SRC_DIR/"})"
     done
 fi

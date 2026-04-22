@@ -85,16 +85,26 @@ if ($Watch) {
             if ($change.TimedOut) { continue }
             if ($change.Name -match $ignorePattern) { continue }
 
+            $changed = [System.Collections.Generic.HashSet[string]]::new()
+            [void]$changed.Add($change.Name)
+
             # Drain any follow-up events in the next 300ms window so a burst
             # of saves coalesces into a single re-sync.
             $deadline = (Get-Date).AddMilliseconds(300)
             while ((Get-Date) -lt $deadline) {
                 $extra = $watcher.WaitForChanged([System.IO.WatcherChangeTypes]::All, 100)
                 if ($extra.TimedOut) { break }
+                if ($extra.Name -notmatch $ignorePattern) { [void]$changed.Add($extra.Name) }
             }
 
             Invoke-Sync
-            Write-Tag 'synced'
+
+            $names = $changed | ForEach-Object { $_.Replace('\', '/') }
+            if ($names.Count -le 3) {
+                Write-Tag "synced ($($names -join ', '))"
+            } else {
+                Write-Tag "synced ($($names.Count) files)"
+            }
         }
     } finally {
         $watcher.Dispose()
