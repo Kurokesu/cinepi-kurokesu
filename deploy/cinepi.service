@@ -1,5 +1,5 @@
 [Unit]
-Description=cinepi camera
+Description=CinePi camera application (Kurokesu edition)
 After=systemd-user-sessions.service
 
 [Service]

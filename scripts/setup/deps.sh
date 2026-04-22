@@ -5,12 +5,7 @@
 # Install APT dependencies for cinepi.
 # Safe to re-run. Requires sudo (calls apt-get).
 #
-# Usage:
-#   sudo scripts/setup/deps.sh              # production deps only
-#   sudo scripts/setup/deps.sh --enable-ui-dev   # + deps for building CinePiUiApp
-#
-# --enable-ui-dev adds qt6-quicktimeline-dev, needed to compile CinePiUi/Dependencies/
-# (Timeline-using Flow components). Only required by scripts/build-ui.sh.
+# Usage: sudo scripts/setup/deps.sh
 
 set -euo pipefail
 
@@ -19,10 +14,8 @@ CINEPI_TAG="deps"
 # shellcheck source=common.sh
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
-ENABLE_UI_DEV=0
 for arg in "$@"; do
     case "$arg" in
-        --enable-ui-dev) ENABLE_UI_DEV=1 ;;
         -h|--help) help_text; exit 0 ;;
         *) die "Unknown argument: $arg" ;;
     esac
@@ -66,10 +59,5 @@ apt-get install -y \
 
 log "Installing Plymouth..."
 apt-get install -y plymouth plymouth-themes
-
-if [ "$ENABLE_UI_DEV" -eq 1 ]; then
-    log "Installing UI-dev extras (--enable-ui-dev)..."
-    apt-get install -y qt6-quicktimeline-dev
-fi
 
 log "Done. All apt dependencies installed."
