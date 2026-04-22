@@ -2,11 +2,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (c) 2026, UAB Kurokesu. All rights reserved.
 #
-# Shared helpers for scripts/setup/* primitives.
-# Sourced (not executed) by each primitive and by install.sh.
+# Shared helpers sourced by install.sh, scripts/cinepictl.sh, and the
+# scripts/setup/* primitives.
 #
-# Provides: colored logging (log/warn/die/header), repo-root resolution,
-# and cinepi-owner detection that works under sudo.
+# Provides: colored logging (log/warn/die/header), repo-root resolution
+# (for callers under scripts/setup/), and cinepi-owner detection that
+# works under sudo.
 
 # Terminal colors - only emit escape codes when stdout is a TTY.
 if [ -t 1 ]; then

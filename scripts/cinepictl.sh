@@ -19,12 +19,11 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_DIR="$(dirname "$SCRIPT_DIR")"
+SCRIPT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 CINEPI_TAG="cinepictl"
 
-# shellcheck source=scripts/setup/common.sh
-source "$REPO_DIR/scripts/setup/common.sh"
+# shellcheck source=common.sh
+source "$SCRIPT_DIR/common.sh"
 
 SERVICE="cinepi.service"
 DROPIN_DIR="/etc/systemd/system/${SERVICE}.d"

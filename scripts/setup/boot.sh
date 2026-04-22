@@ -21,8 +21,8 @@ set -euo pipefail
 
 CINEPI_TAG="boot"
 
-# shellcheck source=common.sh
-source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
+# shellcheck source=../common.sh
+source "$(dirname "${BASH_SOURCE[0]}")/../common.sh"
 
 for arg in "$@"; do
     case "$arg" in

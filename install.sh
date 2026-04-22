@@ -24,8 +24,8 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOG_FILE="/var/log/cinepi-install.log"
 CINEPI_TAG="install"
 
-# shellcheck source=scripts/setup/common.sh
-source "$REPO_DIR/scripts/setup/common.sh"
+# shellcheck source=scripts/common.sh
+source "$REPO_DIR/scripts/common.sh"
 
 for arg in "$@"; do
     case "$arg" in

@@ -15,8 +15,8 @@ set -euo pipefail
 
 CINEPI_TAG="service"
 
-# shellcheck source=common.sh
-source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
+# shellcheck source=../common.sh
+source "$(dirname "${BASH_SOURCE[0]}")/../common.sh"
 
 ENABLE_AT_BOOT=0
 for arg in "$@"; do
