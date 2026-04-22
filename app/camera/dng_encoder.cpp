@@ -816,7 +816,7 @@ void DngEncoder::encodeThread(int num)
             auto end_time = std::chrono::high_resolution_clock::now();
 
             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
-            logger_->info("Thread[{}] {} Time taken for the encode: {} milliseconds, disk buffer count:{} Size:{}", num, encode_item.index, duration, amount, tiff_size);
+            logger_->debug("Thread[{}] {} Time taken for the encode: {} milliseconds, disk buffer count:{} Size:{}", num, encode_item.index, duration, amount, tiff_size);
         }
 
         {
@@ -884,7 +884,7 @@ void DngEncoder::diskThread(int num)
         auto end_time = std::chrono::high_resolution_clock::now();
 
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
-        logger_->info("Thread[{}] {} Time taken for the disk io: {} milliseconds", num, disk_item.index, duration);
+        logger_->debug("Thread[{}] {} Time taken for the disk io: {} milliseconds", num, disk_item.index, duration);
         
     }
 }

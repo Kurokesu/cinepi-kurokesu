@@ -32,6 +32,7 @@ void initLogging()
         level = spdlog::level::from_str(envLevel);
 
     spdlog::set_level(level);
+    spdlog::flush_on(spdlog::level::info);
     spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%n] [%^%l%$] %v");
 
     auto defaultLogger = std::make_shared<spdlog::logger>("cinepi", s_sinks.begin(), s_sinks.end());
