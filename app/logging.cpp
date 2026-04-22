@@ -23,9 +23,6 @@ void initLogging()
     }
 
     spdlog::level::level_enum level = spdlog::level::info;
-#ifdef CINEPI_DEBUG
-    level = spdlog::level::debug;
-#endif
 
     const char *envLevel = std::getenv("CINEPI_LOG_LEVEL");
     if (envLevel && envLevel[0] != '\0')

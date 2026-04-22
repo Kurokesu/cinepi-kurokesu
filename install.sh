@@ -69,11 +69,11 @@ log "Install user: $CINEPI_USER (uid=$CINEPI_UID)"
 
 "$REPO_DIR/scripts/setup/deps.sh"
 
-header "Building cinepi (release)"
+header "Building cinepi"
 
 # Build runs as the cinepi user, not root, so build artifacts end up user-owned.
-sudo -u "$CINEPI_USER" "$REPO_DIR/scripts/build.sh" release
-log "Binary: $REPO_DIR/build/release/cinepi"
+sudo -u "$CINEPI_USER" "$REPO_DIR/scripts/build.sh"
+log "Binary: $REPO_DIR/build/cinepi"
 
 "$REPO_DIR/scripts/setup/storage.sh"
 "$REPO_DIR/scripts/setup/overlays.sh"
@@ -95,14 +95,14 @@ cat <<EOF
 cinepi-kurokesu installed.
 
   User:    $CINEPI_USER
-  Binary:  $REPO_DIR/build/release/cinepi
+  Binary:  $REPO_DIR/build/cinepi
   Service: cinepi.service (enabled, auto-starts on boot)
 
 Quick commands:
   sudo reboot                            # boot into kiosk
   cinepictl status                       # service state (post-install)
   cinepictl logs -f                      # tail logs
-  scripts/build.sh release && cinepictl restart
+  scripts/build.sh && cinepictl restart
                                          # apply code changes
 
 Sensor / display overlays are not auto-configured. Edit /boot/firmware/config.txt

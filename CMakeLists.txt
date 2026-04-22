@@ -7,7 +7,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
 if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type (Debug or Release)" FORCE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 endif()
 
 set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL TRUE)
@@ -156,17 +156,8 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     PROJECT_VERSION="${PROJECT_VERSION}"
 )
 
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE
-        CINEPI_DEBUG
-        SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG
-    )
-    message(STATUS "CinePI: Debug build (CINEPI_DEBUG, log level >= debug)")
-elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE
-        SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_INFO
-    )
-    message(STATUS "CinePI: Release build (log level >= info)")
-endif()
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_INFO
+)
 
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
