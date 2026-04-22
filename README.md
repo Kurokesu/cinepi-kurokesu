@@ -62,12 +62,31 @@ Installer steps:
 - Enables `cinepi.service` to auto-start on boot
 - Symlinks `cinepictl` into `/usr/local/bin`
 
-3. Enable sensor in `/boot/firmware/config.txt`:
+3. Edit boot configuration:
+
+```bash
+sudo nano /boot/firmware/config.txt
+```
+
+Make three changes:
+
+1. Find `camera_auto_detect` near the top and set it to `0`:
 
 ```ini
 camera_auto_detect=0
+```
 
+2. Find `display_auto_detect` below and set it to `0`:
+
+```ini
+display_auto_detect=0
+```
+
+3. Add sensor and display overlays under the `[all]` section at the bottom of the file:
+
+```ini
 [all]
+dtoverlay=vc4-kms-dpi-hyperpixel4sq
 dtoverlay=imx283
 #dtoverlay=imx477
 #dtoverlay=imx585
