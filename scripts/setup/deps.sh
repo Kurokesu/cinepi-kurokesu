@@ -40,6 +40,7 @@ apt-get install -y \
     qt6-base-dev qt6-declarative-dev \
     qml6-module-qtquick qml6-module-qtquick-controls \
     qml6-module-qtquick-layouts qml6-module-qtquick-window \
+    qml6-module-qtquick-virtualkeyboard \
     qt6-shader-baker qt6-shadertools-dev
 
 log "Installing libcamera and rpicam-apps..."
