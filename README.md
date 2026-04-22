@@ -170,6 +170,36 @@ flowchart TB
 
 # Development
 
+## Logging
+
+Under `cinepi.service`, output lands in the systemd journal tagged `cinepi`:
+
+```bash
+cinepictl logs -f                                 # service-scoped follow
+journalctl -u cinepi -t cinepi --since "1h ago"   # window query
+```
+
+Running the binary directly prints to stdout of that shell instead.
+
+Verbosity is set via `CINEPI_LOG_LEVEL`, one of `trace` / `debug` / `info` / `warn` / `error` / `off`. Under `cinepi.service`, use `cinepictl log-level`, which writes a systemd drop-in (does not restart on its own, chain with `restart` to apply):
+
+```bash
+cinepictl log-level debug && cinepictl restart
+```
+
+When running the binary directly, set the env var inline:
+
+```bash
+CINEPI_LOG_LEVEL=debug ./build/cinepi
+```
+
+Other logging env vars:
+
+| Variable | Purpose |
+|----------|---------|
+| `CINEPI_LOG_FILE`      | If set, also write logs to this path. |
+| `LIBCAMERA_LOG_LEVELS` | Passed through to libcamera as-is. Example: `LIBCAMERA_LOG_LEVELS=RPiAgc:ERROR,RPiCcm:ERROR` quiets tuning noise. |
+
 ## Service management
 
 `cinepictl` manages `cinepi.service` for dev iteration, post-install verification, and field support. `install.sh` symlinks it into `/usr/local/bin`, so repo edits to `scripts/cinepictl.sh` are live immediately.
@@ -181,37 +211,23 @@ cinepictl restart            # restart (e.g. after a rebuild)
 cinepictl status             # systemd state
 cinepictl logs               # last 200 journal lines
 cinepictl logs -f            # follow
-cinepictl log-level debug    # writes systemd drop-in; applies on next restart
+cinepictl log-level debug    # see Logging
 cinepictl help
-```
-
-Each subcommand does exactly what its name says and nothing more. `log-level` writes a systemd drop-in but does **not** restart; chain with `restart` to apply immediately:
-
-```bash
-cinepictl log-level debug && cinepictl restart
 ```
 
 ### Rebuilding after code changes
 
 ```bash
-./scripts/build.sh release && cinepictl restart
+./scripts/build.sh && cinepictl restart
 ```
 
-For a debug build (compiled with `CINEPI_DEBUG`, defaults to debug-level logging), bypass systemd and run directly:
+To run the binary directly (outside `cinepi.service`):
 
 ```bash
-./scripts/build.sh debug
-build/debug/cinepi
+./build/cinepi
 ```
 
-### Logs
-
-All output lands in systemd journal, tagged `cinepi`:
-
-```bash
-cinepictl logs -f                                 # service-scoped follow
-journalctl -u cinepi -t cinepi --since "1h ago"   # window query
-```
+The build targets Pi 5's Cortex-A76 CPU (`-mcpu=cortex-a76`) with link-time optimization enabled.
 
 ## UI sandbox
 
@@ -231,7 +247,7 @@ sudo chmod 440 /etc/sudoers.d/cinepi-ui-sandbox
 3. **Build sandbox harness** (on the Pi, one-time):
 
 ```bash
-ui-sandbox/build.sh
+./ui-sandbox/build.sh
 ```
 
 ### Workflow
@@ -240,7 +256,7 @@ On the Pi, stop `cinepi.service` first, then launch sandbox:
 
 ```bash
 cinepictl stop
-ui-sandbox/run.sh
+./ui-sandbox/run.sh
 ```
 
 `ui-sandbox` reads QML from `/var/tmp/cinepi-ui-sandbox/CinePiUi/` (kept deliberately separate from repo's git clone), launched via `systemd-run` on tty1 mirroring `cinepi.service`'s PAM/VT setup.
@@ -249,13 +265,13 @@ From host, in a separate shell:
 
 ```bash
 # Linux / macOS host:
-ui-sandbox/sync.sh <your-pi> --watch
+./ui-sandbox/sync.sh <your-pi> --watch
 
 # Windows host (PowerShell):
 .\ui-sandbox\sync.ps1 <your-pi> -Watch
 ```
 
-Initial run does a full copy. After that, each QML save (in QDS, VS Code, whatever) pushes just the changed file and restarts `ui-sandbox.service`. Burst saves coalesce into a single restart. See `ui-sandbox/sync.sh --help` for all flags.
+Initial run does a full copy. After that, each save (QML, images, fonts, `.conf`, `.json`, `.js`) pushes just the changed file and restarts `ui-sandbox.service`. Burst saves get combined into a single restart. See `./ui-sandbox/sync.sh --help` for all flags.
 
 > [!TIP]
 > For purely design-time iteration with no target hardware, Qt Design Studio's built-in preview is the fastest loop. Sync scripts exist for what QDS can't cover: real touchscreen interaction and how the UI actually renders on the target display.
@@ -277,23 +293,23 @@ Initial run does a full copy. After that, each QML save (in QDS, VS Code, whatev
 Run any one with `-h` / `--help` to print its description. Example: dev Pi with `cinepi` built and `cinepi.service` defined but **not** auto-starting on boot:
 
 ```bash
-sudo scripts/setup/deps.sh
-./scripts/build.sh release
-sudo scripts/setup/service.sh        # no --enable
+sudo ./scripts/setup/deps.sh
+./scripts/build.sh
+sudo ./scripts/setup/service.sh        # no --enable
 ```
 
-## Configuration
+## Environment variables
 
-Runtime environment variables honored by `cinepi`:
+`cinepi` reads these env vars on startup:
 
 | Variable | Purpose |
 |----------|---------|
 | `CINEPI_CONFIG_DIR` | Directory containing `post-processing.json` and runtime configs. Defaults to `config/` at repo root. |
-| `CINEPI_LOG_LEVEL`  | `trace` / `debug` / `info` / `warn` / `error` / `off`. Under `cinepi.service`, prefer `cinepictl log-level`, which writes a systemd drop-in. |
-| `CINEPI_LOG_FILE`   | If set, logs are also written to this path (in addition to stdout / journal). |
 | `CINEPI_SKIP_SOUND` | If set, skips audio init. Useful when no sound HAT is attached. |
 
-`LIBCAMERA_LOG_LEVELS` is passed through to libcamera as-is. Example: `LIBCAMERA_LOG_LEVELS=RPiAgc:ERROR,RPiCcm:ERROR` quiets tuning noise during development.
+Logging env vars are documented under [Logging](#logging).
+
+`cinepi.service` presets `CINEPI_CONFIG_DIR`, `CINEPI_SKIP_SOUND=1`, and `LIBCAMERA_LOG_LEVELS=RPiAgc:ERROR,RPiCcm:ERROR` out of the box. Override via `systemctl edit cinepi.service`.
 
 # Discussion
 
