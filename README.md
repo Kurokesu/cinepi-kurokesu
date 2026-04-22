@@ -47,8 +47,8 @@ CinePI cameras are based around Raspberry Pi hardware / software.
 2. Clone and run the installer:
 
 ```bash
-git clone https://github.com/Kurokesu/kurokesu-cinepi.git
-cd kurokesu-cinepi
+git clone https://github.com/Kurokesu/cinepi-kurokesu.git
+cd cinepi-kurokesu
 sudo ./install.sh
 ```
 

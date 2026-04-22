@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (c) 2026, UAB Kurokesu. All rights reserved.
 #
-# kurokesu-cinepi installer
+# cinepi-kurokesu installer
 # Thin orchestrator over scripts/setup/* primitives.
 #
 # Installs cinepi as a kiosk that auto-starts on boot (via cinepi.service).
@@ -39,7 +39,7 @@ require_root
 # Log everything to $LOG_FILE as well as the terminal.
 exec > >(tee -a "$LOG_FILE") 2>&1
 echo
-echo "=== kurokesu-cinepi install started at $(date) ==="
+echo "=== cinepi-kurokesu install started at $(date) ==="
 echo "Logging to $LOG_FILE"
 echo
 
@@ -92,7 +92,7 @@ log "Symlinked /usr/local/bin/cinepictl -> $REPO_DIR/scripts/cinepictl.sh"
 header "Installation complete"
 
 cat <<EOF
-kurokesu-cinepi installed.
+cinepi-kurokesu installed.
 
   User:    $CINEPI_USER
   Binary:  $REPO_DIR/build/release/cinepi
