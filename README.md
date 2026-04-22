@@ -52,7 +52,15 @@ cd cinepi-kurokesu
 sudo ./install.sh
 ```
 
-Installs APT dependencies, builds `cinepi`, configures NVMe storage, `/boot/firmware/config.txt`, a quiet boot, Plymouth splash, journald size caps, registers `cinepi.service` to auto-start on boot, and symlinks `cinepictl` into `/usr/local/bin`.
+Installer steps:
+
+- Installs APT dependencies
+- Builds `cinepi` (release)
+- Mounts NVMe storage at `/media/RAW`
+- Silences kernel boot messages and shows a Plymouth splash
+- Caps journald disk usage
+- Enables `cinepi.service` to auto-start on boot
+- Symlinks `cinepictl` into `/usr/local/bin`
 
 3. Enable sensor in `/boot/firmware/config.txt`:
 
