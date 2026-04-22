@@ -12,7 +12,7 @@
 
 # Overview
 
-A fork and evolution of CinePI. Built on the libcamera API directly. Camera capture, DNG encoding, and Qt Quick UI all run in a single process with DMA-BUF zero-copy preview.
+A fork and evolution of CinePI. Built directly on libcamera. Camera capture, DNG encoding, and Qt Quick UI all run in a single process with DMA-BUF zero-copy preview.
 
 - **Qt Quick UI** running in Cage Wayland kiosk
 - **DMA-BUF viewfinder** - zero-copy camera preview via EGL/GLES
@@ -40,29 +40,21 @@ CinePI cameras are based around Raspberry Pi hardware / software.
 - [OneInchEye ( IMX283 )](https://github.com/will127534/OneInchEye)
 - [StarlightEye ( IMX585 )](https://github.com/will127534/StarlightEye)
 
-# Getting started
-
-## Setup
+# Install (fresh Pi)
 
 1. Flash [Raspberry Pi OS Lite Trixie](https://www.raspberrypi.com/software/) (64-bit, Debian 13) to a microSD card.
 
-2. Clone and install:
+2. Clone and run the installer:
 
 ```bash
 git clone https://github.com/Kurokesu/kurokesu-cinepi.git
 cd kurokesu-cinepi
-./install.sh
+sudo ./install.sh
 ```
 
-Installer will:
+Installs APT dependencies, builds `cinepi`, configures NVMe storage, `/boot/firmware/config.txt`, a quiet boot, Plymouth splash, journald size caps, registers `cinepi.service` to auto-start on boot, and symlinks `cinepictl` into `/usr/local/bin`.
 
-- Install system dependencies (Qt6, Cage, libcamera, rpicam-apps, EGL/GLES)
-- Build the `cinepi` binary
-- Set up `cinepi.service` (Cage kiosk, auto-starts on boot)
-- Configure NVMe storage mount
-- Install Plymouth splash screen
-
-3. Configure sensor - edit `/boot/firmware/config.txt`:
+3. Enable sensor in `/boot/firmware/config.txt`:
 
 ```ini
 camera_auto_detect=0
@@ -74,53 +66,18 @@ dtoverlay=imx283
 ```
 
 > [!NOTE]
-> Sensors default to **cam1** port. To use cam0, append `,cam0`:
+> Sensors default to `cam1` port. To use `cam0`, append `,cam0`:
 > ```ini
 > dtoverlay=imx283,cam0
 > ```
 
-4. Reboot:
+4. Reboot. `cinepi.service` starts automatically.
 
 ```bash
 sudo reboot
 ```
 
-`cinepi.service` starts automatically on boot.
-
-## Testing
-
-Start manually if needed:
-
-```bash
-sudo systemctl start cinepi.service
-sudo systemctl status cinepi.service
-```
-
-MJPEG stream is available at `http://cinepi.local:8000/stream` from any browser on the same network.
-
-# Development
-
-Build and run locally:
-
-```bash
-./scripts/build.sh release
-./scripts/run.sh
-```
-
-`run.sh` detects the environment automatically - if a Wayland compositor is already running (desktop), it connects directly. Otherwise it launches via Cage.
-
-Stop:
-
-```bash
-./scripts/stop.sh
-```
-
-Debug build:
-
-```bash
-./scripts/build.sh debug
-./scripts/run.sh debug
-```
+MJPEG preview is live at `http://cinepi.local:8000/stream` once `cinepi.service` is running.
 
 # Architecture
 
@@ -184,19 +141,132 @@ flowchart TB
 | 1.37:1 | 713 × 520 | Pillarboxed | -7 px width |
 | 4:3 | 693 × 520 | Pillarboxed | -27 px width |
 
-# Configuration
+# Development
 
-## Sensor tuning
+## Service management
 
-`scripts/run.sh` passes environment variables to the `cinepi` binary:
+`cinepictl` manages `cinepi.service` for dev iteration, post-install verification, and field support. `install.sh` symlinks it into `/usr/local/bin`, so repo edits to `scripts/cinepictl.sh` are live immediately.
 
 ```bash
-TUNING_FILE=~/kurokesu-cinepi/tuning/imx477.json ./scripts/run.sh
-SENSOR_MODE=1920:1080:10:U ./scripts/run.sh
-LORES_WIDTH=1280 LORES_HEIGHT=720 ./scripts/run.sh
+cinepictl start              # start service
+cinepictl stop               # stop service
+cinepictl restart            # restart (e.g. after a rebuild)
+cinepictl status             # systemd state
+cinepictl logs               # last 200 journal lines
+cinepictl logs -f            # follow
+cinepictl log-level debug    # writes systemd drop-in; applies on next restart
+cinepictl help
 ```
 
-Custom tuning files are in the `tuning/` directory.
+Each subcommand does exactly what its name says and nothing more. `log-level` writes a systemd drop-in but does **not** restart; chain with `restart` to apply immediately:
+
+```bash
+cinepictl log-level debug && cinepictl restart
+```
+
+### Rebuilding after code changes
+
+```bash
+./scripts/build.sh release && cinepictl restart
+```
+
+For a debug build (compiled with `CINEPI_DEBUG`, defaults to debug-level logging), bypass systemd and run directly:
+
+```bash
+./scripts/build.sh debug
+build/debug/cinepi
+```
+
+### Logs
+
+All output lands in systemd journal, tagged `cinepi`:
+
+```bash
+cinepictl logs -f                                 # service-scoped follow
+journalctl -u cinepi -t cinepi --since "1h ago"   # window query
+```
+
+## UI sandbox
+
+Iterate on Qt Quick UI from a host machine (e.g. Windows with Qt Design Studio) while it runs on real Pi hardware. No rebuild per QML edit. Tooling lives under `ui-sandbox/`.
+
+### One-time setup
+
+1. **Passwordless SSH** from host to Pi. Easiest path: [ssh-keyup](https://github.com/Kurokesu/ssh-keyup).
+2. **Passwordless sudo** so sync scripts can restart `ui-sandbox.service` without prompting. Run once on the Pi:
+
+```bash
+echo "$USER ALL=(root) NOPASSWD: /bin/systemctl restart ui-sandbox.service" \
+  | sudo tee /etc/sudoers.d/cinepi-ui-sandbox
+sudo chmod 440 /etc/sudoers.d/cinepi-ui-sandbox
+```
+
+3. **Build sandbox harness** (on the Pi, one-time):
+
+```bash
+ui-sandbox/build.sh
+```
+
+### Workflow
+
+On the Pi, stop `cinepi.service` first, then launch sandbox:
+
+```bash
+cinepictl stop
+ui-sandbox/run.sh
+```
+
+`ui-sandbox` reads QML from `/var/tmp/cinepi-ui-sandbox/CinePiUi/` (kept deliberately separate from repo's git clone), launched via `systemd-run` on tty1 mirroring `cinepi.service`'s PAM/VT setup.
+
+From host, in a separate shell:
+
+```bash
+# Linux / macOS host:
+ui-sandbox/sync.sh <your-pi> --watch
+
+# Windows host (PowerShell):
+.\ui-sandbox\sync.ps1 <your-pi> -Watch
+```
+
+Initial run does a full copy. After that, each QML save (in QDS, VS Code, whatever) pushes just the changed file and restarts `ui-sandbox.service`. Burst saves coalesce into a single restart. See `ui-sandbox/sync.sh --help` for all flags.
+
+> [!TIP]
+> For purely design-time iteration with no target hardware, Qt Design Studio's built-in preview is the fastest loop. Sync scripts exist for what QDS can't cover: real touchscreen interaction and how the UI actually renders on the target display.
+
+## Partial reconfigure (dev Pi)
+
+`install.sh` configures a full kiosk (auto-start, Plymouth splash, NVMe mount, quieted boot), which is rarely what a dev Pi wants. Each step under `scripts/setup/` runs standalone and is safe to re-run:
+
+| Script | What it does |
+|--------|--------------|
+| `scripts/setup/deps.sh`     | APT dependencies (Qt6, Cage, libcamera, rpicam-apps, EGL/GLES). |
+| `scripts/setup/service.sh`  | Install `cinepi.service` + PAM config. `--enable` to auto-start on boot. |
+| `scripts/setup/storage.sh`  | NVMe auto-mount to `/media/RAW` for DNG recording. |
+| `scripts/setup/overlays.sh` | `/boot/firmware/config.txt` entries (firmware knobs, splash). |
+| `scripts/setup/boot.sh`     | Quiet / fast boot: kernel cmdline, getty@tty1 mask. |
+| `scripts/setup/splash.sh`   | Install and activate Plymouth theme. |
+| `scripts/setup/journald.sh` | journald size caps and rate limits. |
+
+Run any one with `-h` / `--help` to print its description. Example: dev Pi with `cinepi` built and `cinepi.service` defined but **not** auto-starting on boot:
+
+```bash
+sudo scripts/setup/deps.sh
+./scripts/build.sh release
+sudo scripts/setup/service.sh        # no --enable
+```
+
+## Configuration
+
+Runtime environment variables honored by `cinepi`:
+
+| Variable | Purpose |
+|----------|---------|
+| `CINEPI_CONFIG_DIR` | Directory containing `post-processing.json` and runtime configs. Defaults to `config/` at repo root. |
+| `CINEPI_LOG_LEVEL`  | `trace` / `debug` / `info` / `warn` / `error` / `off`. Under `cinepi.service`, prefer `cinepictl log-level`, which writes a systemd drop-in. |
+| `CINEPI_LOG_FILE`   | If set, logs are also written to this path (in addition to stdout / journal). |
+| `CINEPI_SKIP_SOUND` | If set, skips audio init. Useful when no sound HAT is attached. |
+
+`LIBCAMERA_LOG_LEVELS` is passed through to libcamera as-is. Example: `LIBCAMERA_LOG_LEVELS=RPiAgc:ERROR,RPiCcm:ERROR` quiets tuning noise during development.
 
 # Discussion
 
