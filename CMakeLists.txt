@@ -10,6 +10,23 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 endif()
 
+# Target Pi 5's Cortex-A76 specifically. Project is Pi-5-only, so no portability
+# cost. Enables NEON/ASIMD vectorization, dot-product, and CPU-specific scheduling.
+add_compile_options(-mcpu=cortex-a76)
+add_link_options(-mcpu=cortex-a76)
+
+# Link-time optimization. Cross-TU inlining, typically 5-15% perf.
+# Kept off for RelWithDebInfo so gdb backtraces stay readable (inlining
+# across translation units makes stepping and stack frames messy).
+include(CheckIPOSupported)
+check_ipo_supported(RESULT _lto_supported OUTPUT _lto_error)
+if(_lto_supported)
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
+    message(STATUS "CinePI: LTO enabled")
+else()
+    message(WARNING "CinePI: LTO not supported (${_lto_error})")
+endif()
+
 set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL TRUE)
 set(XKB_FIND_QUIETLY TRUE)
 find_package(Qt6 REQUIRED COMPONENTS Core Qml Quick QuickControls2 Network Gui ShaderTools)
