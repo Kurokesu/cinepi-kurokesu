@@ -2,9 +2,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (c) 2026, UAB Kurokesu. All rights reserved.
 #
-# Run the ui-sandbox app for QML iteration. Loads QML live from
-# $REPO_DIR/CinePiUi, so edits you push from the host show up on next
-# launch without a rebuild. No camera backend.
+# Run the ui-sandbox app for QML iteration. Loads QML from the live
+# sync target (/var/tmp/cinepi-ui-sandbox/CinePiUi), populated by
+# ui-sandbox/sync.{sh,ps1} on the host. No camera backend.
 #
 # Launched via systemd-run as a transient unit (ui-sandbox.service)
 # that mirrors cinepi.service's session setup (same user, PAM, tty1)
@@ -34,8 +34,15 @@ done
 BINARY="$REPO_DIR/build/ui/ui-sandbox"
 [ -x "$BINARY" ] || die "ui-sandbox binary not found: $BINARY (build first: $UI_SANDBOX_DIR/build.sh)"
 
-QML_ROOT="$REPO_DIR/CinePiUi"
-[ -d "$QML_ROOT" ] || die "QML root missing: $QML_ROOT"
+QML_ROOT="/var/tmp/cinepi-ui-sandbox/CinePiUi"
+if [ ! -d "$QML_ROOT" ]; then
+    die "QML root missing: $QML_ROOT
+Push QML from your host first:
+  ui-sandbox/sync.sh  <this-pi>           # bash host (one-shot)
+  ui-sandbox/sync.sh  <this-pi> --watch   # bash host (live)
+  ui-sandbox/sync.ps1 <this-pi>           # Windows host (one-shot)
+  ui-sandbox/sync.ps1 <this-pi> -Watch    # Windows host (live)"
+fi
 
 UNIT=ui-sandbox
 sudo systemctl stop "${UNIT}.service" 2>/dev/null || true
