@@ -76,14 +76,27 @@ if ($Watch) {
     $watcher.NotifyFilter = [System.IO.NotifyFilters]::LastWrite -bor
                             [System.IO.NotifyFilters]::FileName
 
-    $ignorePattern = '[\\/](\.git|build)[\\/]|\.user$'
-    $debounceMs    = 400
+    # Whitelist of extensions that trigger a re-sync. Everything else
+    # (QDS atomic-save tempfiles, generated .cmake/.h, editor swap files, ...)
+    # is ignored at the watcher. scp still pushes the full tree when triggered.
+    $includeExt = @(
+        '.qml', '.conf',
+        '.png', '.jpg', '.jpeg', '.svg', '.webp',
+        '.ttf', '.otf', '.woff', '.woff2',
+        '.json', '.js'
+    )
+    $debounceMs = 400
+
+    function Test-Watched($name) {
+        $ext = [System.IO.Path]::GetExtension($name).ToLowerInvariant()
+        return $includeExt -contains $ext
+    }
 
     try {
         while ($true) {
             $change = $watcher.WaitForChanged([System.IO.WatcherChangeTypes]::All, 1000)
             if ($change.TimedOut) { continue }
-            if ($change.Name -match $ignorePattern) { continue }
+            if (-not (Test-Watched $change.Name)) { continue }
 
             $changed = [System.Collections.Generic.HashSet[string]]::new()
             [void]$changed.Add($change.Name)
@@ -94,7 +107,7 @@ if ($Watch) {
             while ((Get-Date) -lt $deadline) {
                 $extra = $watcher.WaitForChanged([System.IO.WatcherChangeTypes]::All, 100)
                 if ($extra.TimedOut) { break }
-                if ($extra.Name -notmatch $ignorePattern) { [void]$changed.Add($extra.Name) }
+                if (Test-Watched $extra.Name) { [void]$changed.Add($extra.Name) }
             }
 
             Invoke-Sync

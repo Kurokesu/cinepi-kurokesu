@@ -67,6 +67,11 @@ RSYNC_EXCLUDES=(
     --exclude='*.user.*'
 )
 
+# Whitelist of extensions that should trigger a re-sync. Everything else
+# (QDS atomic-save tempfiles, generated .cmake/.h, editor swap files, ...)
+# is ignored at the watcher. rsync still syncs the full tree when triggered.
+WATCH_INCLUDE='\.(qml|conf|png|jpg|jpeg|svg|webp|ttf|otf|woff2?|json|js)$'
+
 sync_once() {
     rsync -az --delete "${RSYNC_EXCLUDES[@]}" "$SRC_DIR/" "$TARGET:$REMOTE_PATH/"
     if [ "$RESTART" -eq 1 ]; then
@@ -90,7 +95,7 @@ if [ "$WATCH" -eq 1 ]; then
         || die "inotifywait not found (sudo apt install inotify-tools)"
     log "watching $SRC_DIR for changes (Ctrl+C to stop)"
     while path=$(inotifywait -qre modify,create,delete,move \
-            --exclude '(\.git/|build/|\.user$)' \
+            --include "$WATCH_INCLUDE" \
             --format '%w%f' "$SRC_DIR"); do
         sleep 0.3
         sync_once
