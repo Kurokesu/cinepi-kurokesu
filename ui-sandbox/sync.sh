@@ -79,6 +79,9 @@ log "target:      $TARGET"
 log "remote path: $REMOTE_PATH"
 log "restart:     $([ "$RESTART" -eq 1 ] && echo yes || echo no)"
 
+ssh -o BatchMode=yes "$TARGET" "mkdir -p $REMOTE_PATH" \
+    || die "failed to create $REMOTE_PATH on $TARGET"
+
 sync_once
 log "initial sync done"
 

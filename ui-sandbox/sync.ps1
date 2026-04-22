@@ -62,6 +62,9 @@ Write-Tag "target:      $SshTarget"
 Write-Tag "remote path: $RemotePath"
 Write-Tag "restart:     $(-not $NoRestart)"
 
+& ssh -o BatchMode=yes $SshTarget "mkdir -p $RemotePath"
+if ($LASTEXITCODE -ne 0) { throw "failed to create $RemotePath on $SshTarget" }
+
 Invoke-Sync
 Write-Tag 'initial sync done'
 
