@@ -63,7 +63,7 @@ add_line "dtoverlay=disable-bt"
 add_line "dtoverlay=disable-wifi"
 
 if [ "$CHANGED" -eq 1 ]; then
-    log "Changes written. Reboot required for them to take effect."
+    log "Changes written."
 else
     log "No changes needed."
 fi

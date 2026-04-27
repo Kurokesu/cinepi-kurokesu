@@ -94,4 +94,4 @@ fi
 systemctl mask getty@tty1.service 2>/dev/null || true
 log "Masked getty@tty1.service"
 
-log "Done. Reboot for changes to fully take effect."
+log "Done."
