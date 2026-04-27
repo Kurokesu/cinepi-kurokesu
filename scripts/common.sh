@@ -9,8 +9,14 @@
 # (for callers under scripts/setup/), and cinepi-owner detection that
 # works under sudo.
 
-# Terminal colors - only emit escape codes when stdout is a TTY.
-if [ -t 1 ]; then
+# Terminal colors. Detect TTY on first source and pin the result via
+# CINEPI_COLOR so child scripts keep colors even after a parent (e.g.
+# install.sh) redirects stdout through a tee pipe.
+if [ -z "${CINEPI_COLOR:-}" ] && [ -t 1 ]; then
+    export CINEPI_COLOR=1
+fi
+
+if [ -n "${CINEPI_COLOR:-}" ]; then
     _C_RED=$'\033[0;31m'
     _C_GREEN=$'\033[0;32m'
     _C_YELLOW=$'\033[1;33m'
