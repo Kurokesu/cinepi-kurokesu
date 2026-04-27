@@ -25,7 +25,7 @@ for arg in "$@"; do
     esac
 done
 
-header "cinepi build"
+header "CinePi build"
 log "Build dir: $BUILD_DIR"
 
 mkdir -p "$BUILD_DIR"

@@ -23,7 +23,7 @@ done
 
 require_root
 
-header "Installing cinepi apt dependencies"
+header "Installing CinePi apt dependencies"
 
 log "Updating package lists..."
 apt-get update

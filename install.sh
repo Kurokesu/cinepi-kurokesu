@@ -38,10 +38,8 @@ require_root
 
 # Log everything to $LOG_FILE as well as the terminal.
 exec > >(tee -a "$LOG_FILE") 2>&1
-echo
-echo "=== cinepi-kurokesu install started at $(date) ==="
-echo "Logging to $LOG_FILE"
-echo
+header "CinePi install started at $(date)"
+log "Logging to $LOG_FILE"
 
 header "Platform check"
 if [ -f /proc/device-tree/model ]; then
@@ -69,7 +67,7 @@ log "Install user: $CINEPI_USER (uid=$CINEPI_UID)"
 
 "$REPO_DIR/scripts/setup/deps.sh"
 
-header "Building cinepi"
+header "Building CinePi"
 
 # Build runs as the cinepi user, not root, so build artifacts end up user-owned.
 sudo -u "$CINEPI_USER" "$REPO_DIR/scripts/build.sh"
@@ -92,7 +90,7 @@ log "Symlinked /usr/local/bin/cinepictl -> $REPO_DIR/scripts/cinepictl.sh"
 header "Installation complete"
 
 cat <<EOF
-cinepi-kurokesu installed.
+CinePi installed.
 
   User:    $CINEPI_USER
   Binary:  $REPO_DIR/build/cinepi
