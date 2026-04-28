@@ -1,3 +1,11 @@
+/* SPDX-License-Identifier: BSD-2-Clause */
+/*
+ * Copyright (C) 2023, Csaba Nagy and CinePI project contributors
+ * Copyright (C) 2026, UAB Kurokesu
+ *
+ * cinepi_audio.hpp - audio capture, levels and BWF metadata.
+ */
+
 #pragma once
 
 #include <iostream>

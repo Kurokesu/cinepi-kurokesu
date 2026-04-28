@@ -1,3 +1,9 @@
+/* SPDX-License-Identifier: BSD-2-Clause */
+/*
+ * Copyright (C) 2023, Csaba Nagy and CinePI project contributors
+ *
+ * utils.hpp - filesystem mount, clip folder and hardware id helpers.
+ */
 
 #pragma once
 #include <iostream>

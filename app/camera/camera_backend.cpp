@@ -1,3 +1,10 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+/*
+ * Copyright (C) 2026, UAB Kurokesu
+ *
+ * camera_backend.cpp - camera control handlers and per-frame stats.
+ */
+
 #include "camera_backend.hpp"
 #include "logging.hpp"
 

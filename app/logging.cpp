@@ -1,3 +1,10 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+/*
+ * Copyright (C) 2026, UAB Kurokesu
+ *
+ * logging.cpp - application logging setup.
+ */
+
 #include "logging.hpp"
 
 #include <spdlog/spdlog.h>

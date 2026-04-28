@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 /*
  * Copyright (C) 2012 Andre Chen and contributors.
  * andre.hl.chen@gmail.com

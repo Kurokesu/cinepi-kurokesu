@@ -1,3 +1,10 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+/*
+ * Copyright (C) 2026, UAB Kurokesu
+ *
+ * camera_adapter.cpp - camera control adapter for the UI layer.
+ */
+
 #include "camera_adapter.hpp"
 #include "camera_session.hpp"
 #include "logging.hpp"

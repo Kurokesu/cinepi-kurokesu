@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright (c) 2026, UAB Kurokesu. All rights reserved.
+# Copyright (C) 2026, UAB Kurokesu
 #
 # Install APT dependencies for cinepi.
 # Safe to re-run. Requires sudo (calls apt-get).

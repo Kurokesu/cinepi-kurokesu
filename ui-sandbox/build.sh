@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright (c) 2026, UAB Kurokesu. All rights reserved.
+# Copyright (C) 2026, UAB Kurokesu
 #
 # Build the ui-sandbox app: a thin harness for iterating on CinePiUi
 # QML without the camera backend.

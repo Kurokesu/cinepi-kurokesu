@@ -1,8 +1,10 @@
 /* SPDX-License-Identifier: BSD-2-Clause */
 /*
  * Copyright (C) 2020, Raspberry Pi (Trading) Ltd.
+ * Copyright (C) 2023, Csaba Nagy and CinePI project contributors
+ * Copyright (C) 2026, UAB Kurokesu
  *
- * still_video.hpp - video capture program options
+ * raw_options.hpp - capture parameters.
  */
 
 #pragma once

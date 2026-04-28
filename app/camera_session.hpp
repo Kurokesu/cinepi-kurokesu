@@ -1,3 +1,10 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+/*
+ * Copyright (C) 2026, UAB Kurokesu
+ *
+ * camera_session.hpp - preview, recording and controls.
+ */
+
 #pragma once
 
 #include <QThread>

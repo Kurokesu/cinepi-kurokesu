@@ -1,9 +1,11 @@
-// SPDX-License-Identifier: GPL-3.0-or-later
-// Copyright (c) 2026, UAB Kurokesu. All rights reserved.
-//
-// UI sandbox: a thin harness for iterating on CinePiUi QML without
-// the camera backend. Loads QML from disk via CINEPI_UI_QML_ROOT, so
-// edits on host sync straight through. Forces fullscreen.
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+/*
+ * Copyright (C) 2026, UAB Kurokesu
+ *
+ * main.cpp - UI sandbox harness for iterating on CinePiUi QML without the
+ * camera backend. Loads QML from disk via CINEPI_UI_QML_ROOT so edits on
+ * host sync straight through. Forces fullscreen.
+ */
 
 #include <QFileInfo>
 #include <QGuiApplication>

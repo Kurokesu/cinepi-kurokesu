@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright (c) 2026, UAB Kurokesu. All rights reserved.
+# Copyright (C) 2026, UAB Kurokesu
 #
 # Install cinepi.service (systemd unit) + PAM config.
 # Safe to re-run. Requires sudo.

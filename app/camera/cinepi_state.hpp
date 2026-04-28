@@ -1,3 +1,11 @@
+/* SPDX-License-Identifier: BSD-2-Clause */
+/*
+ * Copyright (C) 2023, Csaba Nagy and CinePI project contributors
+ * Copyright (C) 2026, UAB Kurokesu
+ *
+ * cinepi_state.hpp - camera state.
+ */
+
 #pragma once
 
 #include <cstdint>

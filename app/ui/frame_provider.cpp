@@ -1,3 +1,10 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+/*
+ * Copyright (C) 2026, UAB Kurokesu
+ *
+ * frame_provider.cpp - viewfinder frame provider.
+ */
+
 #include "frame_provider.hpp"
 #include "logging.hpp"
 

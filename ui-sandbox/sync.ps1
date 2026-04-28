@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright (c) 2026, UAB Kurokesu. All rights reserved.
+# Copyright (C) 2026, UAB Kurokesu
 #
 # Host-side (Windows). Sync CinePiUi/ to the target Pi and restart
 # ui-sandbox.service so the running harness picks up the new QML.

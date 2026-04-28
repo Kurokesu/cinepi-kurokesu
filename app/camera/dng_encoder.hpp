@@ -1,3 +1,12 @@
+/* SPDX-License-Identifier: BSD-2-Clause */
+/*
+ * Copyright (C) 2020, Raspberry Pi (Trading) Ltd.
+ * Copyright (C) 2023, Csaba Nagy and CinePI project contributors
+ * Copyright (C) 2026, UAB Kurokesu
+ *
+ * dng_encoder.hpp - DNG encoder.
+ */
+
 #pragma once
 
 #include <condition_variable>

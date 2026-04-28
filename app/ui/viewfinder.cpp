@@ -1,3 +1,10 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+/*
+ * Copyright (C) 2026, UAB Kurokesu
+ *
+ * viewfinder.cpp - live camera viewfinder surface.
+ */
+
 #include "viewfinder.hpp"
 #include "logging.hpp"
 
