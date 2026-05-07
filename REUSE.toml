@@ -16,3 +16,23 @@ path = [
 precedence = "closest"
 SPDX-FileCopyrightText = "Copyright (C) 2023 The Qt Company Ltd."
 SPDX-License-Identifier = "LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-or-later OR GPL-3.0-or-later"
+
+# Qt Design Studio-generated project scaffolding.
+
+[[annotations]]
+path = [
+    "CinePiUi/App/autogen/**",
+    "CinePiUi/CinePiUi/designer/**",
+    "CinePiUi/Generated/**",
+    "CinePiUi/cmake/**",
+    "CinePiUi/CMakeLists.txt.shared",
+    "CinePiUi/qds.cmake",
+    "CinePiUi/CinePiUi/CMakeLists.txt",
+    "CinePiUi/CinePiUi/EventListModel.qml",
+    "CinePiUi/CinePiUi/EventListSimulator.qml",
+    "CinePiUi/CinePiUi/qmldir",
+    "CinePiUi/CinePiUiContent/CMakeLists.txt",
+]
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright (C) 2026, UAB Kurokesu"
+SPDX-License-Identifier = "GPL-3.0-or-later"
