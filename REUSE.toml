@@ -1,0 +1,18 @@
+version = 1
+
+# Qt Design Studio components: upstream uses pre-SPDX license markers.
+
+[[annotations]]
+path = "CinePiUi/Dependencies/**"
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright (C) 2020-2024 The Qt Company Ltd."
+SPDX-License-Identifier = "LicenseRef-Qt-Commercial OR GPL-3.0-or-later"
+
+[[annotations]]
+path = [
+    "CinePiUi/Dependencies/Components/imports/application/quickstudioapplication.cpp",
+    "CinePiUi/Dependencies/Components/imports/application/quickstudioapplication.h",
+]
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright (C) 2023 The Qt Company Ltd."
+SPDX-License-Identifier = "LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-or-later OR GPL-3.0-or-later"
