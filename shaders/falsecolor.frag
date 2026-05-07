@@ -1,3 +1,10 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+/*
+ * Copyright (C) 2026, UAB Kurokesu
+ *
+ * falsecolor.frag - viewfinder false-color exposure overlay.
+ */
+
 #version 440
 
 layout(location = 0) in vec2 qt_TexCoord0;

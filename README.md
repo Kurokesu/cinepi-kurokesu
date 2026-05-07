@@ -1,204 +1,329 @@
-# kurokesu-cinepi
+![CinePI Kurokesu Edition](docs/banner.png)
 
-Open-source cinema camera platform for Raspberry Pi 5 with Qt Quick GUI, CinemaDNG RAW recording.
+![Version](https://img.shields.io/badge/Version-0.2.0-green?style=flat-square)
 
-This project is a fork and evolution of the [CinePI](https://github.com/cinepi/cinepi-sdk) platform, replacing the original ImGui-based GUI with a modern Qt Quick (QML) interface while preserving the powerful cinepi-raw recording backend.
+***Open-source cinema camera platform for Raspberry Pi - Kurokesu edition of [CinePI](https://github.com/cinepi/cinepi-sdk)***
 
-## Features
+![Raspberry Pi](https://img.shields.io/badge/-RaspberryPi-C51A4A?style=for-the-badge&logo=Raspberry-Pi)
+![Debian](https://img.shields.io/badge/Debian-D70A53?style=for-the-badge&logo=debian&logoColor=white)
+![Qt](https://img.shields.io/badge/Qt-%2341CD52.svg?style=for-the-badge&logo=qt&logoColor=white)
+![C++](https://img.shields.io/badge/c++-%2300599C.svg?style=for-the-badge&logo=c%2B%2B&logoColor=white)
+![Shell Script](https://img.shields.io/badge/shell_script-%23121011.svg?style=for-the-badge&logo=gnu-bash&logoColor=white)
 
-- **12-bit CinemaDNG RAW recording** to NVMe SSD via PCIe
-- **Qt Quick GUI** with touch-friendly controls optimized for HyperPixel 4 Square display
-- **Live camera preview** via shared memory (zero-copy) with MJPEG fallback
-- **GPU-accelerated overlays**: zebra (overexposure), false color, focus peaking, grayscale
-- **Composition guides**: rule of thirds, center crosshair, cinematic aspect ratios (16:9, 1.85:1, 4:3)
-- **Camera controls**: ISO, shutter angle, FPS, white balance, compression, color gains
-- **Redis-based IPC** between backend and GUI
-<!-- TODO: - **Kurokesu sensor support**: IMX283, IMX585, IMX477, IMX462 with DKMS drivers -->
-- **Systemd services** for automatic startup
+# Overview
 
-## Hardware Requirements
+A fork and evolution of CinePI. Built directly on libcamera. Camera capture, DNG encoding, and Qt Quick UI all run in a single process with DMA-BUF zero-copy preview.
 
-| Component | Requirement |
-|-----------|-------------|
-| Board | Raspberry Pi 5 (4GB+ RAM recommended) |
-| OS | Raspberry Pi OS Trixie (64-bit, Debian 13) |
-| Camera | MIPI CSI-2 module (Kurokesu IMX283/IMX585/IMX477 or compatible) |
-| Storage | NVMe SSD via PCIe HAT (for RAW recording) |
-| Display | HyperPixel 4 Square (720x720) or any HDMI/DSI display |
+- **Qt Quick UI** running in Cage Wayland kiosk
+- **DMA-BUF viewfinder** - zero-copy camera preview via EGL/GLES
+- **12-bit CinemaDNG RAW** recording to NVMe SSD
+- **GPU shader overlays** - zebra, false color, focus peaking, grayscale
+- **Composition guides** - rule of thirds, crosshair, cinematic aspect ratios
+- **MJPEG streaming** for remote monitoring
 
-## Quick Start
+# Built with Qt
 
-### 1. Clone the repository
+The UI is [Qt Quick](https://www.qt.io/product/qt-quick) on Qt 6, designed in [Qt Design Studio](https://www.qt.io/product/qt-design-studio). Qt's component library handles the essentials out of the box: touch-friendly buttons, lists with kinetic scrolling, sliders and inputs. The GPU-accelerated scene graph keeps everything smooth, with animations and easing curves built into the language rather than bolted on.
+
+The standout for us is QML's declarative model of states and transitions: each UI mode is a named state and the framework choreographs the animated transition between them with easing and frame pacing built in, no in-between code to write. Combined with Qt Design Studio's visual editor and live QML reload, iterating on look, feel and timing doesn't block on a C++ rebuild.
+
+# Supported hardware
+
+CinePI cameras are based around Raspberry Pi hardware / software.
+
+1st party camera modules from Raspberry Pi are supported out of the box. 3rd party sensor modules from [Will Whang](https://github.com/will127534) and [Soho Enterprise](https://soho-enterprise.com/) are also supported.
+
+## Mainboards
+
+- Raspberry Pi 5 (4 GB / 8 GB)
+
+## Image sensor modules
+
+![Image Sensor Modules](docs/image_sensor_modules.jpg)
+*HQ Camera Module, StarlightEye, OneInchEye, SE-SB8M-IMX585*
+- [Raspberry Pi HQ Camera ( IMX477 )](https://www.raspberrypi.com/products/raspberry-pi-high-quality-camera/)
+- [Raspberry Pi Camera Module 3 ( IMX708 )](https://www.raspberrypi.com/products/camera-module-3/)
+- [OneInchEye ( IMX283 )](https://github.com/will127534/OneInchEye)
+- [StarlightEye ( IMX585 )](https://github.com/will127534/StarlightEye)
+
+# Install (fresh Pi)
+
+1. Flash [Raspberry Pi OS Lite Trixie](https://www.raspberrypi.com/software/) (64-bit, Debian 13) to a microSD card.
+
+2. Clone and run the installer:
 
 ```bash
-git clone --recurse-submodules https://github.com/kurokesu/kurokesu-cinepi.git
-cd kurokesu-cinepi
+git clone https://github.com/Kurokesu/cinepi-kurokesu.git
+cd cinepi-kurokesu
+sudo ./install.sh
 ```
 
-### 2. Run the installer
+Installer steps:
+
+- Installs APT dependencies
+- Builds `cinepi` (release)
+- Mounts NVMe storage at `/media/RAW`
+- Silences kernel boot messages and shows a Plymouth splash
+- Caps journald disk usage
+- Enables `cinepi.service` to auto-start on boot
+- Symlinks `cinepictl` into `/usr/local/bin`
+
+3. Edit boot configuration:
 
 ```bash
-./install.sh
+sudo nano /boot/firmware/config.txt
 ```
 
-The installer will:
-- Install all system dependencies (Qt6, Redis, librpicam-app-dev, build tools)
-- Build cinepi-raw (camera backend)
-- Build cinepi-qt (Qt Quick GUI)
-- Install default configuration files
-- Set up systemd services for automatic startup
-- Configure NVMe storage mount
-- Optionally install sensor-specific kernel drivers
+Make three changes:
 
-### 3. Configure your sensor
-
-Edit `/boot/firmware/config.txt`:
+1. Find `camera_auto_detect` near the top and set it to `0`:
 
 ```ini
-# Disable automatic camera detection
 camera_auto_detect=0
 ```
 
-Add the overlay for your camera under the `[all]` section:
+2. Find `display_auto_detect` below and set it to `0`:
+
+```ini
+display_auto_detect=0
+```
+
+3. Add sensor and display overlays under the `[all]` section at the bottom of the file:
 
 ```ini
 [all]
-# Enable your sensor (uncomment one):
+dtoverlay=vc4-kms-dpi-hyperpixel4sq
 dtoverlay=imx283
 #dtoverlay=imx477
 #dtoverlay=imx585
-#dtoverlay=imx462,clock-frequency=37125000
-
-# If using HyperPixel 4 Square display:
-#dtoverlay=vc4-kms-dpi-hyperpixel4sq
 ```
 
-> **Note:** Sensors default to the **cam1** port. To use cam0 instead, append `,cam0`:
+> [!NOTE]
+> Sensors default to `cam1` port. To use `cam0`, append `,cam0`:
 > ```ini
 > dtoverlay=imx283,cam0
 > ```
 
-> **Note:** The IMX283 driver is included in the mainline RPi kernel (6.12+).
-> Older kernels may require the DKMS driver from `drivers/imx283-v4l2-driver/`.
-
-Reboot after making changes.
-
-### 4. Start the camera
+4. Reboot. `cinepi.service` starts automatically.
 
 ```bash
-# Services start automatically on boot, or start manually:
-sudo systemctl start cinepi-raw
-sudo systemctl start cinepi-qt
+sudo reboot
 ```
 
-## Architecture
+MJPEG preview is live at `http://cinepi.local:8000/stream` once `cinepi.service` is running.
 
+# Architecture
+
+```mermaid
+flowchart TB
+    subgraph CinePi["CinePi (Qt application)"]
+        subgraph UI["Qt Quick UI"]
+            Controls["Camera controls"] ~~~ Viewfinder["Viewfinder"] ~~~ Overlays["Shader overlays"]
+        end
+        CameraAdapter["CameraAdapter"]
+        subgraph CameraStack["Camera stack"]
+            Session["CameraSession (QThread)"]
+            Backend["CameraBackend"]
+            DngEnc["DngEncoder"]
+            MjpegEnc["MjpegEncoder"]
+        end
+    end
+
+    subgraph System["System"]
+        subgraph RPiCamApps["rpicam-apps"]
+            Libcamera["libcamera"]
+        end
+        V4L2["V4L2 / kernel drivers"]
+        Libcamera <--> V4L2
+    end
+
+    UI <--> CameraAdapter
+    CameraAdapter <--> Session
+    Session <--> Backend
+    Backend -. "raw DMA-BUF fd" .-> DngEnc & MjpegEnc
+    Backend <-- "rpicam-apps API" --> RPiCamApps
+    DngEnc ~~~ RPiCamApps
+    Session -. "lores DMA-BUF fd" .-> UI
 ```
-┌────────────────────────────────────────────────────────────┐
-│                      cinepi-qt (GUI)                       │
-│  ┌──────────┐  ┌────────────┐   ┌────────────────────────┐ │
-│  │ Camera   │  │ Shader     │   │ Camera Controls        │ │
-│  │ Preview  │  │ Overlays   │   │ (ISO/Shutter/FPS/WB)   │ │
-│  │          │  │ (zebra,    │   │                        │ │
-│  │ SharedMem│  │  false clr,│   │ Settings Panel         │ │
-│  │ + MJPEG  │  │  focus pk) │   │ (overlays, compression)│ │
-│  └────┬─────┘  └────────────┘   └──────────┬─────────────┘ │
-│       │                                    │               │
-│       │  Shared Memory (zero-copy)   Redis │               │
-└───────┼────────────────────────────────────┼───────────────┘
-        │                                    │
-┌───────┴────────────────────────────────────┴───────────────┐
-│                    cinepi-raw (Backend)                    │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌───────────┐   │
-│  │libcamera │→ │DNG       │  │MJPEG     │  │Redis      │   │
-│  │capture   │  │encoder   │  │streamer  │  │pub/sub    │   │
-│  └──────────┘  └──────────┘  └──────────┘  └───────────┘   │
-│                                                            │
-│  Links against system librpicam-app-dev (rpicam-apps)      │
-└────────────────────────────────────────────────────────────┘
-```
 
-## Configuration
+# Sensor compatibility
 
-### Sensor Tuning
+## Cropped resolution and utilization per aspect ratio
 
-The `run-raw.sh` script accepts environment variables to customize the sensor:
+| Ratio | IMX283 (3:2) | IMX585 (16:9) | IMX477 (4:3) |
+|-------|-------------|--------------|-------------|
+| 2.39:1 (Scope) | 5496 × 2300 (63%) | 3840 × 1607 (74%) | 4056 × 1697 (56%) |
+| 2.2:1 (70 mm) | 5496 × 2498 (68%) | 3840 × 1745 (81%) | 4056 × 1844 (61%) |
+| 1.85:1 (Theatrical) | 5496 × 2971 (81%) | 3840 × 2076 (96%) | 4056 × 2192 (72%) |
+| 16:9 | 5496 × 3091 (84%) | **3840 × 2160 (100%)** | 4056 × 2282 (75%) |
+| 3:2 | **5496 × 3672 (100%)** | 3240 × 2160 (84%) | 4056 × 2704 (88%) |
+| 1.37:1 (Academy) | 5030 × 3672 (92%) | 2959 × 2160 (77%) | 4056 × 2960 (97%) |
+| 4:3 | 4896 × 3672 (89%) | 2880 × 2160 (75%) | **4056 × 3040 (100%)** |
+
+**Bold** = native ratio, no crop needed.
+
+## Preview display (720 × 720 HyperPixel, 520 px preview height)
+
+| Ratio | Frame size | Fits 520 px? | Display method |
+|-------|-----------|-------------|----------------|
+| 2.39:1 | 720 × 301 | Yes | Letterboxed |
+| 2.2:1 | 720 × 327 | Yes | Letterboxed |
+| 1.85:1 | 720 × 389 | Yes | Letterboxed |
+| 16:9 | 720 × 405 | Yes | Letterboxed |
+| 3:2 | 720 × 480 | Yes | Letterboxed |
+| 1.37:1 | 713 × 520 | Pillarboxed | -7 px width |
+| 4:3 | 693 × 520 | Pillarboxed | -27 px width |
+
+# Development
+
+## Logging
+
+Under `cinepi.service`, output lands in the systemd journal tagged `cinepi`:
 
 ```bash
-# Use a different tuning file
-TUNING_FILE=~/kurokesu-cinepi/tuning/imx477.json ./scripts/run-raw.sh
-
-# Change sensor mode
-SENSOR_MODE=1920:1080:10:U ./scripts/run-raw.sh
-
-# Change preview resolution
-LORES_WIDTH=1280 LORES_HEIGHT=720 ./scripts/run-raw.sh
+cinepictl logs -f                                 # service-scoped follow
+journalctl -u cinepi -t cinepi --since "1h ago"   # window query
 ```
 
-### Redis Keys
+Running the binary directly prints to stdout of that shell instead.
 
-The backend and GUI communicate via Redis. Key parameters:
-
-| Key | Description | Example |
-|-----|-------------|---------|
-| `iso` | Sensor ISO | `800` |
-| `shutter_a` | Shutter angle (degrees) | `180` |
-| `fps` | Frame rate | `24` |
-| `awb` | White balance (Kelvin, 0=auto) | `5600` |
-| `is_recording` | Recording state | `0` or `1` |
-| `compress` | Compression (0=none, 1=lossy, 2=lossless) | `0` |
-| `cg_rb` | Color gains (red,blue) | `1.5,1.2` |
-| `width`, `height` | Capture resolution | `2784`, `1828` |
-
-## Manual Build
-
-If you prefer to build components individually:
-
-### cinepi-raw
+Verbosity is set via `CINEPI_LOG_LEVEL`, one of `trace` / `debug` / `info` / `warn` / `error` / `off`. Under `cinepi.service`, use `cinepictl log-level`, which writes a systemd drop-in (does not restart on its own, chain with `restart` to apply):
 
 ```bash
-cd cinepi-raw
-meson setup build --buildtype=release
-ninja -C build
+cinepictl log-level debug && cinepictl restart
 ```
 
-Requires `librpicam-app-dev` and dependencies (see `install.sh`).
-
-### cinepi-qt
+When running the binary directly, set the env var inline:
 
 ```bash
-cd cinepi-qt
-mkdir -p build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
-make -j$(nproc)
+CINEPI_LOG_LEVEL=debug ./build/cinepi
 ```
 
-## Troubleshooting
+Other logging env vars:
 
-### No camera preview
+| Variable | Purpose |
+|----------|---------|
+| `CINEPI_LOG_FILE`      | If set, also write logs to this path. |
+| `LIBCAMERA_LOG_LEVELS` | Passed through to libcamera as-is. Example: `LIBCAMERA_LOG_LEVELS=RPiAgc:ERROR,RPiCcm:ERROR` quiets tuning noise. |
 
-1. Check that cinepi-raw is running: `systemctl status cinepi-raw`
-2. Verify camera detection: `rpicam-hello --list-cameras`
-3. Check Redis is running: `redis-cli ping` (should return `PONG`)
-4. Check logs: `journalctl -u cinepi-raw -n 50`
+## Service management
 
-### GUI doesn't start
+`cinepictl` manages `cinepi.service` for dev iteration, post-install verification, and field support. `install.sh` symlinks it into `/usr/local/bin`, so repo edits to `scripts/cinepictl.sh` are live immediately.
 
-1. Check Wayland is running: `echo $WAYLAND_DISPLAY`
-2. Try running manually: `./scripts/run-qt-gui.sh`
-3. Check logs: `journalctl -u cinepi-qt -n 50`
+```bash
+cinepictl start              # start service
+cinepictl stop               # stop service
+cinepictl restart            # restart (e.g. after a rebuild)
+cinepictl status             # systemd state
+cinepictl logs               # last 200 journal lines
+cinepictl logs -f            # follow
+cinepictl log-level debug    # see Logging
+cinepictl help
+```
 
-### NVMe not detected
+### Rebuilding after code changes
 
-1. Verify PCIe is enabled in `/boot/firmware/config.txt`:
-   ```ini
-   dtparam=pciex1
-   dtparam=pciex1_gen=3
-   ```
-2. Check NVMe is visible: `lsblk`
-3. Format if needed: `sudo mkfs.exfat /dev/nvme0n1p1`
+```bash
+./scripts/build.sh && cinepictl restart
+```
 
-## Credits
+To run the binary directly (outside `cinepi.service`):
 
-- [CinePI](https://github.com/cinepi/cinepi-sdk) - Original cinema camera platform
-- [ALTCINECAM](https://github.com/ALTCINECAM) - Alternative CinePI distribution
+```bash
+./build/cinepi
+```
+
+The build targets Pi 5's Cortex-A76 CPU (`-mcpu=cortex-a76`) with link-time optimization enabled.
+
+## UI sandbox
+
+Iterate on Qt Quick UI from a host machine (e.g. Windows with Qt Design Studio) while it runs on real Pi hardware. No rebuild per QML edit. Tooling lives under `ui-sandbox/`.
+
+### One-time setup
+
+1. **Passwordless SSH** from host to Pi. Easiest path: [ssh-keyup](https://github.com/Kurokesu/ssh-keyup).
+2. **Passwordless sudo** so sync scripts can restart `ui-sandbox.service` without prompting. Run once on the Pi:
+
+```bash
+echo "$USER ALL=(root) NOPASSWD: /bin/systemctl restart ui-sandbox.service" \
+  | sudo tee /etc/sudoers.d/cinepi-ui-sandbox
+sudo chmod 440 /etc/sudoers.d/cinepi-ui-sandbox
+```
+
+3. **Build sandbox harness** (on the Pi, one-time):
+
+```bash
+./ui-sandbox/build.sh
+```
+
+### Workflow
+
+On the Pi, stop `cinepi.service` first, then launch sandbox:
+
+```bash
+cinepictl stop
+./ui-sandbox/run.sh
+```
+
+`ui-sandbox` reads QML from `/var/tmp/cinepi-ui-sandbox/CinePiUi/` (kept deliberately separate from repo's git clone), launched via `systemd-run` on tty1 mirroring `cinepi.service`'s PAM/VT setup.
+
+From host, in a separate shell:
+
+```bash
+# Linux / macOS host:
+./ui-sandbox/sync.sh <your-pi> --watch
+
+# Windows host (PowerShell):
+.\ui-sandbox\sync.ps1 <your-pi> -Watch
+```
+
+Initial run does a full copy. After that, each save (QML, images, fonts, `.conf`, `.json`, `.js`) pushes just the changed file and restarts `ui-sandbox.service`. Burst saves get combined into a single restart. See `./ui-sandbox/sync.sh --help` for all flags.
+
+> [!TIP]
+> For purely design-time iteration with no target hardware, Qt Design Studio's built-in preview is the fastest loop. Sync scripts exist for what QDS can't cover: real touchscreen interaction and how the UI actually renders on the target display.
+
+## Partial reconfigure (dev Pi)
+
+`install.sh` configures a full kiosk (auto-start, Plymouth splash, NVMe mount, quieted boot), which is rarely what a dev Pi wants. Each step under `scripts/setup/` runs standalone and is safe to re-run:
+
+| Script | What it does |
+|--------|--------------|
+| `scripts/setup/deps.sh`     | APT dependencies (Qt6, Cage, libcamera, rpicam-apps, EGL/GLES). |
+| `scripts/setup/service.sh`  | Install `cinepi.service` + PAM config. `--enable` to auto-start on boot. |
+| `scripts/setup/storage.sh`  | NVMe auto-mount to `/media/RAW` for DNG recording. |
+| `scripts/setup/overlays.sh` | `/boot/firmware/config.txt` entries (firmware knobs, splash). |
+| `scripts/setup/boot.sh`     | Quiet / fast boot: kernel cmdline, getty@tty1 mask. |
+| `scripts/setup/splash.sh`   | Install and activate Plymouth theme. |
+| `scripts/setup/journald.sh` | journald size caps and rate limits. |
+
+Run any one with `-h` / `--help` to print its description. Example: dev Pi with `cinepi` built and `cinepi.service` defined but **not** auto-starting on boot:
+
+```bash
+sudo ./scripts/setup/deps.sh
+./scripts/build.sh
+sudo ./scripts/setup/service.sh        # no --enable
+```
+
+## Environment variables
+
+`cinepi` reads these env vars on startup:
+
+| Variable | Purpose |
+|----------|---------|
+| `CINEPI_CONFIG_DIR` | Directory containing `post-processing.json` and runtime configs. Defaults to `config/` at repo root. |
+| `CINEPI_SKIP_SOUND` | If set, skips audio init. Useful when no sound HAT is attached. |
+
+Logging env vars are documented under [Logging](#logging).
+
+`cinepi.service` presets `CINEPI_CONFIG_DIR`, `CINEPI_SKIP_SOUND=1`, and `LIBCAMERA_LOG_LEVELS=RPiAgc:ERROR,RPiCcm:ERROR` out of the box. Override via `systemctl edit cinepi.service`.
+
+# Discussion
+
+[![discord](https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/zGMuSUF5er)
+[![github](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/cinepi/cinepi-sdk/discussions)
+
+# Credits
+
+- [CinePI](https://github.com/cinepi/cinepi-sdk) - original Pi cinema camera platform
+- [ALTCINECAM](https://github.com/ALTCINECAM) - alternative CinePI distribution
+- [Will Whang](https://github.com/will127534) - OneInchEye (IMX283) and StarlightEye (IMX585) sensor modules

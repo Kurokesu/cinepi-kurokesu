@@ -25,8 +25,8 @@ moc_*.cpp
 qrc_*.cpp
 *_autogen/
 
-# Install log
-install.log
+# Qt Design Studio user settings (machine-specific)
+*.qtds
 
 # OS
 .DS_Store

@@ -1,0 +1,11 @@
+LicenseRef-CinePI-Artwork
+
+Files annotated with this identifier include CinePI project artwork
+(logo, visual identity elements) originating with the CinePI project
+(https://cinepi.io/, https://github.com/cinepi). The project does not
+publish a formal license for these visuals at the time of this fork.
+
+UAB Kurokesu uses them in good faith as a contributing fork that
+builds on the upstream CinePI software stack. Kurokesu does not claim
+the underlying CinePI artwork and welcomes contact from the project's
+maintainers to clarify or formalize permission.

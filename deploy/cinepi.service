@@ -1,0 +1,31 @@
+# SPDX-FileCopyrightText: Copyright (C) 2026, UAB Kurokesu
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+[Unit]
+Description=CinePi camera application (Kurokesu edition)
+After=systemd-user-sessions.service
+
+[Service]
+Type=simple
+User=CINEPI_USER
+PAMName=cinepi
+
+TTYPath=/dev/tty1
+StandardInput=tty-fail
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=cinepi
+
+Environment=XCURSOR_SIZE=1
+Environment=XCURSOR_THEME=transparent
+Environment=CINEPI_CONFIG_DIR=CINEPI_REPO_DIR/config
+Environment=CINEPI_SKIP_SOUND=1
+Environment=LIBCAMERA_LOG_LEVELS=RPiAgc:ERROR,RPiCcm:ERROR
+
+ExecStart=/usr/bin/cage -- CINEPI_REPO_DIR/build/cinepi
+
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,89 @@
+version = 1
+
+# Qt Design Studio components: upstream uses pre-SPDX license markers.
+
+[[annotations]]
+path = "CinePiUi/Dependencies/**"
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright (C) 2020-2024 The Qt Company Ltd."
+SPDX-License-Identifier = "LicenseRef-Qt-Commercial OR GPL-3.0-or-later"
+
+[[annotations]]
+path = [
+    "CinePiUi/Dependencies/Components/imports/application/quickstudioapplication.cpp",
+    "CinePiUi/Dependencies/Components/imports/application/quickstudioapplication.h",
+]
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright (C) 2023 The Qt Company Ltd."
+SPDX-License-Identifier = "LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-or-later OR GPL-3.0-or-later"
+
+# Qt Design Studio-generated project scaffolding.
+
+[[annotations]]
+path = [
+    "CinePiUi/App/autogen/**",
+    "CinePiUi/CinePiUi/designer/**",
+    "CinePiUi/Generated/**",
+    "CinePiUi/cmake/**",
+    "CinePiUi/CMakeLists.txt.shared",
+    "CinePiUi/qds.cmake",
+    "CinePiUi/CinePiUi/CMakeLists.txt",
+    "CinePiUi/CinePiUi/EventListModel.qml",
+    "CinePiUi/CinePiUi/EventListSimulator.qml",
+    "CinePiUi/CinePiUi/qmldir",
+    "CinePiUi/CinePiUiContent/CMakeLists.txt",
+    "CinePiUi/CinePiUiContent/images/images.txt",
+    "CinePiUi/CinePiUiContent/fonts/fonts.txt",
+]
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright (C) 2026, UAB Kurokesu"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+# Google Material Symbols icon set.
+
+[[annotations]]
+path = "CinePiUi/CinePiUiContent/images/*.svg"
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright (C) Google LLC"
+SPDX-License-Identifier = "Apache-2.0"
+
+# Roboto variable font, bundled with its OFL license text per OFL terms.
+
+[[annotations]]
+path = [
+    "CinePiUi/CinePiUiContent/fonts/Roboto-Variable.ttf",
+    "CinePiUi/CinePiUiContent/fonts/OFL.txt",
+]
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright 2011 The Roboto Project Authors"
+SPDX-License-Identifier = "OFL-1.1"
+
+# Kurokesu project files.
+
+[[annotations]]
+path = [
+    ".gitignore",
+    "README.md",
+    "deploy/plymouth/progress_bg.png",
+    "deploy/plymouth/progress_fill.png",
+]
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright (C) 2026, UAB Kurokesu"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+# Kurokesu overlays atop CinePI project artwork. See
+# LICENSES/LicenseRef-CinePI-Artwork.txt for the permission-gap notice.
+
+[[annotations]]
+path = [
+    "deploy/boot-logo.tga",
+    "deploy/plymouth/logo.png",
+    "docs/banner.png",
+    "docs/image_sensor_modules.jpg",
+]
+precedence = "closest"
+SPDX-FileCopyrightText = [
+    "Copyright (C) 2026, UAB Kurokesu",
+    "CinePI project (https://cinepi.io/)",
+]
+SPDX-License-Identifier = "GPL-3.0-or-later AND LicenseRef-CinePI-Artwork"

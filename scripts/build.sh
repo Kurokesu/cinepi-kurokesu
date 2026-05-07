@@ -1,35 +1,39 @@
 #!/usr/bin/bash
-# CinePI build script
-# Usage: ./scripts/build.sh [debug|release]  (default: debug)
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026, UAB Kurokesu
+#
+# Build CinePi app
+#
+# Usage: ./scripts/build.sh
+#
+# Output: build/cinepi
+
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(dirname "$SCRIPT_DIR")"
+BUILD_DIR="$REPO_DIR/build"
+CINEPI_TAG="build"
 
-BUILD_TYPE="${1:-debug}"
+# shellcheck source=common.sh
+source "$SCRIPT_DIR/common.sh"
 
-case "$BUILD_TYPE" in
-    debug)   CMAKE_TYPE="Debug" ;;
-    release) CMAKE_TYPE="Release" ;;
-    *)
-        echo "Usage: $0 [debug|release]"
-        exit 1
-        ;;
-esac
+for arg in "$@"; do
+    case "$arg" in
+        -h|--help) help_text; exit 0 ;;
+        *) die "unknown argument: $arg" ;;
+    esac
+done
 
-BUILD_DIR="$REPO_DIR/build/$BUILD_TYPE"
+header "CinePi build"
+log "Build dir: $BUILD_DIR"
+
 mkdir -p "$BUILD_DIR"
 cd "$BUILD_DIR"
 
-echo "=== CinePI $CMAKE_TYPE build ==="
-echo "Build dir: $BUILD_DIR"
-
-cmake "$REPO_DIR" \
-    -DCMAKE_BUILD_TYPE="$CMAKE_TYPE" \
-    -Wno-dev
+cmake "$REPO_DIR" -Wno-dev
 
 make -j"$(nproc)"
 
-echo ""
-echo "Binary: $BUILD_DIR/cinepi"
-echo "Run with: $REPO_DIR/scripts/run-cinepi.sh"
+log "Binary: $BUILD_DIR/cinepi"
+log "Run as a service: cinepictl restart"
