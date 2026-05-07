@@ -21,6 +21,12 @@ A fork and evolution of CinePI. Built directly on libcamera. Camera capture, DNG
 - **Composition guides** - rule of thirds, crosshair, cinematic aspect ratios
 - **MJPEG streaming** for remote monitoring
 
+# Built with Qt
+
+The UI is [Qt Quick](https://www.qt.io/product/qt-quick) on Qt 6, designed in [Qt Design Studio](https://www.qt.io/product/qt-design-studio). Qt's component library handles the essentials out of the box: touch-friendly buttons, lists with kinetic scrolling, sliders and inputs. The GPU-accelerated scene graph keeps everything smooth, with animations and easing curves built into the language rather than bolted on.
+
+The standout for us is QML's declarative model of states and transitions: each UI mode is a named state and the framework choreographs the animated transition between them with easing and frame pacing built in, no in-between code to write. Combined with Qt Design Studio's visual editor and live QML reload, iterating on look, feel and timing doesn't block on a C++ rebuild.
+
 # Supported hardware
 
 CinePI cameras are based around Raspberry Pi hardware / software.
