@@ -32,7 +32,16 @@ path = [
     "CinePiUi/CinePiUi/EventListSimulator.qml",
     "CinePiUi/CinePiUi/qmldir",
     "CinePiUi/CinePiUiContent/CMakeLists.txt",
+    "CinePiUi/CinePiUiContent/images/images.txt",
 ]
 precedence = "closest"
 SPDX-FileCopyrightText = "Copyright (C) 2026, UAB Kurokesu"
 SPDX-License-Identifier = "GPL-3.0-or-later"
+
+# Google Material Symbols icon set.
+
+[[annotations]]
+path = "CinePiUi/CinePiUiContent/images/*.svg"
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright (C) Google LLC"
+SPDX-License-Identifier = "Apache-2.0"
