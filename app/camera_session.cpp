@@ -8,6 +8,8 @@
 #include "camera_session.hpp"
 #include "logging.hpp"
 
+#include <QFile>
+
 #include "camera/cinepi_audio.hpp"
 #include "camera/camera_backend.hpp"
 #include "camera/dng_encoder.hpp"
@@ -80,12 +82,12 @@ void CameraSession::run()
 
         RawOptions *options = app.GetOptions();
 
-        std::string ppFile = (configDir_ + "/post-processing.json").toStdString();
+        QString ppPath = configDir_ + "/post-processing.json";
+        std::string ppFile = ppPath.toStdString();
         std::string tuningFile = "/usr/share/libcamera/ipa/rpi/pisp/imx283.json";
 
         std::vector<const char *> args = {
             "cinepi",
-            "--post-process-file", ppFile.c_str(),
             "--tuning-file", tuningFile.c_str(),
             "-n",
             "--mode", "2784:1828:12:U",
@@ -94,6 +96,12 @@ void CameraSession::run()
             "--lores-width", "720",
             "--lores-height", "474",
         };
+        if (QFile::exists(ppPath)) {
+            args.push_back("--post-process-file");
+            args.push_back(ppFile.c_str());
+        } else {
+            log->info("No post-processing.json in config dir, post-processing disabled");
+        }
         int fake_argc = static_cast<int>(args.size());
         options->Parse(fake_argc, const_cast<char **>(args.data()));
 
